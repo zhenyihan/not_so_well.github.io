@@ -89,6 +89,204 @@
         
           <section id="main">
   
+    <article id="post-vr-note2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/16/vr-note2/" class="article-date">
+  <time datetime="2015-05-16T06:55:23.000Z" itemprop="datePublished">2015-05-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/16/vr-note2/">虛擬實境 論文研讀 Part 2</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/05/16/vr-note2/" data-id="cilu7nf3o00qk2wxc51uarhcd" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/05/16/vr-note2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <blockquote>
+<p>接續上一篇，接下來會有很多數學，自己也是一知無解狀態。</p>
+</blockquote>
+<h2 id="QEM"><a href="#QEM" class="headerlink" title="QEM"></a>QEM</h2><p>QEM 方程如下，當找到許多在等值曲面上的 $p_k$ 時，接著要找到一個最小 $v$ 參數為滿足目標方程</p>
+<span>$v^{M} \leftarrow \text{arg } \underset{v}{min} \sum_{k} (n^t_{k} (v - p_{k}))^2$</span><!-- Has MathJax -->
+<p>為了找到這個 $v$</p>
+<span>$v^M \leftarrow v^M + Q^+ (q - Q v^M)$</span><!-- Has MathJax -->
+<p>其中矩陣<span>$Q = \sum_{k} n_{k} n^{t}_{k}$</span><!-- Has MathJax -->，</p>
+<p>使用 SVD ( singular value decomposition )，奇異值分解去找解，這個計算好像在巨量資料中也存在 SVD，這世界太可怕了！ )。 在找到 $v^M$ 之後，進行簡化模型的縮點 (減少節點數)。經由這一步，可以更貼近物體的輪廓線，來強化邊緣的存在。</p>
+<p>為了減少退化三角形跟三角網格的品質，可以藉由 Delaunay Tetrahedralization 再刷新一次。修改、刪除的點其實並不多於全局 (大多都是邊緣？)，那麼可以利用鬆弛的方式進行更新會比全局刷新還來得快速。</p>
+<h2 id="實戰"><a href="#實戰" class="headerlink" title="實戰"></a>實戰</h2><p>接下來這篇論文的作者，要進行實戰比較 (一起來吸收別人怎麼去驗證、統計、比較！實驗方法也是相當重要的。)，查看每一次迭代的是否可以的過程、速度。</p>
+<h3 id="誤差評定"><a href="#誤差評定" class="headerlink" title="誤差評定"></a>誤差評定</h3><p>利用模擬的模型 (幾何模型構成，拿真物要找到物體表面的方向量有點麻煩)，來看梯度方向的準確性，簡單來說就是拿實際結果與實驗結果中的一個點，於表面上的法向量夾角作為誤差大小。</p>
+<span>$\varepsilon_{n}(p) = \text{arccos } (n(p)^t m(p))$</span><!-- Has MathJax -->
+<h3 id="梯度估計"><a href="#梯度估計" class="headerlink" title="梯度估計"></a>梯度估計</h3><blockquote>
+<p>即使是誤差，平滑也是好事。梯度越小越平滑。</p>
+</blockquote>
+<p>接著它拿兩個物體 sphere 和 fandisk mesh (球體和一個 ???) 進行測試，看來在那些特殊的地方的誤差。算法可能會在某些特殊邊緣、平面的運行效果不好 (算法擅長於那些特徵計算、不善長什麼，來釐清這一點)。</p>
+<p>視覺化時，利用下列二種方式凸顯梯度 central differences、<a href="http://en.wikipedia.org/wiki/Sobel_operator" target="_blank" rel="external">Sobel operator</a> (索貝爾運算就是在影像處理運用中，檢測邊緣、圖像梯度用的)。論文作者接下來提供一的新穎 CT value 的計算公式，與一般傳統的不同，讓這個誤差梯度下降。經由上面兩種方式的梯度表示，發現論文作者提供的這種會再更好一點點。</p>
+<h2 id="討論"><a href="#討論" class="headerlink" title="討論"></a>討論</h2><ul>
+<li>提供一個更準確的 CT value 的計算方式</li>
+<li>動態運作 ODT, QEM 的方式</li>
+</ul>
+<h3 id="比較-Grid-Based"><a href="#比較-Grid-Based" class="headerlink" title="比較 Grid-Based"></a>比較 Grid-Based</h3><p>拿其他的建造方案，如 Grid-Based Polygonization，進行邊緣銳利比較。使用 <a href="http://en.wikipedia.org/wiki/Hausdorff_distance" target="_blank" rel="external">Hausdorff distance</a> 比較好壞，當然地 Grid-Based 沒對齊好，基本上贏不過三角化的版本！Grid-Based 取樣點夠密集才能勝過 vary triangle 的建模吧！在大多共平面的狀況下，三角形建模的方式需要頂點數非常少。</p>
+<h3 id="時間消耗"><a href="#時間消耗" class="headerlink" title="時間消耗"></a>時間消耗</h3><p>由於精準度上的調校，提出的方法比起常規的建模是消耗更多時間，但 CT 掃描數據的時間通常需要 10min 到 1hr，但是提出的方法比掃描時間還快。</p>
+<p>也就是說讀取資料很慢，處理速度不用這麼快也沒關係，算起來有種 $O(n)$ 的效能。</p>
+<h3 id="空間消耗"><a href="#空間消耗" class="headerlink" title="空間消耗"></a>空間消耗</h3><p>由於過程中需要大量的矩陣、附加值於記憶體中，會消耗上 GB 的使用空間來維護操作。但現代電腦的記憶體可以超過 10GB 以上，因此這個缺點可以忽略不計。</p>
+<h3 id="實作細節"><a href="#實作細節" class="headerlink" title="實作細節"></a>實作細節</h3><p>為了加速運行，特別將物體表面周圍的取樣多、密集一點，對於其他地方的取樣少點，如此一來計算量會少很多。</p>
+<h3 id="插值"><a href="#插值" class="headerlink" title="插值"></a>插值</h3><p>在 $Tiso= (f(gi)+f(gj))/2$ 中提到插值法，但插值法有很多種，如 tricubic interpolation、bicubic interpolation … 等，如果選擇別種的插植法，效果會不會比較好呢？經過它們的梯度估算方法，他們所提到的插值法會稍微好一些。</p>
+<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>提出一個可以用 CT 圖去建模的方法，仰賴的不是三維空間 volumetric data，並且可以提供一個更高精度的建模方法，用少許的三角形就能構造出相當銳利的結果。</p>
+<ol>
+<li>以上都是建立在單一素材上，如果由複合的素材構成，可能是一個無法解決的問題。</li>
+<li>對於光束敏感的物體，CT 的建造方法可以支持更好。</li>
+<li>如果一開始的四面體不夠完善，有可能無法捕抓到邊緣。自適應的 meshing 也許能解決這問題。</li>
+</ol>
+<blockquote>
+<p>提出一個速度慢、空間多的算法，但是現代電腦記憶體夠，速度慢沒關係，比輸入還快就行了</p>
+</blockquote>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-security-notes3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/05/16/security-notes3/" class="article-date">
+  <time datetime="2015-05-16T00:52:18.000Z" itemprop="datePublished">2015-05-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/05/16/security-notes3/">近代加密 快速冪次計算</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/05/16/security-notes3/" data-id="cilu7nemo006s2wxce775w0f7" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/05/16/security-notes3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/分治算法/">分治算法</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/模乘法/">模乘法</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <p>先來上競賽中最常見到的快速冪次寫法</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">long long mul(long long a, long long b, long long mod) &#123; </span><br><span class="line">    long long ret = 0; </span><br><span class="line">    for( ; b != 0; b&gt;&gt;=1, (a&lt;&lt;=1)%=mod) </span><br><span class="line">        if(b&amp;1) (ret += a) %= mod; </span><br><span class="line">    return ret; </span><br><span class="line">&#125;</span><br><span class="line">long long mpow(long long x, long long y, long long mod) &#123;</span><br><span class="line">    long long ret = 1;</span><br><span class="line">    while (y) &#123;</span><br><span class="line">        if (y&amp;1)</span><br><span class="line">            ret = mul(ret, x, mod);</span><br><span class="line">        y &gt;&gt;= 1, x = mul(x, x, mod);</span><br><span class="line">    &#125;</span><br><span class="line">    return ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>這樣的寫法，只運算 64-bits 內的結果相當不錯，與接下來講的算法速度差異並不大。但對於近代加密所需要的離散對數過程，則會有放大速度差異，因為 x, y, mod 三個參數的 bit-length 都相當長。</p>
+<h2 id="Right-To-Left"><a href="#Right-To-Left" class="headerlink" title="Right-To-Left"></a>Right-To-Left</h2><p>做法就是最普遍見到的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">void pow(x, a) &#123;</span><br><span class="line">    R = 1, g = x</span><br><span class="line"></span><br><span class="line">    for i = 0 to n, step 1</span><br><span class="line">        if (a[i] == 1) // a[i] mean i-bit in a</span><br><span class="line">            R = R * g</span><br><span class="line">        g = g * g</span><br><span class="line">    return R</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">example: a = 26 = (11010)</span><br><span class="line">---</span><br><span class="line">#iterator  0   1    2    3     4 </span><br><span class="line">#g         x, x^2, x^4, x^8, x^16, ...</span><br><span class="line">binary     0   1    0    1     1</span><br><span class="line">x^a =         x^2       x^8 x^16 = x^26</span><br></pre></td></tr></table></figure>
+<h2 id="Left-To-Right"><a href="#Left-To-Right" class="headerlink" title="Left-To-Right"></a>Left-To-Right</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">void pow(x, a) &#123;</span><br><span class="line">    R = 1</span><br><span class="line">    for i = n-1 to 0, step -1</span><br><span class="line">        R = R ^ 2</span><br><span class="line">        if (a[i] == 1)</span><br><span class="line">            R = R * x</span><br><span class="line">    return R;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">example: a = 26 = (11010)</span><br><span class="line">---</span><br><span class="line">#iterator  0   1    2      3     4 </span><br><span class="line">binary     1   1    0      1     0</span><br><span class="line">R         x^1 x^11 x^110 x^1101 x^11010</span><br></pre></td></tr></table></figure>
+<p>也就是說，每一次迭代，將會將指數左移 (<code>R = R ^ 2</code> 就是要移動 <code>R^xxxx</code> 變成 <code>R^xxxx0</code>，切著看是否要乘上 x 來變成 <code>R^xxxx1</code>)，這方法雖然不錯，但是計算高位元空迴圈可是不能忽略！當然對於設計電路的人，固定變量的迴圈展開後就不存在這問題。</p>
+<p>效能上，期望的乘法次數與 Right-To-Left 是差不多的！長度為 n bits 的數字，期望值會有 $n/2$ 個 1，因此大約需要 $n/2$ 次乘法。</p>
+<h2 id="Left-To-Right-2-bits"><a href="#Left-To-Right-2-bits" class="headerlink" title="Left-To-Right(2-bits)"></a>Left-To-Right(2-bits)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">void pow(x, a) &#123;</span><br><span class="line">    pre-computation: x^2, x^3</span><br><span class="line"></span><br><span class="line">    R = 1</span><br><span class="line">    for i = n/2 to 0, step -2</span><br><span class="line">        R = R ^ 4</span><br><span class="line">        if (a[i+1]a[i] != 0)</span><br><span class="line">            R = R * x^(a[i+1]a[i])</span><br><span class="line">    return R</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">example: a = 1737 = (01 10 11 00 10 01)</span><br><span class="line">---</span><br><span class="line">#iterator   0   1    2     3     4     5</span><br><span class="line">R          x^1 x^4  x^24  x^108 x^432 x^1736</span><br><span class="line">               x^6  x^27        x^434 x^1737</span><br><span class="line">a[i+1]a[i] 01  10   11    00    10    01</span><br></pre></td></tr></table></figure>
+<p>長度為 n bits 的數字，倆倆一起期望值會有 $3n/8$ 個非 0 (00, 01, 10, 11 中 4 個有 3 個 $!= 0$，計算組數只有 $n/2$)，因此大約需要 $3n/8$ 次乘法。比剛剛快上一點呢 ( $3n/8 &lt; n/2$ )！</p>
+<h2 id="Left-To-Right-sliding"><a href="#Left-To-Right-sliding" class="headerlink" title="Left-To-Right(sliding)"></a>Left-To-Right(sliding)</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void pow(x, a) &#123;</span><br><span class="line">    pre-computation: x^3</span><br><span class="line"></span><br><span class="line">    R = 1</span><br><span class="line">    for i = n-1 to 0</span><br><span class="line">        if a[i]a[i-1] = (11)</span><br><span class="line">            R = R ^ 4</span><br><span class="line">            R = R * x^3</span><br><span class="line">            i -= 2</span><br><span class="line">        else if a[i]a[i-1] = (00)</span><br><span class="line">            R = R ^ 4</span><br><span class="line">            i -= 2</span><br><span class="line">        else if a[i] = (0)</span><br><span class="line">            R = R ^ 2</span><br><span class="line">            i -= 1</span><br><span class="line">        else if a[i] = (1)</span><br><span class="line">            R = R ^ 2</span><br><span class="line">            R = R * x</span><br><span class="line">            i -= 1</span><br><span class="line">    return R</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">example: a = (1 10 11 00 10 01)</span><br><span class="line">---</span><br><span class="line">#iterator   0   1    2       3     4      5          6</span><br><span class="line">R          x^11    x^11011     x^11011001      x^11011001001</span><br><span class="line">              x^110     x^1101100    x^1101100100</span><br></pre></td></tr></table></figure>
+<p>期望的乘法次數 $n/3$，這很可怕，別問我！</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><table>
+<thead>
+<tr>
+<th>Algorithm Name</th>
+<th>Table Size</th>
+<th>#squaring</th>
+<th>Average #Multiplication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Right-To-Left</td>
+<td>1: $x^{2^i}$</td>
+<td>$n$</td>
+<td>$n/2$</td>
+</tr>
+<tr>
+<td>Left-To-Right</td>
+<td>1: $x$</td>
+<td>$n$</td>
+<td>$n/2$</td>
+</tr>
+<tr>
+<td>Left-To-Right(2-bits)</td>
+<td>3: $x$, $x^2$, $x^3$</td>
+<td>$n$</td>
+<td>$3n/8$</td>
+</tr>
+<tr>
+<td>Left-To-Right(sliding)</td>
+<td>2: $x$, $x^3$</td>
+<td>$n$</td>
+<td>$n/3$</td>
+</tr>
+</tbody>
+</table>
+<h2 id="Attack"><a href="#Attack" class="headerlink" title="Attack"></a>Attack</h2><p>上述四種方法中，不外乎都存在 <strong><em> Conditional Jump </em></strong> 出現，會導致執行速度跟程式計數器 (Program Counter) 移動上會有所差別。可以進行實作攻擊，從分析時間、電源不穩攻擊，來找到 $a$ 究竟是何物 (通常要偷的都是 $x^a$ 上面的 $a$)！電源雜訊干擾於當指令執行到 <strong> Conditional Jump </strong> 時，干擾 $R$ 的計算發生錯誤，如果沒有發生錯誤，表示 $a \left [ i \right ] = 0$，反之就能知道 $a \left [ i \right ] = 1$。</p>
+<p>很趣味地是提供一個不需要 Conditional Jump 的寫法 (實作上)，一樣會有這種問題！</p>
+<h3 id="error-example"><a href="#error-example" class="headerlink" title="error example"></a>error example</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">R[1] = 1</span><br><span class="line">for i = n-1 to 0, step -1</span><br><span class="line">    R[1] = R[1] ^ 2</span><br><span class="line">    R[a[i]] = R[1] × g</span><br><span class="line">return R[1]</span><br></pre></td></tr></table></figure>
+<p>提供一個不相干的垃圾暫存器 (redundancy register) 來減少 Jump 的問題，很明顯地 電源雜訊干擾 的攻擊仍然存在！這作法很有趣的啊！只是會被攻擊。</p>
+<h3 id="Montgomery-Ladder"><a href="#Montgomery-Ladder" class="headerlink" title="Montgomery Ladder"></a>Montgomery Ladder</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">R[0] = 1, R[1] = g</span><br><span class="line">for i = n-1 to 0, step -1</span><br><span class="line">    R[1-a[i]] = R[0] × R[1]</span><br><span class="line">    R[a[i] = R[a[i]] × R[a[i]]</span><br><span class="line">return R[0]</span><br></pre></td></tr></table></figure>
+<p>這作法避開之前的問題，解決其中一種被攻擊的方案。</p>
+<p>過程中都滿足 $R \left [ 0 \right ] = R \left [ 1 \right ] \times g$，同時 $R \left [ 0 \right ]$ 會是最後的答案。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">example: a = 26 = (11010)</span><br><span class="line">---</span><br><span class="line">#iterator  0   1    2      3      4     5</span><br><span class="line">binary     0   1    1      0      1     0</span><br><span class="line">R[0]       1   x    x^3   x^6   x^13  x^26</span><br><span class="line">R[1]       x   x^2  x^4   x^7   x^14</span><br></pre></td></tr></table></figure>
+<p>明顯地，$R \left [ 1 \right ]$ 的計算是為了下一次為 $a \left [ i+1 \right ] = 1$ 而存在的！</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-security-notes2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/16/security-notes2/" class="article-date">
@@ -114,7 +312,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/16/security-notes2/" data-id="cilpwx20x009n1kxczcj7ocg8" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/16/security-notes2/" data-id="cilu7neml006k2wxcvnwzjtvx" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/16/security-notes2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -259,7 +457,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/bbS0jrV.jpg" rel="gallery_cilpwx22k00bq1kxcdane3s65">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/bbS0jrV.jpg" rel="gallery_cilu7nenp008l2wxcicnm9ygy">
         <img src="http://i.imgur.com/bbS0jrV.jpg" itemprop="image">
       </a>
     
@@ -278,7 +476,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-F/" data-id="cilpwx22k00bq1kxcdane3s65" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-F/" data-id="cilu7nenp008l2wxcicnm9ygy" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-F/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -337,7 +535,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-G/" data-id="cilpwx22i00bn1kxcsm5fl3ci" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-G/" data-id="cilu7nens008t2wxcwck6gtk2" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-G/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -392,7 +590,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-E/" data-id="cilpwx22d00bf1kxcx12umjrh" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-E/" data-id="cilu7nenr008q2wxcxame3q4c" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-E/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -455,7 +653,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-D/" data-id="cilpwx22g00bi1kxcmplqecx6" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-D/" data-id="cilu7nenn008i2wxcvfm6364g" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-D/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -510,7 +708,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-B/" data-id="cilpwx22900ba1kxckb6k8dzb" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-B/" data-id="cilu7nenl008e2wxcl51advoc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-B/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -565,7 +763,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-A/" data-id="cilpwx22700b71kxcvj4l44hu" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-A/" data-id="cilu7nenj008a2wxclvd8zmin" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/15/tmt514-Beverage-Cup-2-A/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -618,7 +816,7 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-C/" data-id="cilpwx22r00c31kxcwua20cll" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-C/" data-id="cilu7neo200992wxcpifldrzu" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-C/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -662,130 +860,6 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
 
 
   
-    <article id="post-tmt514-Beverage-Cup-2-Warmup-B" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/14/tmt514-Beverage-Cup-2-Warmup-B/" class="article-date">
-  <time datetime="2015-05-13T23:05:18.000Z" itemprop="datePublished">2015-05-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/14/tmt514-Beverage-Cup-2-Warmup-B/">[Tmt514] Beverage Cup 2 Warmup B - The Brush</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-B/" data-id="cilpwx22o00by1kxcbz44olxj" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-B/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/BIT/">BIT</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/逆序對/">逆序對</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>給一個 $N \times N$ 的棋盤，放置城堡 (rook)，城堡只能攻擊同行同列，這裡更特別一些，只能攻擊右下角位置。</p>
-<p>下方是一個 $5 \times 5$ 範例，其中 <code>R</code> 表示城堡的位置，<code>*</code> 表示城堡可攻擊的格子，也就是範例的第三組測資。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">+-+-+-+-+-+</span><br><span class="line">| | | | |R| 1</span><br><span class="line">+-+-+-+-+-+ </span><br><span class="line">| | |R|*|*| 2</span><br><span class="line">+-+-+-+-+-+</span><br><span class="line">| |R|*|*|*| 3</span><br><span class="line">+-+-+-+-+-+</span><br><span class="line">|R|*|*|*|*| 4</span><br><span class="line">+-+-+-+-+-+</span><br><span class="line">|*|*|*|R|*| 5</span><br><span class="line">+-+-+-+-+-+</span><br><span class="line"> 1 2 3 4 5</span><br></pre></td></tr></table></figure>
-<p>保證輸入中城堡不會出現在同行同列，請問可攻擊的格子有多少個 (意即計算 <code>*</code> 的數量)。</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">3</span><br><span class="line">3</span><br><span class="line">1 2 3</span><br><span class="line">5</span><br><span class="line">5 4 3 2 1</span><br><span class="line">5</span><br><span class="line">5 3 2 1 4</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">6</span><br><span class="line">10</span><br><span class="line">13</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>很明顯地發現，答案是 <strong> 所有城堡可攻擊數量總和 </strong> 扣除 <strong> 交集點數量 </strong>，兩兩城堡最多一個交集點，並且交集點不會重疊 (不同行列的關係)，而交集點只發生在逆序對中。因此找到逆序對總數，可以利用 D&amp;C 的 merge sort 算法，或者套用 Binary indexed tree，利用掃描線思路找到逆序對。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> n, A[<span class="number">131072</span>];</span><br><span class="line"><span class="keyword">int</span> BIT[<span class="number">131072</span>];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">modify</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> val)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (x &lt;= n) &#123;</span><br><span class="line">        BIT[x] += val;</span><br><span class="line">        x += x&amp;(-x);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">query</span><span class="params">(<span class="keyword">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (x) &#123;</span><br><span class="line">        ret += BIT[x];</span><br><span class="line">        x -= x&amp;(-x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> testcase;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span> (testcase--) &#123;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n); </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;A[i]);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= n; i++)</span><br><span class="line">            BIT[i] = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            ret += n - A[i];</span><br><span class="line">            ret += n - i - <span class="number">1</span>;</span><br><span class="line">            ret -= i - query(A[i]<span class="number">-1</span>);</span><br><span class="line">            modify(A[i], <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%lld\n"</span>, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">3</span><br><span class="line">3</span><br><span class="line">1 2 3</span><br><span class="line">5</span><br><span class="line">5 4 3 2 1</span><br><span class="line">5</span><br><span class="line">5 3 2 1 4</span><br><span class="line">*/</span></span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-tmt514-Beverage-Cup-2-Warmup-A" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/14/tmt514-Beverage-Cup-2-Warmup-A/" class="article-date">
-  <time datetime="2015-05-13T22:46:27.000Z" itemprop="datePublished">2015-05-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/14/tmt514-Beverage-Cup-2-Warmup-A/">[Tmt514] Beverage Cup 2 Warmup A - Euler&#39;s Criterion</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-A/" data-id="cilpwx22m00bv1kxccu3sorp3" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/14/tmt514-Beverage-Cup-2-Warmup-A/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/窮舉/">窮舉</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>日本電影《博士熱愛的算式》中，</p>
-<blockquote><p>博士只有八十分鐘的記憶，　　　　　　　　　<br>一旦超過這個時間，　　　　　　　　　　　　<br>他的記憶就自動歸零，重新開始。　　　　　　<br>然而，博士卻用一個簡單的數學公式，　　　　<br>驗證了愛的永恆。</p>
-<ul>
-<li>《博士熱愛的算式》</li>
-</ul>
-</blockquote>
-<span>$$e^{i \pi} + 1 = 0 \\
-e^{ix} = cos(x) + i sin(x) \\
-e^{i \pi} = cos(\pi) + i sin(\pi) = -1$$</span><!-- Has MathJax -->
-<p>判斷 $a \equiv x^2 (\text{ mod } p)$ 中，$a$ 是否在模 $p$ 下是個平方數。則滿足</p>
-<span>$a^{\frac{p-1}{2}} \equiv x^{p-1} \equiv 1 (\text{ mod } p)$</span><!-- Has MathJax -->
-<p>從歐拉定理 $a^{\varphi (p)} \equiv 1 (\text{ mod } p)$ 可以推導得到上述。接著給定一個集合，分別帶入 $a$, $p$ 有多少組合法解。</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">4</span><br><span class="line">3 5 7 11</span><br><span class="line">5</span><br><span class="line">3 5 7 11 13</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5</span><br><span class="line">7</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>窮舉帶入，利用快速冪乘積檢驗之。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">mpow</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> y, <span class="keyword">long</span> <span class="keyword">long</span> mod)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (y) &#123;</span><br><span class="line">        <span class="keyword">if</span> (y&amp;<span class="number">1</span>)</span><br><span class="line">            ret = (ret * x)%mod;</span><br><span class="line">        y &gt;&gt;= <span class="number">1</span>, x = (x * x)%mod;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> testcase;</span><br><span class="line">    <span class="keyword">int</span> n, p[<span class="number">128</span>];</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span> (testcase--) &#123;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n); </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;p[i]);</span><br><span class="line">            </span><br><span class="line">        <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i == j)</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">if</span> (mpow(p[i], (p[j]<span class="number">-1</span>)/<span class="number">2</span>, p[j]) == <span class="number">1</span>)</span><br><span class="line">                    ret++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/13/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><a class="page-number" href="/page/16/">16</a><span class="space">&hellip;</span><a class="page-number" href="/page/72/">72</a><a class="extend next" rel="next" href="/page/15/">Next &raquo;</a>
@@ -800,7 +874,7 @@ e^{i \pi} = cos(\pi) + i sin(\pi) = -1$$</span><!-- Has MathJax -->
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">70</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">598</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">36</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">72</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">598</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">36</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -810,6 +884,22 @@ e^{i \pi} = cos(\pi) + i sin(\pi) = -1$$</span><!-- Has MathJax -->
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/03/16/jg-10085/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10085. Parallel Count (debug)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/03/16/jg-10084/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10084. Prefix Sum (pthread)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/02/29/uva-13006/">
@@ -873,22 +963,6 @@ e^{i \pi} = cos(\pi) + i sin(\pi) = -1$$</span><!-- Has MathJax -->
                 <i class="icon-file-o"></i> 
               
             2016 Facebook Hacker Cup Round 2</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/01/24/zj-b685/">
-              
-                <i class="icon-file-o"></i> 
-              
-            b685. 高中組第五題-課堂抽籤</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/01/24/uva-12415/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 12415 - Digit Patterns</a>
           </li>
         
       </ul>
