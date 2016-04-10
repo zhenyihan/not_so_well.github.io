@@ -114,7 +114,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/08/30/oj/zj/a331/" data-id="cimum6qdk0216h3xcjf7mi99g" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/08/30/oj/zj/a331/" data-id="cimun1lde021xn2xclcn1dfxc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/08/30/oj/zj/a331/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -135,6 +135,70 @@
 <p>也就是說，每一次修改會根據前一次的 root 增加一個新的 root’，這是一個相當重要的一環，每一次修改會產生新的一棵線段樹，而這個新線段樹大部分節點會使用前一個線段樹的節點，因此只要針對走訪不影響的情況下，我們仍然會經過舊有的節點。</p>
 <p>為了找到區間 K 大，使用函數式線段樹有點類似於掃描線算法，對於某個時間點依序將數字放進去，然後對於區間查詢 K 大的時候，相當於對某個時間點之間作減法運算。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> Node &#123;</span><br><span class="line">    <span class="keyword">int</span> l, r, lson, rson;</span><br><span class="line">    <span class="keyword">int</span> sum;</span><br><span class="line">&#125; node[<span class="number">2097152</span>];</span><br><span class="line"><span class="keyword">int</span> nodesize = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> A[<span class="number">131072</span>], B[<span class="number">131072</span>], root[<span class="number">131072</span>];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">build</span><span class="params">(<span class="keyword">int</span> l, <span class="keyword">int</span> r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (l &gt; r)  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> k = nodesize++;</span><br><span class="line">    node[k].l = l, node[k].r = r, node[k].sum = <span class="number">0</span>;</span><br><span class="line">    node[k].lson = node[k].rson = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (l == r) <span class="keyword">return</span> k;</span><br><span class="line">    <span class="keyword">int</span> m = (l + r)/<span class="number">2</span>;</span><br><span class="line">    node[k].lson = build(l, m);</span><br><span class="line">    node[k].rson = build(m+<span class="number">1</span>, r);</span><br><span class="line">    <span class="keyword">return</span> k;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">change</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> x, <span class="keyword">int</span> val)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> k = nodesize++;</span><br><span class="line">    node[k] = node[p];</span><br><span class="line">    node[k].sum += val;</span><br><span class="line">    <span class="keyword">if</span> (node[k].l == node[k].r) <span class="keyword">return</span> k;</span><br><span class="line">    <span class="keyword">int</span> m = (node[k].l + node[k].r)/<span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> (x &lt;= m)</span><br><span class="line">        node[k].lson = change(node[p].lson, x, val);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        node[k].rson = change(node[p].rson, x, val);</span><br><span class="line">    <span class="keyword">return</span> k;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">query</span><span class="params">(<span class="keyword">int</span> tp, <span class="keyword">int</span> tq, <span class="keyword">int</span> k)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (node[tp].l == node[tp].r)</span><br><span class="line">        <span class="keyword">return</span> node[tp].l;</span><br><span class="line">    <span class="keyword">int</span> t = node[node[tp].lson].sum - node[node[tq].lson].sum;</span><br><span class="line">    <span class="keyword">if</span> (k &lt;= t)</span><br><span class="line">        <span class="keyword">return</span> query(node[tp].lson, node[tq].lson, k);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> query(node[tp].rson, node[tq].rson, k - t);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m, x, y, k;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; R;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;A[i]), R[A[i]] = <span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> size = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt;::iterator it = R.begin(); it != R.end(); it++) &#123;</span><br><span class="line">            it-&gt;second = ++size;</span><br><span class="line">            B[it-&gt;second] = it-&gt;first;        </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        nodesize = <span class="number">1</span>;</span><br><span class="line">        root[<span class="number">0</span>] = build(<span class="number">1</span>, size);</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            A[i] = R[A[i]];</span><br><span class="line">            root[i] = change(root[i<span class="number">-1</span>], A[i], <span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;x, &amp;y, &amp;k);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, B[query(root[y], root[x<span class="number">-1</span>], k)]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line"> 7 3</span><br><span class="line"> 1 5 2 6 3 7 4</span><br><span class="line"> 2 5 3</span><br><span class="line"> 4 4 1</span><br><span class="line"> 1 7 3</span><br><span class="line"> */</span></span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-oj/zj/a858" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/04/18/oj/zj/a858/" class="article-date">
+  <time datetime="2014-04-18T13:20:35.000Z" itemprop="datePublished">2014-04-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/04/18/oj/zj/a858/">a858. 數三角形</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a858/" data-id="cimun1ldt0226n2xc5yq797y2" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/04/18/oj/zj/a858/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/排容原理/">排容原理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數三角形/">數三角形</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="題目"><a href="#題目" class="headerlink" title="題目"></a>題目</h1><h2 id="內容："><a href="#內容：" class="headerlink" title="內容："></a>內容：</h2><p>你有一個大小為N的完全圖，這N(N-1)/2條邊可能是紅色或黑色。任三個不同的點都形成一個三角形，請問三邊同色的三角形有幾個？ </p>
+<h2 id="輸入說明："><a href="#輸入說明：" class="headerlink" title="輸入說明："></a>輸入說明：</h2><p>第一行輸入一個正整數N，其中N&lt;=1,000。接下來的N行，每行有N個數字，其中第i行的第j個數字代表邊(i,j)的顏色，紅色用1表示，黑色用2表示，i=j時則用0表示。</p>
+<h2 id="輸出說明："><a href="#輸出說明：" class="headerlink" title="輸出說明："></a>輸出說明：</h2><p>請輸出同色三角形的數目。</p>
+<h2 id="範例輸入："><a href="#範例輸入：" class="headerlink" title="範例輸入："></a>範例輸入：</h2><pre><code>4
+0 1 2 1
+1 0 1 1
+2 1 0 2
+1 1 2 0
+</code></pre><h2 id="範例輸出："><a href="#範例輸出：" class="headerlink" title="範例輸出："></a>範例輸出：</h2><pre><code>1
+</code></pre><hr>
+<h1 id="解法"><a href="#解法" class="headerlink" title="解法"></a>解法</h1><ul>
+<li>作法：<br>  分治，將輸入 n 個劃分成兩堆，分別窮舉所有可能，採用合併的方式去運算。</li>
+</ul>
+<figure class="highlight cpp"><figcaption><span>a858.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"><span class="comment">/*  Problem: a858 "數三角形" from                                             */</span></span><br><span class="line"><span class="comment">/*  Language: CPP (462 Bytes)                                                     */</span></span><br><span class="line"><span class="comment">/*  Result: AC(0.1s, 264KB) judge by this@ZeroJudge                               */</span></span><br><span class="line"><span class="comment">/*  Author: morris1028 at 2014-04-17 11:06:20                                     */</span></span><br><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, x;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n) == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> p = (n) * (n<span class="number">-1</span>) * (n<span class="number">-2</span>) / <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">int</span> s = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">int</span> b = <span class="number">0</span>, r = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;x);</span><br><span class="line">                r += x == <span class="number">1</span>;</span><br><span class="line">                b += x == <span class="number">2</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            s += r * b;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, p - s/<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
           </div>
           <div class="toggle-input article-more-link"><a>Read More +</a></div>
         
@@ -172,7 +236,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a576/" data-id="cimum6qdq0218h3xctzx809g3" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a576/" data-id="cimun1ldi021zn2xcqv8gdaal" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/18/oj/zj/a576/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -230,130 +294,6 @@ Case #4: 46
 
 
   
-    <article id="post-oj/zj/a962" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/04/18/oj/zj/a962/" class="article-date">
-  <time datetime="2014-04-18T13:20:35.000Z" itemprop="datePublished">2014-04-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/04/18/oj/zj/a962/">a962. 新專輯</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a962/" data-id="cimum6qec021kh3xco0tuijnm" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/04/18/oj/zj/a962/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數學/">數學</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/逆元/">逆元</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="題目"><a href="#題目" class="headerlink" title="題目"></a>題目</h1><h2 id="內容："><a href="#內容：" class="headerlink" title="內容："></a>內容：</h2><p>給定正整數N，請求出(N除以1的餘數)+(N除以2的餘數)+(N除以3的餘數)+…+(N除以N的餘數)。  </p>
-<h2 id="輸入說明："><a href="#輸入說明：" class="headerlink" title="輸入說明："></a>輸入說明：</h2><p>輸入只有一個正整數N，其中1&lt;=N&lt;=1014。</p>
-<h2 id="輸出說明："><a href="#輸出說明：" class="headerlink" title="輸出說明："></a>輸出說明：</h2><p>為了避免要寫大數，你只要輸出這個奇怪的和除以1000000009的餘數就好了。</p>
-<h2 id="範例輸入："><a href="#範例輸入：" class="headerlink" title="範例輸入："></a>範例輸入：</h2><pre><code>10
-</code></pre><h2 id="範例輸出："><a href="#範例輸出：" class="headerlink" title="範例輸出："></a>範例輸出：</h2><pre><code>13
-</code></pre><hr>
-<h1 id="解法"><a href="#解法" class="headerlink" title="解法"></a>解法</h1><ul>
-<li>作法：<br>  各種方式要避免 mod 運算。</li>
-</ul>
-<figure class="highlight cpp"><figcaption><span>a962.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"><span class="comment">/*  Problem: a962 "新專輯" from TIOJ 1674                                      */</span></span><br><span class="line"><span class="comment">/*  Language: CPP (1612 Bytes)                                                    */</span></span><br><span class="line"><span class="comment">/*  Result: AC(0.8s, 272KB) judge by this@ZeroJudge                               */</span></span><br><span class="line"><span class="comment">/*  Author: morris1028 at 2014-04-18 20:11:19                                     */</span></span><br><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MOD 1000000009LL</span></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">inv</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> n, <span class="keyword">long</span> <span class="keyword">long</span> m)</span> </span>&#123; <span class="comment">// get n*? = 1 (mod m)</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> la = <span class="number">1</span>, lb = <span class="number">0</span>, ra = <span class="number">0</span>, rb = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> i = <span class="number">0</span>, t, mod = m;</span><br><span class="line">    <span class="keyword">while</span>(n%m) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!i) &#123;</span><br><span class="line">            la -= n/m*ra;</span><br><span class="line">            lb -= n/m*rb;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ra -= n/m*la;</span><br><span class="line">            rb -= n/m*lb;</span><br><span class="line">        &#125;</span><br><span class="line">        i = !i;</span><br><span class="line">        t = n, n = m, m = t%m;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(i)</span><br><span class="line">        <span class="keyword">return</span> (la%mod+mod)%mod;</span><br><span class="line">    <span class="keyword">return</span> (ra%mod+mod)%mod;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> inv2 = inv(<span class="number">2</span>, MOD);</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> n;</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%lld"</span>, &amp;n) == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">0</span>, hret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> half = (<span class="keyword">long</span> <span class="keyword">long</span>)<span class="built_in">sqrt</span>(n)/<span class="number">5</span>;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> u = <span class="number">-1</span>, v = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(half = <span class="number">1</span>; u != v; half++, u = v, v = n/half) &#123;</span><br><span class="line">            hret += n%half;</span><br><span class="line">        &#125;</span><br><span class="line">        hret -= n%(half - <span class="number">1</span>);</span><br><span class="line">        hret %= MOD;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> l = half - <span class="number">1</span>, r, div;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> a0, d, tn, buff;</span><br><span class="line">        <span class="keyword">while</span>(l &lt;= n) &#123;</span><br><span class="line">            div = n / l;</span><br><span class="line">            r = n / div;</span><br><span class="line">            a0 = n % l, d = -div, tn = r - l + <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(tn &gt;= MOD)   tn %= MOD;</span><br><span class="line">            <span class="keyword">if</span>(d &gt;= MOD)    d %= MOD;</span><br><span class="line">            <span class="keyword">if</span>(a0 &gt;= MOD)   a0 %= MOD;</span><br><span class="line">            buff = (a0 * <span class="number">2</span> + (tn - <span class="number">1</span>)*d);</span><br><span class="line">            <span class="keyword">if</span>(buff &lt; <span class="number">0</span> || buff &gt;= MOD) buff %= MOD;</span><br><span class="line">            buff *= tn;</span><br><span class="line">            <span class="keyword">if</span>(buff &lt; <span class="number">0</span> || buff &gt;= MOD) buff %= MOD;</span><br><span class="line">            ret += buff;</span><br><span class="line">            l = r + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ret %= MOD;</span><br><span class="line">        ret = (ret * inv2)%MOD;</span><br><span class="line">        ret = (ret + hret + MOD)%MOD;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%lld\n"</span>, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">100000000000000</span><br><span class="line">*/</span></span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-oj/zj/a858" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/04/18/oj/zj/a858/" class="article-date">
-  <time datetime="2014-04-18T13:20:35.000Z" itemprop="datePublished">2014-04-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/04/18/oj/zj/a858/">a858. 數三角形</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a858/" data-id="cimum6qei021nh3xcoe3p3nmg" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/04/18/oj/zj/a858/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/排容原理/">排容原理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數三角形/">數三角形</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="題目"><a href="#題目" class="headerlink" title="題目"></a>題目</h1><h2 id="內容："><a href="#內容：" class="headerlink" title="內容："></a>內容：</h2><p>你有一個大小為N的完全圖，這N(N-1)/2條邊可能是紅色或黑色。任三個不同的點都形成一個三角形，請問三邊同色的三角形有幾個？ </p>
-<h2 id="輸入說明："><a href="#輸入說明：" class="headerlink" title="輸入說明："></a>輸入說明：</h2><p>第一行輸入一個正整數N，其中N&lt;=1,000。接下來的N行，每行有N個數字，其中第i行的第j個數字代表邊(i,j)的顏色，紅色用1表示，黑色用2表示，i=j時則用0表示。</p>
-<h2 id="輸出說明："><a href="#輸出說明：" class="headerlink" title="輸出說明："></a>輸出說明：</h2><p>請輸出同色三角形的數目。</p>
-<h2 id="範例輸入："><a href="#範例輸入：" class="headerlink" title="範例輸入："></a>範例輸入：</h2><pre><code>4
-0 1 2 1
-1 0 1 1
-2 1 0 2
-1 1 2 0
-</code></pre><h2 id="範例輸出："><a href="#範例輸出：" class="headerlink" title="範例輸出："></a>範例輸出：</h2><pre><code>1
-</code></pre><hr>
-<h1 id="解法"><a href="#解法" class="headerlink" title="解法"></a>解法</h1><ul>
-<li>作法：<br>  分治，將輸入 n 個劃分成兩堆，分別窮舉所有可能，採用合併的方式去運算。</li>
-</ul>
-<figure class="highlight cpp"><figcaption><span>a858.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"><span class="comment">/*  Problem: a858 "數三角形" from                                             */</span></span><br><span class="line"><span class="comment">/*  Language: CPP (462 Bytes)                                                     */</span></span><br><span class="line"><span class="comment">/*  Result: AC(0.1s, 264KB) judge by this@ZeroJudge                               */</span></span><br><span class="line"><span class="comment">/*  Author: morris1028 at 2014-04-17 11:06:20                                     */</span></span><br><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, x;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n) == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> p = (n) * (n<span class="number">-1</span>) * (n<span class="number">-2</span>) / <span class="number">6</span>;</span><br><span class="line">        <span class="keyword">int</span> s = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">int</span> b = <span class="number">0</span>, r = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;x);</span><br><span class="line">                r += x == <span class="number">1</span>;</span><br><span class="line">                b += x == <span class="number">2</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            s += r * b;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, p - s/<span class="number">2</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
     <article id="post-oj/zj/a007" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/04/18/oj/zj/a007/" class="article-date">
@@ -379,7 +319,7 @@ Case #4: 46
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a007/" data-id="cimum6qdw021ah3xctx1iwffg" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a007/" data-id="cimun1lda021tn2xci9z8vd5d" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/18/oj/zj/a007/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -404,6 +344,66 @@ Case #4: 46
 <li>作法：<br>  Miller-Rabin Algorithm</li>
 </ul>
 <figure class="highlight cpp"><figcaption><span>a007.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"><span class="comment">/*  Problem: a007 "判斷質數"                                                  */</span></span><br><span class="line"><span class="comment">/*  Language: CPP (715 Bytes)                                                     */</span></span><br><span class="line"><span class="comment">/*  Result: AC(0.2s, 224KB) judge by this@ZeroJudge                               */</span></span><br><span class="line"><span class="comment">/*  Author: morris1028 at 2014-04-18 20:25:42                                     */</span></span><br><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">Pow</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">int</span> n, <span class="keyword">long</span> <span class="keyword">long</span> mod)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> Ans = <span class="number">1</span>, t = x;</span><br><span class="line">    <span class="keyword">while</span>(n) &#123;</span><br><span class="line">        <span class="keyword">if</span>(n&amp;<span class="number">1</span>)</span><br><span class="line">            Ans *= t, Ans %= mod;</span><br><span class="line">        t *= t, t %= mod, n &gt;&gt;= <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">int</span>)Ans;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">JudgePrime</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">2</span> || n == <span class="number">3</span>)    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">1</span>)    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span>(!(n&amp;<span class="number">1</span>))    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> a, x, flag = <span class="number">1</span>, t;</span><br><span class="line">    <span class="keyword">for</span>(a = <span class="number">0</span>; a &lt; <span class="number">2</span>; a++) &#123;</span><br><span class="line">        x = rand()%(n<span class="number">-4</span>)+<span class="number">2</span>;</span><br><span class="line">        t = Pow(x, n<span class="number">-1</span>, n);</span><br><span class="line">        <span class="keyword">if</span>(t != <span class="number">1</span>)    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n) == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>(JudgePrime(n))    <span class="built_in">puts</span>(<span class="string">"質數"</span>);</span><br><span class="line">        <span class="keyword">else</span>    <span class="built_in">puts</span>(<span class="string">"非質數"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-oj/zj/a962" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/04/18/oj/zj/a962/" class="article-date">
+  <time datetime="2014-04-18T13:20:35.000Z" itemprop="datePublished">2014-04-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/04/18/oj/zj/a962/">a962. 新專輯</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/04/18/oj/zj/a962/" data-id="cimun1ldo0223n2xcot30s6zg" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/04/18/oj/zj/a962/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數學/">數學</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/逆元/">逆元</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="題目"><a href="#題目" class="headerlink" title="題目"></a>題目</h1><h2 id="內容："><a href="#內容：" class="headerlink" title="內容："></a>內容：</h2><p>給定正整數N，請求出(N除以1的餘數)+(N除以2的餘數)+(N除以3的餘數)+…+(N除以N的餘數)。  </p>
+<h2 id="輸入說明："><a href="#輸入說明：" class="headerlink" title="輸入說明："></a>輸入說明：</h2><p>輸入只有一個正整數N，其中1&lt;=N&lt;=1014。</p>
+<h2 id="輸出說明："><a href="#輸出說明：" class="headerlink" title="輸出說明："></a>輸出說明：</h2><p>為了避免要寫大數，你只要輸出這個奇怪的和除以1000000009的餘數就好了。</p>
+<h2 id="範例輸入："><a href="#範例輸入：" class="headerlink" title="範例輸入："></a>範例輸入：</h2><pre><code>10
+</code></pre><h2 id="範例輸出："><a href="#範例輸出：" class="headerlink" title="範例輸出："></a>範例輸出：</h2><pre><code>13
+</code></pre><hr>
+<h1 id="解法"><a href="#解法" class="headerlink" title="解法"></a>解法</h1><ul>
+<li>作法：<br>  各種方式要避免 mod 運算。</li>
+</ul>
+<figure class="highlight cpp"><figcaption><span>a962.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"><span class="comment">/*  Problem: a962 "新專輯" from TIOJ 1674                                      */</span></span><br><span class="line"><span class="comment">/*  Language: CPP (1612 Bytes)                                                    */</span></span><br><span class="line"><span class="comment">/*  Result: AC(0.8s, 272KB) judge by this@ZeroJudge                               */</span></span><br><span class="line"><span class="comment">/*  Author: morris1028 at 2014-04-18 20:11:19                                     */</span></span><br><span class="line"><span class="comment">/**********************************************************************************/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MOD 1000000009LL</span></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">inv</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> n, <span class="keyword">long</span> <span class="keyword">long</span> m)</span> </span>&#123; <span class="comment">// get n*? = 1 (mod m)</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> la = <span class="number">1</span>, lb = <span class="number">0</span>, ra = <span class="number">0</span>, rb = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> i = <span class="number">0</span>, t, mod = m;</span><br><span class="line">    <span class="keyword">while</span>(n%m) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!i) &#123;</span><br><span class="line">            la -= n/m*ra;</span><br><span class="line">            lb -= n/m*rb;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ra -= n/m*la;</span><br><span class="line">            rb -= n/m*lb;</span><br><span class="line">        &#125;</span><br><span class="line">        i = !i;</span><br><span class="line">        t = n, n = m, m = t%m;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(i)</span><br><span class="line">        <span class="keyword">return</span> (la%mod+mod)%mod;</span><br><span class="line">    <span class="keyword">return</span> (ra%mod+mod)%mod;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> inv2 = inv(<span class="number">2</span>, MOD);</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> n;</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%lld"</span>, &amp;n) == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">0</span>, hret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> half = (<span class="keyword">long</span> <span class="keyword">long</span>)<span class="built_in">sqrt</span>(n)/<span class="number">5</span>;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> u = <span class="number">-1</span>, v = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(half = <span class="number">1</span>; u != v; half++, u = v, v = n/half) &#123;</span><br><span class="line">            hret += n%half;</span><br><span class="line">        &#125;</span><br><span class="line">        hret -= n%(half - <span class="number">1</span>);</span><br><span class="line">        hret %= MOD;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> l = half - <span class="number">1</span>, r, div;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> a0, d, tn, buff;</span><br><span class="line">        <span class="keyword">while</span>(l &lt;= n) &#123;</span><br><span class="line">            div = n / l;</span><br><span class="line">            r = n / div;</span><br><span class="line">            a0 = n % l, d = -div, tn = r - l + <span class="number">1</span>;</span><br><span class="line">            <span class="keyword">if</span>(tn &gt;= MOD)   tn %= MOD;</span><br><span class="line">            <span class="keyword">if</span>(d &gt;= MOD)    d %= MOD;</span><br><span class="line">            <span class="keyword">if</span>(a0 &gt;= MOD)   a0 %= MOD;</span><br><span class="line">            buff = (a0 * <span class="number">2</span> + (tn - <span class="number">1</span>)*d);</span><br><span class="line">            <span class="keyword">if</span>(buff &lt; <span class="number">0</span> || buff &gt;= MOD) buff %= MOD;</span><br><span class="line">            buff *= tn;</span><br><span class="line">            <span class="keyword">if</span>(buff &lt; <span class="number">0</span> || buff &gt;= MOD) buff %= MOD;</span><br><span class="line">            ret += buff;</span><br><span class="line">            l = r + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ret %= MOD;</span><br><span class="line">        ret = (ret * inv2)%MOD;</span><br><span class="line">        ret = (ret + hret + MOD)%MOD;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%lld\n"</span>, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">100000000000000</span><br><span class="line">*/</span></span><br></pre></td></tr></table></figure>
           </div>
           <div class="toggle-input article-more-link"><a>Read More +</a></div>
         
@@ -441,7 +441,7 @@ Case #4: 46
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/17/oj/zj/a981/" data-id="cimum6qe1021eh3xcteizbvk3" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/17/oj/zj/a981/" data-id="cimun1ldy022an2xckr11q7jr" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/17/oj/zj/a981/#disqus_thread" class="article-comment-link">Comments</a>
       
