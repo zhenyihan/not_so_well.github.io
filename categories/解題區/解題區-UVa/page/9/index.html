@@ -114,7 +114,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/08/uva-1336/" data-id="cin8nb7pk00t4vqxcd37vhktw" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/08/uva-1336/" data-id="cin8umug600leqoxcfttpbfac" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/08/uva-1336/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -171,7 +171,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/08/uva-1356/" data-id="cin8nb7py00tlvqxcx0nnln4l" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/08/uva-1356/" data-id="cin8umuh200m1qoxc9vdazsws" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/08/uva-1356/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -190,8 +190,8 @@
 <h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>可以藉由貪心得到塔的數量，但是拋物線的方程式並不明確，因此可以考慮二分的高度，來計算纜線夠不夠長。</p>
 <p>得到拋物線方程式後，要計算拋物線長度，使用數值積分的方式得到。為了降低計算誤差，使用自適應辛普森積分法，也就是當預估方法的變異小到一定程度時，停止分段求值。</p>
 <p>integral parabola length</p>
-\int{\sqrt{dx^{2} + dy^{2}}} = \int{\sqrt{1 + dy^{2}/dx^{2}} dx}
-\\ = \int{\sqrt{1 + f'(x)^{2}} dx}
+<span>$$\int{\sqrt{dx^{2} + dy^{2}}} = \int{\sqrt{1 + dy^{2}/dx^{2}} dx}
+\\ = \int{\sqrt{1 + f&apos;(x)^{2}} dx}$$</span><!-- Has MathJax -->
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> SimpsonIntegral &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> eps = <span class="number">1e-6</span>;</span><br><span class="line">    <span class="keyword">double</span> a; <span class="comment">// function coefficient</span></span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span> x)</span> </span>&#123; <span class="comment">// usually replace</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">sqrt</span>(<span class="number">1</span> + <span class="number">4</span> * a * a * x * x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCoefficient</span><span class="params">(<span class="keyword">double</span> a)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;a = a;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">simpson</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> fa, <span class="keyword">double</span> fb, <span class="keyword">double</span> fab)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (fa + <span class="number">4</span> * fab + fb) * (b - a) / <span class="number">6.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> l, <span class="keyword">double</span> r)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> integral(l, r, eps);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> c, <span class="keyword">double</span> eps, <span class="keyword">double</span> A, <span class="keyword">double</span> fa, <span class="keyword">double</span> fb, <span class="keyword">double</span> fc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> ab = (a + b)/<span class="number">2</span>, bc = (b + c)/<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">double</span> fab = f(ab), fbc = f(bc);</span><br><span class="line">        <span class="keyword">double</span> L = simpson(a, b, fa, fb, fab), R = simpson(b, c, fb, fc, fbc);</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">fabs</span>(L + R - A) &lt;= <span class="number">15</span> * eps)</span><br><span class="line">            <span class="keyword">return</span> L + R + (L + R - A) / <span class="number">15.0</span>;</span><br><span class="line">        <span class="keyword">return</span> integral(a, ab, b, eps/<span class="number">2</span>, L, fa, fab, fb) + integral(b, bc, c, eps/<span class="number">2</span>, R, fb, fbc, fc);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> eps)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> ab = (a + b) /<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">double</span> fa = f(a), fb = f(b), fab = f(ab);</span><br><span class="line">        <span class="keyword">return</span> integral(a, ab, b, eps, simpson(a, b, fa, fb, fab), fa, fab, fb);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; tool;</span><br><span class="line"><span class="comment">// integral parabola length</span></span><br><span class="line"><span class="comment">// \int \sqrt_&#123;dx^&#123;2&#125; + dy^&#123;2&#125;&#125; = \int \sqrt_&#123;1 + dy^&#123;2&#125;/dx^&#123;2&#125;&#125; dx</span></span><br><span class="line"><span class="comment">// = \int \sqrt_&#123;1 + f'(x)^&#123;2&#125;&#125; dx</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> testcase, cases = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">double</span> D, H, B, L;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span> (testcase--) &#123;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%lf %lf %lf %lf"</span>, &amp;D, &amp;H, &amp;B, &amp;L);</span><br><span class="line">        <span class="keyword">int</span> n = <span class="built_in">ceil</span>(B / D);</span><br><span class="line">        <span class="keyword">double</span> w = B / n, plen = L / n; <span class="comment">// for a parabola</span></span><br><span class="line">        <span class="keyword">double</span> l = <span class="number">0</span>, r = H, len, mid;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> it = <span class="number">0</span>; it &lt; <span class="number">100</span>; it++) &#123;</span><br><span class="line">            mid = (l + r)/<span class="number">2</span>; <span class="comment">// parabola y = ax^2, pass (w/2, mid)</span></span><br><span class="line">            tool.setCoefficient(<span class="number">4</span> * mid / w / w);</span><br><span class="line">            len = <span class="number">2</span> * tool.integral(<span class="number">0</span>, w/<span class="number">2</span>);</span><br><span class="line">            <span class="keyword">if</span> (len &lt; plen)</span><br><span class="line">                l = mid;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                r = mid;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (cases)	<span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Case %d:\n"</span>, ++cases);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%.2lf\n"</span>, H - l);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           </div>
           <div class="toggle-input article-more-link"><a>Read More +</a></div>
@@ -230,7 +230,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-1322/" data-id="cin8nb7p600stvqxcw83n88qe" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-1322/" data-id="cin8umug300lcqoxcosqyz2gc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-1322/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -287,7 +287,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-1312/" data-id="cin8nb7pe00sxvqxc0mumziwt" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-1312/" data-id="cin8umug000l8qoxc567gjgrh" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-1312/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -341,7 +341,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-1153/" data-id="cin8nb7jw00msvqxc5gzmhdbi" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-1153/" data-id="cin8umu8z00ekqoxcf96e2iuc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-1153/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -397,7 +397,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-1151/" data-id="cin8nb7jt00movqxcdyalpqbz" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-1151/" data-id="cin8umu8u00egqoxcr5lhitsx" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-1151/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -454,7 +454,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-805/" data-id="cin8nb7t800x1vqxcm7u5dd5n" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-805/" data-id="cin8umuke00psqoxcnacg0rtx" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-805/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -511,7 +511,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-804/" data-id="cin8nb7sz00wrvqxcohpgke33" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-804/" data-id="cin8umukb00ppqoxccj5llfd3" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-804/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -566,7 +566,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/03/uva-754/" data-id="cin8nb7t500wyvqxcis7bi2xl" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/03/uva-754/" data-id="cin8umuk800pkqoxc9dl0b9jd" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/03/uva-754/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -628,7 +628,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/02/uva-751/" data-id="cin8nb7ss00wkvqxcedw70253" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/02/uva-751/" data-id="cin8umuk500phqoxc9n0ch7ji" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/02/uva-751/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -865,6 +865,23 @@
 
 <script src="/js/script.js"></script>
 
-  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
 </body>
 </html>
