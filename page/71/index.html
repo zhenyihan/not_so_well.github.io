@@ -89,6 +89,197 @@
         
           <section id="main">
   
+    <article id="post-oj/zj/a981" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/04/17/oj/zj/a981/" class="article-date">
+  <time datetime="2014-04-17T13:20:35.000Z" itemprop="datePublished">2014-04-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/04/17/oj/zj/a981/">a981. 求和問題</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/04/17/oj/zj/a981/" data-id="cin8fdaac0211q2xcktx6xnei" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/04/17/oj/zj/a981/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/分治算法/">分治算法</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="題目"><a href="#題目" class="headerlink" title="題目"></a>題目</h1><h2 id="內容："><a href="#內容：" class="headerlink" title="內容："></a>內容：</h2><p>給你N個正整數, 試求哪幾個之和剛好為M, 印出所有合條件的解, 如有多組解, 請按由小到大的順序印出(格式可參考樣例輸出)</p>
+<h2 id="輸入說明："><a href="#輸入說明：" class="headerlink" title="輸入說明："></a>輸入說明：</h2><p>n  m  (1&lt;=n&lt;=30, 1&lt;=m&lt;=100000000) n個正整數, 全部以空格分開 </p>
+<h2 id="輸出說明："><a href="#輸出說明：" class="headerlink" title="輸出說明："></a>輸出說明：</h2><ul>
+<li>其和剛好等於m的數, 如果有多組解則按由小到大全部印出, 如果無解則印出 <code>-1</code></li>
+</ul>
+<h2 id="範例輸入："><a href="#範例輸入：" class="headerlink" title="範例輸入："></a>範例輸入：</h2><pre><code>10 100
+10 20 40 30 50 80 60 70 5 15
+</code></pre><h2 id="範例輸出："><a href="#範例輸出：" class="headerlink" title="範例輸出："></a>範例輸出：</h2><pre><code>5 10 15 20 50
+5 10 15 30 40
+5 10 15 70
+5 15 20 60
+5 15 30 50
+5 15 80
+10 20 30 40
+10 20 70
+10 30 60
+10 40 50
+20 30 50
+20 80
+30 70
+40 60
+</code></pre><hr>
+<h1 id="解法"><a href="#解法" class="headerlink" title="解法"></a>解法</h1><ul>
+<li>作法：<br>  分治，將輸入 n 個劃分成兩堆，分別窮舉所有可能，採用合併的方式去運算。</li>
+</ul>
+<figure class="highlight cpp"><figcaption><span>a981.cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;set&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="keyword">int</span> A[<span class="number">35</span>];</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;A[i]);</span><br><span class="line">        sort(A, A + n, greater&lt;<span class="keyword">int</span>&gt;());</span><br><span class="line">        <span class="keyword">int</span> h1Cnt = n / <span class="number">2</span>, h2Cnt = n - h1Cnt;</span><br><span class="line">        <span class="built_in">map</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt; h1, h2;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = (<span class="number">1</span>&lt;&lt;h1Cnt)<span class="number">-1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="keyword">long</span> <span class="keyword">long</span> sum = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; h1Cnt; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span>((i&gt;&gt;j)&amp;<span class="number">1</span>)	sum += A[j];</span><br><span class="line">            &#125;</span><br><span class="line">            h1[sum].push_back(i);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = (<span class="number">1</span>&lt;&lt;h2Cnt)<span class="number">-1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">            <span class="keyword">long</span> <span class="keyword">long</span> sum = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; h2Cnt; j++) &#123;</span><br><span class="line">                <span class="keyword">if</span>((i&gt;&gt;j)&amp;<span class="number">1</span>)	sum += A[j + h1Cnt];</span><br><span class="line">            &#125;</span><br><span class="line">            h2[sum].push_back(i&lt;&lt;h1Cnt);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">set</span>&lt;<span class="keyword">int</span>&gt; ret;</span><br><span class="line">        <span class="keyword">for</span>(<span class="built_in">map</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt;::iterator it = h1.begin();</span><br><span class="line">            it != h1.end(); it++) &#123;</span><br><span class="line">            <span class="keyword">long</span> <span class="keyword">long</span> f = (<span class="keyword">long</span> <span class="keyword">long</span>)m - it-&gt;first;</span><br><span class="line">            <span class="built_in">map</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>, <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt;::iterator jt = h2.find(f);</span><br><span class="line">            <span class="keyword">if</span>(jt != h2.end()) &#123;</span><br><span class="line">                <span class="keyword">for</span>(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator iv = it-&gt;second.begin();</span><br><span class="line">                    iv != it-&gt;second.end(); iv++) &#123;</span><br><span class="line">                    <span class="keyword">for</span>(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator jv = jt-&gt;second.begin();</span><br><span class="line">                        jv != jt-&gt;second.end(); jv++) &#123;</span><br><span class="line">                        ret.insert(*iv| *jv);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(ret.size() == <span class="number">0</span>)</span><br><span class="line">            <span class="built_in">puts</span>(<span class="string">"-1"</span>);</span><br><span class="line">        <span class="keyword">for</span>(<span class="built_in">set</span>&lt;<span class="keyword">int</span>&gt;::reverse_iterator it = ret.rbegin();</span><br><span class="line">            it != ret.rend(); it++) &#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = n<span class="number">-1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">                <span class="keyword">if</span>(((*it)&gt;&gt;i)&amp;<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="built_in">printf</span>(<span class="string">"%d "</span>, A[i]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-test" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/04/17/test/" class="article-date">
+  <time datetime="2014-04-17T11:35:27.000Z" itemprop="datePublished">2014-04-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/出題解題/">出題解題</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/04/17/test/">Scarky 您的博客線上檢測系統</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/04/17/test/" data-id="cin8fd8w6008nq2xcuo2w47d7" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/04/17/test/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ACM/">ACM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Judge/">Judge</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Scarky/">Scarky</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="Scarky-提供線上出程式題目的平台"><a href="#Scarky-提供線上出程式題目的平台" class="headerlink" title="Scarky 提供線上出程式題目的平台"></a>Scarky 提供線上出程式題目的平台</h1><script type="text/javascript" src="http://scarky.com/widget/get/PNFCQOY5/"></script>
+<blockquote>
+<p>出了一道好题目却不知道该怎样投递到各大OJ上？现在不用担心这个问题了，因为你可以直接把自己的Blog变成一个OJ。Scarky是一个建立在SPOJ系统上的OJ平台。所不同的是，任何人无需注册便可以编写自己的题目并发在自己的网站上与网友分享，并且网友们提交答案时也不需要进行注册。这个网站的功能还在不断扩充中，但目前就Programming Challenge模块看来，这个网站已经很强大了。以后我有了好题目就用这种方式和大家分享了，这里先试用一下，题目来源好像是某次USACO月赛。</p>
+</blockquote>
+<p><a href="http://www.matrix67.com/blog/archives/2241" target="_blank" rel="external">matrix67 的說明</a><br><a href="http://www.scarky.com/" target="_blank" rel="external">Scarky 網址點我</a></p>
+<h2 id="創建題目"><a href="#創建題目" class="headerlink" title="創建題目"></a>創建題目</h2><ul>
+<li>點進網站，點選創建自己的題目，您將會看到下圖的訊息，記得要求它寄封題目鏈結到你的信箱。這些題目內容稍後還能修改。<br><img src="/img/scarky5.PNG" alt="scarky5.png"></li>
+<li>在信封中，將會收到編輯頁面鏈結。<br><img src="/img/scarky3.PNG" alt="scarky3.png"></li>
+<li>回到編輯頁面，將可以把輸入輸出測資放上去，最後按儲存訊息即可。<br>  基本上這裡都採用嚴格比對，也就是多空白多換行字符都是不行的。<br><img src="/img/scarky2.PNG" alt="scarky2.png"></li>
+<li>編輯者還能看到目前的統計資料。為什麼身為管理者看不到別人上傳的代碼，這不科學。<br><img src="/img/scarky4.PNG" alt="scarky4.png"></li>
+<li>放上博客有三種方式。<br><img src="/img/scarky1.png" alt="scarky1.png"></li>
+</ul>
+<h2 id="使用心得"><a href="#使用心得" class="headerlink" title="使用心得"></a>使用心得</h2><ul>
+<li>正如上方的題目，編輯頁面要打 HTML，這點不科學也不方便。</li>
+<li>頁面顯示上就是固定，大小無法更動。</li>
+<li>題目生存期限有多久？曾經放著一年前的題目還在。</li>
+<li>HTML 打好放上去，編輯時從曾經打過的 <code>&lt;br/&gt;</code> 會消失。</li>
+<li>最後附上簡單的測試。<pre><code>&lt;strong&gt;題目描述&lt;/strong&gt;&lt;br/&gt;&lt;br/&gt;
+    &lt;p&gt;
+        請將 NFA 轉換成 DFA，不用進行最佳化。
+    &lt;/p&gt;&lt;br/&gt;
+&lt;strong&gt;輸入描述&lt;/strong&gt;&lt;br/&gt;&lt;br/&gt;
+    &lt;p&gt;
+        輸入只會有一筆 NFA 描述，輸入以 EOF(end-of-file) 為結尾。
+        &lt;br/&gt;&lt;br/&gt;
+        略 ...
+    &lt;/p&gt;&lt;br/&gt;
+&lt;strong&gt;輸出格式&lt;/strong&gt;&lt;br/&gt;&lt;br/&gt;
+    &lt;p&gt;
+    輸出對於每一組 DFA，格式如下。&lt;br/&gt;
+    輸出第一行為字母集 CDFA (按照字典順序輸出)。&lt;br/&gt;
+    &lt;br/&gt;
+    略 ...
+    &lt;/p&gt;&lt;br/&gt;
+&lt;strong&gt;Example Input :&lt;/strong&gt;&lt;br/&gt;
+    &lt;pre&gt;
+    (l,a,b,2)
+    (2,0)(3,0)(0,0)
+    (0,0)(4,5)(0,0)
+    (0,0)(0,0)(4,0)
+    (0,0)(5,0)(5,0)
+    (*,*)(*,*)(*,*)
+    略 ...
+    &lt;/pre&gt;
+&lt;strong&gt;Example Output:&lt;/strong&gt;&lt;br/&gt;
+    &lt;pre&gt;
+    (a,b)
+    (1,2)(*3,4,5)(0)
+    (*3,4,5)(*5)(*4,5)
+    (*5)(0)(0)
+    (*4,5)(*5)(*5)
+    略 ...
+    &lt;/pre&gt;
+</code></pre></li>
+</ul>
+<h2 id="Hexo"><a href="#Hexo" class="headerlink" title="Hexo"></a>Hexo</h2><ul>
+<li>文章格式<pre><code>title: Scarky 您的博客線上檢測系統
+date: 2014-04-17 19:35:27
+tags: [Scarky, ACM, Judge]
+categories: 出題解題
+scarky: PNFCQOY5
+</code></pre></li>
+<li>文章顯示<figure class="highlight plain"><figcaption><span>theme/layout/_partial/post/article.ejs</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=&quot;main&quot; class=&quot;&lt;%= item.layout %&gt;&quot; itemscope itemprop=&quot;blogPost&quot;&gt;</span><br><span class="line">    &lt;article itemprop=&quot;articleBody&quot;&gt; </span><br><span class="line">        &lt;%- partial(&apos;header&apos;) %&gt;</span><br><span class="line">    &lt;div class=&quot;article-content&quot;&gt;</span><br><span class="line">        &lt;%- partial(&apos;gallery&apos;) %&gt;</span><br><span class="line">        &lt;% if( table&amp;&amp;(item.toc !== false) &amp;&amp; theme.toc.article)&#123; %&gt;</span><br><span class="line">        &lt;div id=&quot;toc&quot; class=&quot;toc-article&quot;&gt;</span><br><span class="line">            &lt;strong class=&quot;toc-title&quot;&gt;&lt;%= __(&apos;contents&apos;) %&gt;&lt;/strong&gt;</span><br><span class="line">        &lt;%- toc(item.content) %&gt;</span><br><span class="line">        &lt;/div&gt;</span><br><span class="line">        &lt;% &#125; %&gt;</span><br><span class="line">        &lt;% if(item.scarky) &#123; %&gt;</span><br><span class="line">            &lt;!-- scarky widget http://scarky.com/ --&gt;</span><br><span class="line">            &lt;script type=&quot;text/javascript&quot; src=&quot;http://scarky.com/widget/get/&lt;%= item.scarky %&gt;/&quot;&gt;&lt;/script&gt;</span><br><span class="line">            &lt;!-- end scarky widget --&gt;</span><br><span class="line">        &lt;% &#125; %&gt;</span><br><span class="line">        &lt;%- item.content %&gt;  </span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">        &lt;%- partial(&apos;footer&apos;) %&gt;   	       </span><br><span class="line">    &lt;/article&gt;</span><br><span class="line">    &lt;%- partial(&apos;pagination&apos;) %&gt;</span><br><span class="line">    &lt;%- partial(&apos;comment&apos;) %&gt;</span><br><span class="line">&lt;/div&gt;  </span><br></pre></td></tr></table></figure></li>
+</ul>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-lesson/operating-system-notes" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/04/16/lesson/operating-system-notes/" class="article-date">
@@ -105,7 +296,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/test.jpg" rel="gallery_cin2pv8xj01twwxxc9v7lw36c">
+      <a class="article-gallery-img fancybox" href="/img/test.jpg" rel="gallery_cin8fda0p01uwq2xc8hkcyw2c">
         <img src="/img/test.jpg" itemprop="image">
       </a>
     
@@ -124,7 +315,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/16/lesson/operating-system-notes/" data-id="cin2pv8xj01twwxxc9v7lw36c" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/16/lesson/operating-system-notes/" data-id="cin8fda0p01uwq2xc8hkcyw2c" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/16/lesson/operating-system-notes/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -463,7 +654,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/15/web/nodejs-first-learn/" data-id="cin2pv91z01xrwxxc0opmpj93" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/15/web/nodejs-first-learn/" data-id="cin8fda3q01x5q2xcexdo299t" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/15/web/nodejs-first-learn/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -558,7 +749,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/15/lesson/universities-project-record/" data-id="cin2pv8xa01towxxcyy3onsfd" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/15/lesson/universities-project-record/" data-id="cin8fda0g01upq2xcqi5zcljn" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/15/lesson/universities-project-record/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -646,11 +837,11 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/10269917_10201061845467877_1902960998_o.jpg" rel="gallery_cin2pv91r01xowxxczt3htrm6">
+      <a class="article-gallery-img fancybox" href="/img/10269917_10201061845467877_1902960998_o.jpg" rel="gallery_cin8fda3f01wxq2xcxl4f71aj">
         <img src="/img/10269917_10201061845467877_1902960998_o.jpg" itemprop="image">
       </a>
     
-      <a class="article-gallery-img fancybox" href="/img/10178598_10201061846027891_982179198_o.jpg" rel="gallery_cin2pv91r01xowxxczt3htrm6">
+      <a class="article-gallery-img fancybox" href="/img/10178598_10201061846027891_982179198_o.jpg" rel="gallery_cin8fda3f01wxq2xcxl4f71aj">
         <img src="/img/10178598_10201061846027891_982179198_o.jpg" itemprop="image">
       </a>
     
@@ -669,7 +860,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/13/web/jquery-ukagaka/" data-id="cin2pv91r01xowxxczt3htrm6" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/13/web/jquery-ukagaka/" data-id="cin8fda3f01wxq2xcxl4f71aj" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/13/web/jquery-ukagaka/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -789,7 +980,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/2013021915074423098.jpg" rel="gallery_cin2pv8tc01rewxxcmua4mzle">
+      <a class="article-gallery-img fancybox" href="/img/2013021915074423098.jpg" rel="gallery_cin8fd9xj01seq2xctbo8s9tu">
         <img src="/img/2013021915074423098.jpg" itemprop="image">
       </a>
     
@@ -808,7 +999,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/12/lesson/computational-intelligence-learn/" data-id="cin2pv8tc01rewxxcmua4mzle" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/12/lesson/computational-intelligence-learn/" data-id="cin8fd9xj01seq2xctbo8s9tu" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/12/lesson/computational-intelligence-learn/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1158,7 +1349,7 @@ k 取 [-1, 1] 的微量亂數。
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/03fig09.jpg" rel="gallery_cin2pv8rs01q9wxxc9j1xho7i">
+      <a class="article-gallery-img fancybox" href="/img/03fig09.jpg" rel="gallery_cin8fd9w701rfq2xcmbrs897f">
         <img src="/img/03fig09.jpg" itemprop="image">
       </a>
     
@@ -1177,7 +1368,7 @@ k 取 [-1, 1] 的微量亂數。
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/12/lesson/agile-method-learn/" data-id="cin2pv8rs01q9wxxc9j1xho7i" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/12/lesson/agile-method-learn/" data-id="cin8fd9w701rfq2xcmbrs897f" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/12/lesson/agile-method-learn/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1545,7 +1736,7 @@ k 取 [-1, 1] 的微量亂數。
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/12/web/hexo-comment/" data-id="cin2pv91101x8wxxcr98guo9n" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/12/web/hexo-comment/" data-id="cin8fda2x01wkq2xc5h5vyz7y" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/12/web/hexo-comment/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1617,7 +1808,7 @@ k 取 [-1, 1] 的微量亂數。
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/ganbate.jpg" rel="gallery_cin2pv7mi002uwxxc3houlyyt">
+      <a class="article-gallery-img fancybox" href="/img/ganbate.jpg" rel="gallery_cin8fd8s2002wq2xczgsq4twq">
         <img src="/img/ganbate.jpg" itemprop="image">
       </a>
     
@@ -1636,7 +1827,7 @@ k 取 [-1, 1] 的微量亂數。
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/11/image-test/" data-id="cin2pv7mi002uwxxc3houlyyt" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/04/11/image-test/" data-id="cin8fd8s2002wq2xczgsq4twq" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/04/11/image-test/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1669,169 +1860,9 @@ k 取 [-1, 1] 的微量亂數。
 
 
   
-    <article id="post-web/hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/04/10/web/hello-world/" class="article-date">
-  <time datetime="2014-04-10T11:40:22.000Z" itemprop="datePublished">2014-04-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/網頁設計/">網頁設計</a>►<a class="article-category-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/04/10/web/hello-world/">從現在開始開始 Hexo !</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/04/10/web/hello-world/" data-id="cin2pv90u01x5wxxc6ji9gmjc" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/04/10/web/hello-world/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hexo/">hexo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/install/">install</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="用了-GitHub-學到-Nodejs-路過-Hexo-到了這裡"><a href="#用了-GitHub-學到-Nodejs-路過-Hexo-到了這裡" class="headerlink" title="用了 GitHub, 學到 Nodejs, 路過 Hexo, 到了這裡"></a>用了 GitHub, 學到 Nodejs, 路過 Hexo, 到了這裡</h1><h2 id="安裝各種有趣"><a href="#安裝各種有趣" class="headerlink" title="安裝各種有趣 ?"></a>安裝各種有趣 ?</h2><h3 id="Hexo-第一步"><a href="#Hexo-第一步" class="headerlink" title="Hexo 第一步"></a>Hexo 第一步</h3><ul>
-<li>請先把 Nodejs 和 npm 架設好</li>
-</ul>
-<ol>
-<li>下載 Hexo <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo -g</span><br></pre></td></tr></table></figure></li>
-<li>安裝到你的目標目錄下<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init blog &amp;&amp; cd blog</span><br></pre></td></tr></table></figure></li>
-<li>以下操作會將文章從 markdown 檔案產生關聯<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure></li>
-<li>開啟 Server, 使用於本地調效, 之後可連到 <a href="http://localhost:4000/" target="_blank" rel="external">http://localhost:4000/</a> 查看<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="Hexo-日常問題"><a href="#Hexo-日常問題" class="headerlink" title="Hexo 日常問題"></a>Hexo 日常問題</h2><ul>
-<li><p>撰寫文章</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new [layout]</span><br><span class="line"></span><br><span class="line">$ hexo new &quot;New Post&quot;</span><br><span class="line"># =&gt; The file will be created at source/_posts/new-post.md</span><br><span class="line"></span><br><span class="line">$ hexo new page &quot;New Page&quot;</span><br><span class="line"># =&gt; The file will be created at source/new-page/index.html</span><br><span class="line"></span><br><span class="line">$ hexo new draft &quot;New Draft&quot;</span><br><span class="line"># =&gt; The file will be created at source/_drafts/new-draft.md</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>文章標籤使用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">title: Start Hexo !</span><br><span class="line">date: 2014-04-10 19:40:22</span><br><span class="line">tags: [hexo, image]</span><br><span class="line">categories: About This Blog</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>文章代碼高亮</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;\% codeblock \%&#125;</span><br><span class="line">your code here. 自行去掉反斜線</span><br><span class="line">&#123;\% endcodeblock \%&#125;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<h2 id="Hexo-個人化問題"><a href="#Hexo-個人化問題" class="headerlink" title="Hexo 個人化問題"></a>Hexo 個人化問題</h2><ul>
-<li><p>修改主題, 修改完畢後, 請進行以下操作來對 deploy 運行, style.css 才會正確, 本地查閱不影響</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ hexo clean</span><br><span class="line">$ hexo generate</span><br><span class="line">$ hexo deploy </span><br></pre></td></tr></table></figure>
-</li>
-<li><p>與 github page 連接做靜態操作</p>
-<figure class="highlight plain"><figcaption><span>blog_folder/_config.yml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># Deployment</span><br><span class="line">## Docs: http://zespia.tw/hexo/docs/deployment.html</span><br><span class="line">deploy:</span><br><span class="line">  type: github</span><br><span class="line">  repository: https://github.com/morris821028/morris821028.github.io.git</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>RSS 設定</p>
-<figure class="highlight plain"><figcaption><span>blog_folder/_config.yml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># Plugins</span><br><span class="line">plugins:</span><br><span class="line">  - hexo-generator-feed</span><br><span class="line">  - hexo-generator-sitemap</span><br><span class="line"></span><br><span class="line"># RSS hexo-generator-feed</span><br><span class="line">feed:</span><br><span class="line">  type: atom</span><br><span class="line">  path: atom.xml</span><br><span class="line">  limit: 20</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>BLOG 主題 pacman 配置 - 增加文章列表圖片 (詳見 <a href="http://yangjian.me/pacman/hello/introducing-pacman-theme/" target="_blank" rel="external">http://yangjian.me/pacman/hello/introducing-pacman-theme/</a>)</p>
-<figure class="highlight plain"><figcaption><span>blog_folder/theme/pacman/layout/_partial/post/article.ejs</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;@ if(item.content.indexOf(&apos;&lt;img src=&quot;&apos;) &gt;= 0) &#123; @&gt;</span><br><span class="line">    &lt;p itemprop=&quot;description&quot;&gt;&lt;img style=&apos;float:left;margin:5px;height:80px;&apos; src=&quot;&lt;@- item.content.substring(item.content.indexOf(&apos;src=&quot;&apos;, item.content.indexOf(&apos;&lt;img src=&quot;&apos;)) + 5, item.content.indexOf(&apos;&quot;&apos;, item.content.indexOf(&apos;&lt;img src=&quot;&apos;) + 11)) @&gt;&quot;&gt;</span><br><span class="line">    &lt;@= strip_html(item.content).replace(/^\s*/, &apos;&apos;).replace(/\s*$/, &apos;&apos;).substring(0, 140) @&gt;&lt;/p&gt;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>BLOG 主題 pacman 配置 - 色彩配置</p>
-<figure class="highlight plain"><figcaption><span>blog_folder/theme/pacman/css/_base/variable.styl</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">color-background = #1f1f1f</span><br><span class="line">color-font = #ffffff</span><br><span class="line">color-white = #ffffff</span><br><span class="line">color-blue = #2ca6cb</span><br><span class="line">color-theme = #1f1f1f</span><br><span class="line">color-font-nav =#E9CD4C</span><br><span class="line">color-section = #272822</span><br><span class="line">color-footer = #1f1f1f</span><br><span class="line">color-gray = #CCC</span><br><span class="line">color-heading = #333333</span><br><span class="line">color-code = #eee</span><br><span class="line">color-twitter = #00aced</span><br><span class="line">color-facebook = #3b5998</span><br><span class="line">color-weibo = #eb182c</span><br><span class="line">color-google = #dd4b39</span><br><span class="line">color-qrcode= #49ae0f</span><br><span class="line">color-top = #762c54</span><br></pre></td></tr></table></figure></li>
-</ul>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-note/diary-20140308" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/03/08/note/diary-20140308/" class="article-date">
-  <time datetime="2014-03-08T11:41:25.000Z" itemprop="datePublished">2014-03-08</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/手札日記/">手札日記</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://link.photo.pchome.com.tw/s08/morris821028/2/139428411261/" rel="gallery_cin2pv8z701v2wxxcw48onfbr">
-        <img src="http://link.photo.pchome.com.tw/s08/morris821028/2/139428411261/" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/03/08/note/diary-20140308/">言盡</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/03/08/note/diary-20140308/" data-id="cin2pv8z701v2wxxcw48onfbr" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/03/08/note/diary-20140308/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>最近沒有什麼心得感想、或者是新的突破，所以也一直沒有寫心得。</p>
-<p>這幾個月打個程式代碼也因為女朋友掛了，跟著女朋友的回憶一起消失了。雖然常接觸電腦，對於雲端的即時備份卻沒使用。所以下場還真是慘不忍睹，不知道該從哪裡說起，女朋友掛彩好幾天，頓時真覺得世界籠罩了一片烏雲，好死不死是處於連救都不能救的處境，現在打的程式也只是昂貴的垃圾！對於資料遺失這種事情還是看開了，動畫也沒載下來看、音樂也沒長時間聽 …</p>
-<p>過著單調的無趣生活，不留著具有里程碑的紀錄，在硬碟死後，頓時明白了一些事情。</p>
-<p>現在是大學三年級的下學期，在前五個學期中，平均學期成績仍不斷上升，同時擔憂也不斷地上升，成績真的不太重要，反而太認真針對考試學習而後悔，心情五味雜全無法說清，就是處於渾沌時期中。</p>
-<p>這學期的選課還真是個挺奇特的，敏捷方法、計算理論、計算型智慧、編譯器、作業系統。看到那精美的通識課程，還是避而遠之。外面的世界還真是五花八門有點討厭，而資訊領域的數學有過於難懂，慧根嚴重不足以立馬理解。</p>
-<p>也許是遊戲打多的緣故，還是理解了更多，不怎麼想要表達什麼，越想表達越覺得空虛。</p>
-<p>最近學校專題那邊有 Mozilla 的工作人員想要帶帶看我們，不過對於團隊開發的經驗來說，我是以一個完全初學者的經驗來參加，跟其他人相比，還真是沒有什麼能力玩這個。現在有種江才郎盡 … 也許根本連才都說不上。</p>
-<p>看到 Mozilla 的工作環境，從 open-source 的那段故事開始，還真有一點感慨，這種可以互相學習解決的事情，卻非得躲躲藏藏「你不是比較強，而是你資源比較多。」不過不管哪方面，我都稱不上就是了，偷雞摸狗地活著。</p>
-<p>學習 github 的路程還真是艱辛，現在才剛開始，實戰都還沒上線，光是搞一個自己想要的需求都能搞上好幾個小時，自己都想吐槽自己「是不是已經到底了？」接二連三地，還有專案工作項目要學習，這學期若能這麼平平淡淡過去就好，再專研幾個有趣的小問題，繼續把思路精進。</p>
-<p>哦，對了，關於下學期的比賽，彰師大的中程盃、元智的資訊週、靜宜大學的程式競賽、 … 等，事實上還在考慮參加，不過想到比賽還是會害怕，一旦少了網路，還真是一無是處。</p>
-<p>最近遭遇的慘事非常多，但也只不過是一個不懂外面世界的人所描述，可謂井底之蛙，這些事情不說也罷。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/70/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="page-number" href="/page/70/">70</a><span class="page-number current">71</span><a class="page-number" href="/page/72/">72</a><a class="extend next" rel="next" href="/page/72/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/70/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="page-number" href="/page/70/">70</a><span class="page-number current">71</span><a class="page-number" href="/page/72/">72</a><a class="page-number" href="/page/73/">73</a><a class="extend next" rel="next" href="/page/72/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1843,7 +1874,7 @@ k 取 [-1, 1] 的微量亂數。
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">73</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">75</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1853,6 +1884,22 @@ k 取 [-1, 1] 的微量亂數。
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10080/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10080. Fast Matrix Multiplication (pthread)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10086/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10086. Red/Blue Computation</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/16/2016-google-code-jam-1A/">
@@ -1916,22 +1963,6 @@ k 取 [-1, 1] 的微量亂數。
                 <i class="icon-file-o"></i> 
               
             UVa 13014 - Keep it energized</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13054/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13054 - Hippo Circus</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13032/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13032 - Marbles in Jars</a>
           </li>
         
       </ul>

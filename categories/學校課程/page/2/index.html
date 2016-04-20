@@ -89,6 +89,204 @@
         
           <section id="main">
   
+    <article id="post-realtime-system-qemu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/realtime-system-qemu/" class="article-date">
+  <time datetime="2016-01-21T07:13:45.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cin8fd8uw006fq2xcd6xvf63b">
+        <img src="http://i.imgur.com/2sHgITS.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/realtime-system-qemu/">初體驗 qemu</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cin8fd8uw006fq2xcd6xvf63b" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/realtime-system-qemu/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <p>若不想在 Windows 上灌 Virtual Box 進行 kernel 修改，那麼在 Linux 上面灌 qemu，在上面測試，假設只要測試 kernel 那麼 qemu 在第一次編譯以及在部分檔案重新編譯都只需要兩三分鐘。若 Windows 上用 Virtual Box 灌 Linux，又在 Linux 上面灌 qemu，容易遭遇到記憶體不夠的窘境。</p>
+<h3 id="Ubuntu-Environment"><a href="#Ubuntu-Environment" class="headerlink" title="Ubuntu Environment"></a>Ubuntu Environment</h3><p>Ubuntu 環境需要安裝下列插件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install qemu-system</span><br><span class="line">$ sudo apt-get install libncurses5-dev</span><br></pre></td></tr></table></figure>
+<h3 id="Buildroot"><a href="#Buildroot" class="headerlink" title="Buildroot"></a>Buildroot</h3><p>用 busybox 建造一直失敗，轉向學長推薦的 buildroot，用別人打包好的環境替 qemu 建造 file system。</p>
+<p><a href="https://buildroot.uclibc.org/download.html" target="_blank" rel="external">site</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://buildroot.uclibc.org/downloads/buildroot-2015.11.1.tar.bz2</span><br><span class="line">$ bzip2 -d FileName.bz2</span><br><span class="line">$ tar xvf FileName.tar</span><br></pre></td></tr></table></figure>
+<h4 id="Compile-Config"><a href="#Compile-Config" class="headerlink" title="Compile Config"></a>Compile Config</h4><p>Buildroot 提供很多參數給予選擇</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
+<p>這次作業設定，由於需要改寫 kernel 版本為 2.6.32.* 左右，因此相關的 gcc 編譯器等設定如下。同時，根據機器架構設定，助教預設在 visual box 上面，通常為 i386，而我們用實驗室 server，編 x86 64。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Target options  ---&gt;</span><br><span class="line">    Target Architecture (x86_64)  ---&gt;</span><br><span class="line">        x86_64</span><br><span class="line"></span><br><span class="line">Toolchain  ---&gt;</span><br><span class="line">    C library (glibc)  ---&gt;</span><br><span class="line">        glibc</span><br><span class="line">    Kernel Headers (Manually specified Linux version)  ---&gt;</span><br><span class="line">        custom 2.6.x</span><br><span class="line">        2.6.32.6</span><br><span class="line"></span><br><span class="line">System configuration  ---&gt;</span><br><span class="line">    [*] Enable root login with password</span><br><span class="line">    [*] remount root filesystem read-write during boot </span><br><span class="line"></span><br><span class="line">Filesystem images  ---&gt; </span><br><span class="line">    [*] ext2/3/4 root filesystem</span><br><span class="line">    [*] tar the root filesystem</span><br></pre></td></tr></table></figure>
+<h4 id="Compile"><a href="#Compile" class="headerlink" title="Compile"></a>Compile</h4><p><code>make -j8</code> 用 8 個執行緒編譯，如果機器有很多個 core，那麼可以用 <code>make -j20</code> 在非常短的時間內完成。</p>
+<p>接著在 <code>buildroot</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make -j8</span><br><span class="line">$ cp output/image/rootfs.ext* WORKSPACE_PATH</span><br></pre></td></tr></table></figure>
+<h3 id="Linux-kernel-config"><a href="#Linux-kernel-config" class="headerlink" title="Linux kernel config"></a>Linux kernel config</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make defconfig</span><br><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[_] Enable loadable module support</span><br><span class="line"></span><br><span class="line">File systems  ---&gt; </span><br><span class="line">    [*] Second extended fs support</span><br><span class="line">        [*] ext2</span><br><span class="line"></span><br><span class="line">Device Drivers  ---&gt;</span><br><span class="line">    Generic Driver Options  ---&gt; </span><br><span class="line">        [*] Create a kernel maintained /dev tmpfs (EXPERIMENTAL) </span><br><span class="line">        [*] Automount devtmpfs at /dev</span><br></pre></td></tr></table></figure>
+<p>create <code>arch/x86/boot/bzImage</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make -j20</span><br></pre></td></tr></table></figure>
+<h3 id="Test-Flow"><a href="#Test-Flow" class="headerlink" title="Test Flow"></a>Test Flow</h3><h4 id="move-test-execute-file"><a href="#move-test-execute-file" class="headerlink" title="move test execute file"></a>move test execute file</h4><p><code>mnt.sh</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mount rootfs.ext2 mnt</span><br><span class="line">sudo cp test_weighted_rr/test_weighted_rr mnt/root/</span><br><span class="line">sudo umount mnt</span><br></pre></td></tr></table></figure>
+<p><code>run.sh</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -M pc -kernel arch/x86/boot/bzImage -hda rootfs-dirty.ext4 -netdev user,id=network0 -device e1000,netdev=network0 -nographic -append &quot;root=/dev/sda console=ttyS0&quot;</span><br></pre></td></tr></table></figure></p>
+<h3 id="How-to-enlarge-the-rootfs-ext4"><a href="#How-to-enlarge-the-rootfs-ext4" class="headerlink" title="How to enlarge the rootfs.ext4"></a>How to enlarge the rootfs.ext4</h3><p><a href="http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image" target="_blank" rel="external">http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ dd if=/dev/zero of=foo.img count=0 bs=1M seek=2000   # assuming target size is 2000M</span><br><span class="line"># e2fsck -f foo.img</span><br><span class="line"># resize2fs foo.img</span><br></pre></td></tr></table></figure>
+<h3 id="Screen-Workspace"><a href="#Screen-Workspace" class="headerlink" title="Screen Workspace"></a>Screen Workspace</h3><p><a href="http://ssorc.tw/19" target="_blank" rel="external">commond tutorial</a></p>
+<p>執行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ screen</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ctrl+a c</code><br>開啟新的視窗，並同時切換到這個新的視窗</li>
+<li><code>ctrl+a tab</code><br>切換視窗</li>
+<li><code>ctrl+a |</code><br>切割垂直視窗，並產生新的視窗。</li>
+<li><code>ctrl+a k</code><br>關閉此視窗</li>
+</ul>
+<p>之所以用 Screen 指令，主要是因為遠端到工作站上操作 qemu，若程序掛掉，很容易遭遇到要重新連線的麻煩事。</p>
+<h3 id="Speical-Thanks"><a href="#Speical-Thanks" class="headerlink" title="Speical Thanks"></a>Speical Thanks</h3><ul>
+<li>蕭光宏 蕭大帥</li>
+<li>Lab 332 Parallel &amp; Distributed Laboratory</li>
+</ul>
+<h3 id="Virtual-Box"><a href="#Virtual-Box" class="headerlink" title="Virtual Box"></a>Virtual Box</h3><h4 id="第一次運行"><a href="#第一次運行" class="headerlink" title="第一次運行"></a>第一次運行</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src</span><br><span class="line">$ sudo wget http://newslab.csie.ntu.edu.tw/course/rts2015/projects/linux-2.6.32.60.tar.gz</span><br><span class="line">$ sudo tar -zxvf linux-2.6.32.60.tar.gz</span><br><span class="line">$ cd linux-2.6.32.60</span><br><span class="line">$ sudo make mrproper</span><br><span class="line">$ sudo make menuconfig</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/arch/x86/include/asm/unistd_64.h arch/x86/include/asm/</span><br><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/kernel/sched_weighted_rr.c kernel/</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vim /etc/default/grub</span><br><span class="line">#Add &quot;#&quot; to comment the following 2 lines</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT=10</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT_QUIET=true</span><br><span class="line">$ sudoupdate-grub2</span><br><span class="line">$ sudoshutdown -r now</span><br></pre></td></tr></table></figure>
+<h4 id="Test-flow"><a href="#Test-flow" class="headerlink" title="Test flow"></a>Test flow</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src/linux-2.6.32.60</span><br><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+<h4 id="Debug-by-printk"><a href="#Debug-by-printk" class="headerlink" title="Debug by printk"></a>Debug by <code>printk</code></h4><p>在另一個 terminal 開啟以下代碼，並且等待執行測試 scheduler 得執行檔在 kernel 運行時所打印出的 <code>printk</code> 訊息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo more /proc/kmsg</span><br></pre></td></tr></table></figure>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-realtime-system-using-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/realtime-system-using-scheduler/" class="article-date">
+  <time datetime="2016-01-21T06:41:29.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cin8fd8uy006jq2xcorluwc0t">
+        <img src="http://i.imgur.com/2L6Zmwa.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/realtime-system-using-scheduler/">即時系統 使用排程器</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cin8fd8uy006jq2xcorluwc0t" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h3 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h3><p>安裝 linux kernel 2.6.32.68、練習 pthread 設定 scheduler 相關函數以利後續修改 kernel source code。</p>
+<h3 id="設定-scheduler-問題"><a href="#設定-scheduler-問題" class="headerlink" title="設定 scheduler 問題"></a>設定 scheduler 問題</h3><ul>
+<li>設定 thread 可以在哪些 core 運行，由於要測試執行順序,強制讓 pthread 都在 CPU 0 運行。<br>編譯時，增加 <code>#define _GNU_SOURCE</code> 在 <code>#include &lt;pthread&gt;</code> 之前，確定 <code>cpu_set_t</code> 型別存在。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cpu_set_t</span> mask;</span><br><span class="line">CPU_ZERO(&amp;mask);</span><br><span class="line">CPU_SET(<span class="number">0</span>, &amp;mask);</span><br><span class="line">sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(mask), &amp;mask);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>使用 <code>sched_setscheduler()</code> 時，需查閱 <code>int policy</code> 相關規定去設定 <code>struct sched_param</code> 的 priority 數值。例如 <code>SCHED_FIFO</code> 的 priority 介於 1 到 99 之間,若 priority 錯誤，<code>sched_setscheduler()</code> 會發生錯誤，錯誤訊息可以藉由 <code>printf(&quot;Message␣%s\n&quot;, mid, strerror(errno));</code> 查閱。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(mask), &amp;mask);</span><br><span class="line">              <span class="function"><span class="keyword">int</span> <span class="title">sched_setscheduler</span><span class="params">(pid_t pid, <span class="keyword">int</span> policy,</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">struct</span> sched_param *param)</span></span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>如果 pid = 0，相當於 caller 的 thread 會被設置對應的 policy 和 <code>sched_param</code>。在 policy 設定 規範中，有兩種 real time scheduler <code>SCHED_FIFO</code> 和 <code>SCHED_RR</code>。當 thread 設置 real time scheduler 時，需要用 root 權限來執行程式，否則會設置失敗。相反地，若使用 non-real time scheduler 則不需要 root 權限，如 <code>SCHED_BATCH</code>。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sched_param param;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Thread %d sched_setscheduler()\n"</span>, mid);</span><br><span class="line">param.sched_priority = sched_get_priority_max(SCHED_FIFO);</span><br><span class="line">s = sched_setscheduler(<span class="number">0</span>, SCHED_FIFO, &amp;param);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Thread %d sched after %s\n"</span>, mid, strerror(errno));</span><br></pre></td></tr></table></figure>
+<h3 id="三種方法設定-pthread"><a href="#三種方法設定-pthread" class="headerlink" title="三種方法設定 pthread"></a>三種方法設定 pthread</h3><h4 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h4><p>各自的 <code>pthread_create()</code> 後，再呼叫 <code>sched_setscheduler()</code> 進行設定。這種寫法在本次實驗有順序問題，在 create 之後，無法保證執行 <code>sched_setscheduler()</code> 的順序，無法依靠 main thread 中執行 <code>pthread_create()</code> 的順序決定。幸運地，仍可以使用 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pthread_barrier_t</span> barrier; </span><br><span class="line">pthread_barrier_wait(&amp;barrier);</span><br><span class="line">pthread_barrier_init(&amp;barrier, <span class="literal">NULL</span>, MAX_THREAD);</span><br></pre></td></tr></table></figure>
+<p>確保每一個 thread 都設置好各自的 <code>sched_setscheduler()</code> 後統一運行，運行順序取決 priority。</p>
+<h4 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h4><p>在 main thread 中，呼叫 <code>pthread_attr_setinheritsched(attr, PTHREAD_INHERIT_SCHED);</code> 接下來 create 出來的 pthread 都將繼承 main thread 的 scheduler 設定。這種寫法很方便，如果需要各自設置 priority 會不方便，倒不如直接用第三種寫法。</p>
+<h4 id="方法三"><a href="#方法三" class="headerlink" title="方法三"></a>方法三</h4><p>在 main thread 中，手動設置每一個 pthread 的 scheduler。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pthread_attr_t</span> *attr = <span class="keyword">new</span> <span class="keyword">pthread_attr_t</span>;</span><br><span class="line"><span class="keyword">struct</span> sched_param *param = <span class="keyword">new</span> <span class="keyword">struct</span> sched_param;</span><br><span class="line"><span class="comment">// increasing order</span></span><br><span class="line">param-&gt;sched_priority = sched_get_priority_max(SCHED_FIFO) - i;</span><br><span class="line"><span class="comment">// set scheduler</span></span><br><span class="line">pthread_attr_setinheritsched(attr, PTHREAD_EXPLICIT_SCHED);</span><br><span class="line">pthread_attr_setschedpolicy(attr, SCHED_FIFO);</span><br><span class="line">pthread_attr_setschedparam(attr, param);</span><br><span class="line"><span class="comment">// create thread</span></span><br><span class="line">pthread_create(&amp;tid[i], attr, running_print, create_arg(i+<span class="number">1</span>, scheduler))</span><br></pre></td></tr></table></figure>
+<h3 id="計時設置"><a href="#計時設置" class="headerlink" title="計時設置"></a>計時設置</h3><p>為確定每一個 thread 按照設定的 scheduler 運行，方式採用 <code>print()</code> 進行，但有可能輸出之間間隔距離過短，導致順序容易在輸出上發生無法預期的問題，適時地加入一秒間隔完成。</p>
+<p>如何準確地停止一秒？不能呼叫 <code>sleep()</code> 因為這類的 system call 會產生 interrupt，此時 thread 將會降低 priority 或者進入隊列尾端。佔據 CPU time 有以下三種</p>
+<h4 id="busy-work"><a href="#busy-work" class="headerlink" title="busy work"></a>busy work</h4><p>只要停留的夠久即可，下面是一種簡單的方法 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// busy 1 second</span></span><br><span class="line"><span class="keyword">double</span> a = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000000</span>; i++)	a += <span class="number">0.1f</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="系統時間"><a href="#系統時間" class="headerlink" title="系統時間"></a>系統時間</h4><p>利用 critical section 抓系統時間 <code>int gettimeofday (struct timeval * tv, struct timezone * tz);</code>，這寫法會共用同一份時間，因此需要使用 mutex 完成。仍使用一個迴圈來判定時間是否超過，實際運行時間會超過一秒。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">double</span> <span class="title">my_clock</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> timeval t;</span><br><span class="line">    gettimeofday(&amp;t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1e-6</span> * t.tv_usec + t.tv_sec;</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_lock(&amp;outputlock);</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">double</span> sttime = my_clock();</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (my_clock() - sttime &gt; <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(&amp;outputlock);</span><br></pre></td></tr></table></figure>
+<h4 id="執行緒運行時間"><a href="#執行緒運行時間" class="headerlink" title="執行緒運行時間"></a>執行緒運行時間</h4><p>事實上 Linux 有提供每一個 thread 各自的 clock，用來計算 thread 的執行時間。使用 <code>clock_gettime(CLOCK_THREAD_CPUTIME_ID, &amp;t)</code>，在舊版本需在編譯參數中加入 <code>-lrt</code> 才能使用。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">double</span> <span class="title">my_clock</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> timespec t;</span><br><span class="line">    assert(clock_gettime(CLOCK_THREAD_CPUTIME_ID, &amp;t) == <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1e-9</span> * t.tv_nsec + t.tv_sec;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="輸出-console-問題"><a href="#輸出-console-問題" class="headerlink" title="輸出 console 問題"></a>輸出 console 問題</h3><p>在 <code>SCHED_FIFO</code> 這類的 real time scheduler 情況下，thread 輸出無法即時顯示在 terminal 上。</p>
+<p>從 <a href="http://man7.org/linux/man-pages/man7/sched.7.html" target="_blank" rel="external">http://man7.org/linux/man-pages/man7/sched.7.html</a> 可以見到 real-time scheduler 安排工作的比例，由於 <code>print()</code> 之後的顯示處理並不是 real-time process，當 real-time process 完全用盡 95\% 的 CPU time 時，顯示處理可能沒辦法在一秒內完成，可能要用好幾秒中的 5% 來完成。這也就是造成一開始會停頓一陣子，隨後才一次輸出數行結果。(註：並不是每一種裝置都會造成這問題，跟 CPU 時脈有關。)</p>
+<blockquote>
+<p>The value in this file specifies how much of the period time  can be used by all real-time and deadline scheduled processes on the system.  The value in this file can range from <code>-1</code> to <code>INT_MAX-1</code>.  Specifying <code>-1</code> makes the runtime the same as the period; that is, no CPU time is set aside for non-real-time processes (which was the Linux behavior before kernel 2.6.25). The default value in this file is 950,000 (0.95 seconds), meaning that 5% of the CPU time is reserved for processes that don’t run under a real-time or deadline scheduling policy.</p>
+</blockquote>
+<p>解決這類的問題，可以從 kernel 設定著手，降低 real-time 最大佔有量，讓 <code>print()</code> 處理能即刻印出。這不是好的解決辦法，但可用於實驗。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// default</span><br><span class="line">$ sudo /sbin/sysctl -w kernel.sched_rt_runtime_us=950000</span><br><span class="line">// modify</span><br><span class="line">$ sudo /sbin/sysctl -w kernel.sched_rt_runtime_us=500000</span><br></pre></td></tr></table></figure>
+<p>又或者採用拉大間隔，讓每一個 thread 都停止數十秒以上。</p>
+<h3 id="特別感謝"><a href="#特別感謝" class="headerlink" title="特別感謝"></a>特別感謝</h3><p>蕭光宏學長</p>
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/morris821028/hw-realtime-system" target="_blank" rel="external">https://github.com/morris821028/hw-realtime-system</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-security-notes7" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/06/23/security-notes7/" class="article-date">
@@ -114,7 +312,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cin2pv7pu0077wxxcqwrtmyx9" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cin8fd8vm007oq2xc7y4wqyby" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/23/security-notes7/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -193,7 +391,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cin2pv7qh007kwxxcvz8qwpv0" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cin8fd8vg007eq2xcv1ic0f2t" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/19/security-notes6/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -370,7 +568,7 @@ A     B     C
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cin2pv7ll001lwxxcialkechg">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cin8fd8qy001rq2xcqjcmx7vy">
         <img src="http://i.imgur.com/6c9iCJd.png" itemprop="image">
       </a>
     
@@ -389,7 +587,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cin2pv7ll001lwxxcialkechg" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cin8fd8qy001rq2xcqjcmx7vy" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/16/cognitive-style-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -516,7 +714,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cin2pv8ey01c0wxxcadb2ffpw" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cin8fd9bv00rgq2xchnuvwzaa" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/13/vr-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -600,7 +798,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cin2pv7pr0070wxxca3k8yu7b" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cin8fd8vi007iq2xcupaosaec" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/12/security-notes5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -697,7 +895,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cin2pv8f201c2wxxcuzjutc5u" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cin8fd9bj00rbq2xc6n4fmoxz" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/06/vr-note3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -811,7 +1009,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cin2pv7la001awxxctrg21q9x" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cin8fd8qm001fq2xchwml6h7g" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/02/cognitive-style-note3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1221,7 +1419,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cin2pv7pt0074wxxceqssf5yp" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cin8fd92v00i5q2xck32hdsp8" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/29/security-notes4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1322,225 +1520,6 @@ A     B     C
 
 
   
-    <article id="post-cognitive-style-note2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/17/cognitive-style-note2/" class="article-date">
-  <time datetime="2015-05-17T13:01:13.000Z" itemprop="datePublished">2015-05-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/17/cognitive-style-note2/">認知風格 設計篇</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note2/" data-id="cin2pv7lj001iwxxc6po7zirl" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/17/cognitive-style-note2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>接續上一篇</p>
-<h2 id="調整方法"><a href="#調整方法" class="headerlink" title="調整方法"></a>調整方法</h2><p>調適能力 (Adaptivity) 與調適性 (Adaptability)。前者能依據使用者的互動 (interaction) 自動修改應用程式的行為，後者則是依照預先定義好的選項來改變應用程式的行為。</p>
-<table>
-<thead>
-<tr>
-<th>網頁設計類型</th>
-<th>優點</th>
-<th>缺點</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Adaptivity</td>
-<td>迅速地貼近使用者，使用者不必做過多設定</td>
-<td>由於自動變化，對於使用者教學會相當困難</td>
-</tr>
-<tr>
-<td>Adaptability</td>
-<td>客製化過程有參與感，可以更了解系統功能</td>
-<td>入門困難，適應介面到可以客製的過程長</td>
-</tr>
-</tbody>
-</table>
-<h2 id="介面初步"><a href="#介面初步" class="headerlink" title="介面初步"></a>介面初步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">test version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | type you want                       |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br></pre></td></tr></table></figure>
-<p>從最基礎的設計中，明顯地會需要一個輸入框與觸發的按鈕。但是搜尋條件有幾種，從 <strong> 作者 </strong>、<strong> 本文 </strong>、<strong> 標題 </strong>、<strong> 出版期刊 </strong> … 等，這些要怎麼設計才好？</p>
-<p><a href="http://buzzorange.com/techorange/2015/05/07/better-than-google/" target="_blank" rel="external">《大神落伍了？這些搜索引擎比 Google 精確還更有趣》</a> 這裡提到專門的搜尋引擎，可以針對音樂、圖片、社群、找人 … 等內容進行搜尋。他們是怎麼完成的？</p>
-<h2 id="介面二步"><a href="#介面二步" class="headerlink" title="介面二步"></a>介面二步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">test version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line">    | BOOK NAME |  | AUTHOR |  | WHERE |        |Find it!|</span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br></pre></td></tr></table></figure>
-<p>這裡的設計多了三個欄位，有些欄位可填、可不填，進行分開的搜尋。然而會不會發生有人誤填一些資訊，誤把人名當書名，造成搜尋結果不好。為了考量這些，基本上都是在搜尋結果中做一個排序，排序的優先權可能先按照書名、作者、地點。搜尋方式的比例差異通常呈現普遍性。</p>
-<p>為了加速篩選結果，通常會先抓書名，如果書名不夠具有特色，則會嘗試抓作者名稱，如果作者出版很多本書，則會考慮出版時間、內容。能按照內容進行搜索的引擎，肯定規模很大。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line">    | BOOK NAME |  | AUTHOR |  | WHERE |        |Find it!|</span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">+---------------+---------------+---------------------+</span><br><span class="line">|  BOOK NAME    |  AUTHOR       |  WHERE              |</span><br><span class="line">+---------------+---------------+---------------------+</span><br><span class="line">                                                       </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  TITLE        |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  SUBTITLE     |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  CHAPTER      |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  NICKNAME     |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  PROLOGUE     |                                      </span><br><span class="line">+---------------+</span><br></pre></td></tr></table></figure>
-<p>有一種方式是提供搜尋條件的細節，來增加使用者的搜尋效率。上面就是一個範例，不僅僅只是官方書名提供搜索，細節劃分也是相當重要。甚至有人會將書給予暱稱，例如書的名稱太普通，卻以某種封裝、寫法出名，那麼這些書的名稱可能就比較特別。</p>
-<p>對於場依賴的而言，看得到的搜尋介面相當重要，它們比較容易根據環境提供的條件，因此設計效能上影響很多。反過來看看場獨立的人，對於這個介面操作可能會將自己的想法投入，這些想法可能來自於自身或者是之前學習過的知識。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">argument version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | learning in 23 days type:reference  |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br></pre></td></tr></table></figure>
-<p>對於隱藏式的操作想必也是相當上手。但這種使用需要教學，不是相當方便。可以由簡到繁地引領使用者，例如說第一次搜尋操作後，自動填充，提示使用者下一次搜尋的方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+-------------------------------------+     *--------*</span><br><span class="line">| learning in 23 days                 |     |Find it!| &lt;--- click</span><br><span class="line">+-------------------------------------+     *--------*</span><br></pre></td></tr></table></figure>
-<p>得到結果後</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | learning in 23 days type:reference  |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* ...</span><br></pre></td></tr></table></figure>
-<p>現在的設計大多都是由 <strong> 簡到繁 </strong> 的方式，從蘋果軟體中都可以發現到這些特徵，將不常用的功能都先藏在特定的地方，先基礎地提供最低需求，當使用者發現結果越來越不好時，主動地去察覺要怎麼使用更複雜的操作。</p>
-<h2 id="介面三步"><a href="#介面三步" class="headerlink" title="介面三步"></a>介面三步</h2><p>當然有些人搜尋的結果，會根據場依賴、場獨立來查閱，場依賴偏向是由觀眾評分、評論來判定是否找到正確的書，場獨立純文本內容為主。著重的觀點不同，為了成功銷售所有的書籍，顯示的方法如下兩種參考。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* Learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* WTF Learning, author:Blob</span><br><span class="line">    detail ..</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* [HOT] STAR: 5, learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* STAR: 3, WTF Learning, author:Blob</span><br><span class="line">    detail ..</span><br><span class="line">* ...</span><br></pre></td></tr></table></figure>
-<p>以上示範的是場獨立、依賴的兩種。當然上面的設計屬於階層式、也有水平擺放訊息的方式。其實還有很多種的！</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">* 1 TITLE AUTHOR </span><br><span class="line">    * 1.1 DETAIL</span><br><span class="line">    * 1.2 DETAIL</span><br><span class="line">        * 1.2.1 DETAIL</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+-------+   +------------------------------------------+</span><br><span class="line">|       |   |  TITLE                                   |</span><br><span class="line">|       |   +------------------------------------------+</span><br><span class="line">| COVER |                                               </span><br><span class="line">|       |   +------------------------------------------+</span><br><span class="line">|       |   |  AUTHOR, DETAIL                          |</span><br><span class="line">|       |   |                                          |</span><br><span class="line">+-------+   +------------------------------------------+</span><br></pre></td></tr></table></figure>
-<p>如果找書不根據任何別人推坑的想法，階層式會是很好的細節來決策，嘗試把每一本書的概要都仔細讀過，階層式很吃 <strong> 優先權順序 </strong>，設計起來相當挑戰。</p>
-<p>如果是下方的方式，比較偏向大致上已經在事前知道要買哪本書，有了大概目標。這樣的設計方式方便跳躍性的搜索，因為階層式會 <strong> 改變高度 </strong>，檢索時的位移量不同會造成操作時間會比較久，但是下方的那種方式屬於固定位移量。</p>
-<p>至於對色彩學的配色部分，又分單色、雙色欄位，來加快視窗滑動的對齊。而每一個欄位的文字色彩也相當講究，用色數量越多，看起來越五花八門，面向的使用族群也越多。為了讓使用者有 <strong> 貼切感 </strong> (服務的專一性)，通常用色不大於三種。</p>
-<h2 id="回頭調整"><a href="#回頭調整" class="headerlink" title="回頭調整"></a>回頭調整</h2><p>Adaptivity 提供系統自動調整變化，最好提醒使用者可以切換回去舊的介面設計，否則多個使用者在現實中交談時，可能會發生矛盾的錯亂交流。</p>
-<p>Adaptability 提供使用者自定義，這些功能從系統中抽離出來，對於開發者來說是件好事，讓所有功能盡可能地讓特定使用者使用，但普遍性來說，大多數的功能都會被忽略，甚至當作從來沒有過。</p>
-<p>Adaptability 類型的網頁設計，提供高度穩定性、客製化，有利於長時間的網站經營，培養長遠的顧客為主，對於短期入門的新手而言，對於客製化的吃力程度不一，當尚未熟悉系統前，對於功能設定處於一知半解狀態，需要閱讀文檔或累積經驗。因此在使用前期效率並不高，有待一段時間後，使用效率就有機會突破 Adaptivity 類型的。</p>
-<p>正因為使用時間的長短，Adaptability 比較適合高頻率使用的軟體，而且功能性很強。相較於 Adaptivity 給予功能性較低，但操作起來會比較耗時 (滑鼠移動、滾動) 的軟體。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><strong><em> Evaluation of a personalized digital library based on cognitive styles: Adaptivity vs. adaptability </em></strong></p>
-<p>課程需求才看得，雖然我對裡面的實驗方法一點也不認同，很多地方沒有考慮進去，實驗的順序性有考慮到，卻沒有去考慮適應面向的主體，拿幾次任務的時間來進行比較往往是不夠的，根據時間成長的效率比較也應該被提出。</p>
-<h3 id="課程公告"><a href="#課程公告" class="headerlink" title="課程公告"></a>課程公告</h3><blockquote>
-<p>由於明天的課程有多數同學因畢業旅行而無法前來上課，因此明天上課的方式將不在課堂上進行，而改為同學閱讀所附的 paper，並找時間與組員討論所附的問題</p>
-</blockquote>
-<p>請容許我罵一聲！我擦！為什麼不上課！雖然老師上課的認知風格與我不同，無法好好地學習知識，在盡可能地去適應，卻不斷地減少上課次數，學期結束前都還沒有適應吧。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cognitive-style-note" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/17/cognitive-style-note/" class="article-date">
-  <time datetime="2015-05-17T00:39:38.000Z" itemprop="datePublished">2015-05-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/F9AGdNi.jpg" rel="gallery_cin2pv86l00qgwxxcxxlrsj2f">
-        <img src="http://i.imgur.com/F9AGdNi.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/17/cognitive-style-note/">認知風格 找你所好</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note/" data-id="cin2pv86l00qgwxxcxxlrsj2f" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/17/cognitive-style-note/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>曾想過明明有資源，卻怎麼樣都學不好嗎？在一個群體中學習，偏偏是落單的那一個人嗎？最近上課講到認知風格的相關內容，又對學習上有所障礙，到底是哪裡出了問題？</p>
-<h2 id="本文"><a href="#本文" class="headerlink" title="本文"></a>本文</h2><blockquote><p>如果一名學生的認知風格與教師類似，這個學生就會有更積極的學習經歷，學習將會改善。<br>隊員如果擁有 <strong> 類似認知風格 </strong>，將會使他們對於參與有更 <strong> 積極 </strong> 的感受。而認知風格的匹配將使參與者與人共事時感覺更為 <strong> 舒適 </strong>，雖然它並不能獨自保證取得勝利的結果。</p>
-<footer><strong>wiki</strong><cite><a href="http://en.wikipedia.org/wiki/Cognitive_style" target="_blank" rel="external">en.wikipedia.org/wiki/Cognitive_style</a></cite></footer></blockquote>
-<p>明明身處同一個環境下，成長幅度卻來得比別人低，沒錯！學習上完全沒有共鳴，導致學起來相當痛苦，建造、聚集知識的方式不同，兩路不相逢，要如何引領另一個走向相同目標？</p>
-<p>在思考知識、經驗傳播問題前，先來認識自己，當然以前人所提供的分類方法，既不是唯一也不能二值劃分，必然有人有於兩邊優缺點，呈現自然分布，很少人是相當極端的特例！</p>
-<p>接下來要胡言亂語囉！不用擔心！只是學習的過程不同，不代表能力的侷限。</p>
-<h3 id="認知風格"><a href="#認知風格" class="headerlink" title="認知風格"></a>認知風格</h3><h4 id="Wholist-Analytic"><a href="#Wholist-Analytic" class="headerlink" title="Wholist-Analytic"></a>Wholist-Analytic</h4><p>看待一個事物時，採用策略的認知方法 (從舊有事物著手，了解處理事物之間的關聯)。來看看是怎麼 <strong> 吸收 </strong>、<strong> 管理 </strong> 新訊息。</p>
-<h5 id="Field-Dependence-amp-Independence"><a href="#Field-Dependence-amp-Independence" class="headerlink" title="Field Dependence &amp; Independence"></a>Field Dependence &amp; Independence</h5><p>美國心理學家威特金 (Witkin) 在 1940 年代研究垂直知覺時首先發現的。強調認知的過程而非內容。</p>
-<ul>
-<li>Field Dependence 場依賴<br>  偏向利用環境訊息來了解事物。</li>
-<li>Field Independence 場獨立<br>  不依賴外界資訊，由個體的方式去理解。</li>
-</ul>
-<p>場獨立自主、改造能力高，對於社會技能低。相反地，場依賴則在社會技能高，對於自主、改造能力低。當然從成長過程、性別差異，會逐漸地特化、轉變成另一類，並非完全由天生決定。</p>
-<p>一種宅宅的既視感，不外乎差別就是願不願意聽外界，當個固執的聰明人還是頑固的蠢蛋，靠著外界成長就能成為現充，當個活在社會的人。場獨立則相當危險似的，若不是聰明的那一群，很容易被誤解、淘汰於社會中。 <strong> 社會究竟是何物呢？ </strong></p>
-<h5 id="Leveller-amp-Sharpener"><a href="#Leveller-amp-Sharpener" class="headerlink" title="Leveller &amp; Sharpener"></a>Leveller &amp; Sharpener</h5><p>赫爾茲曼 (K.Holzman) 和克萊因 (Klein, 1954) 使用 <strong> 水平 - 尖銳 </strong> 認知型來描述認知風格的另一維度。</p>
-<ul>
-<li>Leveller 水平<br>  利用舊有資料產生關聯，並且加入新資料進去，但這樣做容易發生混淆，關聯的下場不保證能夠邏輯地去理解，相當於把多個物品放在同一處，「<strong> 他們應該是相似的 </strong>」的感覺，甚至有時還會因為擺滿物品而捨棄。一種以增加代替修改的 <strong> 持久化算法 </strong> 呢！</li>
-<li>Sharpener 尖銳<br>  相對於水平，會想盡辦法 <strong> 取代 </strong> 掉舊有資料，把相似之處抓出來後，放大物品差異再放回去架子上，減少混淆的情況。但對於相似之處會被移除，聯想某個物品時，只會看到最後擺放的位置，回答問題只會去描述極端的差異？操作起來一定相當耗時，放大差異去分析處理，想必會很慢。</li>
-</ul>
-<p>接下來分析行為上，有一種傾向。Leveller 運行 self-inwardness 模式，避免主動參與活動，對於指導、相助有迫切的需要，傾向於 <strong> 自我貶抑 </strong> 的性格。Sharpener 運行 self-outwardness 模式，相較於 Leveller 更喜歡 <strong> 競爭 </strong> 、<strong> 自我展現 </strong>，對於成就有高度的需求，常常會逼迫自己推進。</p>
-<p>看起來，Leveller 只是因為有 Sharpener 的人存在，才會偏向自我貶抑吧！而 Sharpener 擺明就是一個抖 M 推進器。</p>
-<h5 id="Impulsivity-amp-Reflectivity"><a href="#Impulsivity-amp-Reflectivity" class="headerlink" title="Impulsivity &amp; Reflectivity"></a>Impulsivity &amp; Reflectivity</h5><p>由卡根 (J.Kagan, 1964) 及同事提出來的，指在不確定條件下個體作出決定速度上的差異。</p>
-<ul>
-<li>Impulsivity 衝動<br>  快速地成形自己的看法，對於問題可以很快速地回答，有迫切做出決定的慾望。</li>
-<li>Reflectivity 反思<br>  相反地，不斷地反思自己看法，考量所有可能性才能回答問題，並且設想所有評估所有答案的優缺。</li>
-</ul>
-<p>這兩種在整體性的工作上沒有任何差異，但反思型學習速度比較慢。</p>
-<h5 id="Diverging-amp-Converging"><a href="#Diverging-amp-Converging" class="headerlink" title="Diverging &amp; Converging"></a>Diverging &amp; Converging</h5><p>由吉爾福特 (Guilford, 1967) 在介紹智力模型時提出的。</p>
-<ul>
-<li>Diverging 發散<br>  回答問題時，答案允許多個，接受多種解決方案，強調多樣性、創造性。</li>
-<li>Converging 收斂<br>  強調找到一種明確的正確答案。</li>
-</ul>
-<p>只有一種答案不是很無趣嗎？對於我而言，越是要求那麼唯一，就越不是答案，也許是因為找不到唯一的答案吧，才去接受多種選項的可能性。</p>
-<h5 id="Holist-amp-Serialist"><a href="#Holist-amp-Serialist" class="headerlink" title="Holist &amp; Serialist"></a>Holist &amp; Serialist</h5><p>由帕斯克 (G.Pask, 1972) 和司科特 (Scott) 提出的。</p>
-<ul>
-<li>Holist 整體<br>  大規模搜索資料，進行較大的特徵假設，嘗試去找到一個模式、關係來理解。</li>
-<li>Serialist 序列<br>  單一方向、單一步驟來完成理解，對於細節較為著重，不在意整體的連接關係。</li>
-</ul>
-<p>序列導向的人肯定對於讀書這類的序列資料很感興趣，也比較能一頁一頁的讀完，對於整體導向的人而言，常常會跳躍章節去讀，才會逐漸深入理解。</p>
-<p>序列導向通常面臨的是細節著重，而無法看到整體概念，整體導向則由整體概念來理解，而缺少細節的驗證。從具有遠見的程度來看，整體導向會比序列導向來得高，正因為不清楚，才有廣闊的視野吧！</p>
-<h4 id="Verbaliser-Imager"><a href="#Verbaliser-Imager" class="headerlink" title="Verbaliser-Imager"></a>Verbaliser-Imager</h4><p>心理學家 Paivio (1974) 提出了長時記憶信息如何被加工存儲的理論。影像儲存還是文字儲存？有一種原始影像資料和壓縮過後的大綱儲存差別，語言系統一改，壓縮而成的文字內容會造成理解錯誤吧？</p>
-<h5 id="Verbaliser-amp-Imager"><a href="#Verbaliser-amp-Imager" class="headerlink" title="Verbaliser &amp; Imager"></a>Verbaliser &amp; Imager</h5><p>Riding 和 Taylor 最初提出的。</p>
-<ul>
-<li>Imager 形象<br>  傾向於以視覺表象的形式思維的人被稱為形象型的人。</li>
-<li>Verbaliser 言語<br>  傾向於以詞的形式思維的人被稱為言語型的人。</li>
-</ul>
-<p>根據許多研究，當學習材料不匹配時，得到的成績往往不理想。而在人格性質上，往往言語型偏向外向、形象型偏向內向。等等，好像明白為什麼語言類型的科目會比較難學，因為很難形象化，導致只有言語型的人可以在這一方面學習得不錯。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
-<li><a href="http://blog.sina.com.cn/s/blog_50eb7e1101009xxi.html" target="_blank" rel="external">认知风格模型的研究</a></li>
-</ul>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="page-number current">2</span><a class="page-number" href="/categories/學校課程/page/3/">3</a><a class="page-number" href="/categories/學校課程/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/3/">Next &raquo;</a>
@@ -1555,7 +1534,7 @@ A     B     C
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">73</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">75</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1565,6 +1544,22 @@ A     B     C
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10080/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10080. Fast Matrix Multiplication (pthread)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10086/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10086. Red/Blue Computation</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/16/2016-google-code-jam-1A/">
@@ -1628,22 +1623,6 @@ A     B     C
                 <i class="icon-file-o"></i> 
               
             UVa 13014 - Keep it energized</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13054/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13054 - Hippo Circus</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13032/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13032 - Marbles in Jars</a>
           </li>
         
       </ul>

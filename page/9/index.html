@@ -89,6 +89,127 @@
         
           <section id="main">
   
+    <article id="post-zj-b428" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/10/zj-b428/" class="article-date">
+  <time datetime="2015-07-10T11:17:51.000Z" itemprop="datePublished">2015-07-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/10/zj-b428/">b428. 凱薩加密</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/07/10/zj-b428/" data-id="cin8fd9oo01ilq2xclotqq8hd" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/07/10/zj-b428/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼基礎/">密碼基礎</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>曾幾何時，基礎題庫已經成了不基礎的題庫。小小新手們寫個題目，不少拿了 TLE、CE 求助無門，就再也不想打開 Zerojudge。高中生哪有寫這麼困難的題目，高中生都不像高中生。在某 M 那個年代寫的題目非常簡單，沒有特別變化處理，更別說多麼高檔的資料結構，暴力算法 (naive algorithm) 就能輕鬆切題。</p>
+<p>「年代變了呢，現在的高中生要寫出比大學生的某 M 更困難的題目」</p>
+<p>重溫解題的那份初心吧！</p>
+<h3 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h3><p>在西元前就存在的一種加密－凱薩加密為目前最早發現的替換加密 (substitution cipher)。其原理很簡單，將一段明文往替換成往後數的第 $k$ 個英文字母。</p>
+<p>若用數學式表示凱薩加密和解密，如下：</p>
+<p>加密 $C = E_K(P) = (P + k) \mod 26$<br>解密 $P = D_K(P) = (C - k) \mod 26$ </p>
+<p>例如 $k = 3$ 時，發生的情況如下：</p>
+<p>明文字母表：<code>ABCDEFGHIJKLMNOPQRSTUVWXYZ</code><br>密文字母表：<code>DEFGHIJKLMNOPQRSTUVWXYZABC</code></p>
+<p>從數學的觀點來看，每一個字母就是一個數字。</p>
+<p>A = 0, B = 1, C = 2, …,X = 23, Y = 24, Z = 25</p>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ABCDEFGHIJKLMNOPQRSTUVWXYZ </span><br><span class="line">DEFGHIJKLMNOPQRSTUVWXYZABC</span><br><span class="line">DLQXABXEEQMEUQYLZPEK</span><br><span class="line">YGLSVWSZZLHZPLTGUKZF</span><br><span class="line">Z</span><br><span class="line">Z</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3</span><br><span class="line">21</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>只需要看第一個字符的變換方式即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> s1[<span class="number">1024</span>], s2[<span class="number">1024</span>];</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%s %s"</span>, s1, s2) == <span class="number">2</span>)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, (((s2[<span class="number">0</span>] - <span class="string">'A'</span>) - (s1[<span class="number">0</span>] - <span class="string">'A'</span>))%<span class="number">26</span> + <span class="number">26</span>)%<span class="number">26</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-poj-1811" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/07/08/poj-1811/" class="article-date">
+  <time datetime="2015-07-08T00:04:13.000Z" itemprop="datePublished">2015-07-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/07/08/poj-1811/">POJ 1811 - Prime Test</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/07/08/poj-1811/" data-id="cin8fd8uh005zq2xc56ga1emh" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/07/08/poj-1811/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/miller-rabin/">miller-rabin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/pollard-rho/">pollard-rho</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/判斷質數/">判斷質數</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/模乘法/">模乘法</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>給一個大整數 $N \le 2^{54}$，判斷是否為質數，若不是則進行因數分解，並且輸出最小的質因數。</p>
+<p>備註：大整數分解不可使用一般的 $O(\sqrt{N})$ 算法完成。</p>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">5</span><br><span class="line">10</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Prime</span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>以下的寫法還不是最快的，而且沒有加上最小質因數的剪枝。若在 pollard-rho 算法中，使用 Brent’s algorithm 取代 Floyd’s algorithm 進行環偵測，同時減少模數使用會變得更快 (常數上)。</p>
+<p>討論區提供卡邁克爾數 (Carmichael Number)，讓費馬素性檢驗 (Fermat primality test) 判斷失誤，若用盧卡斯-萊默檢驗法 (Miller–Rabin primality test) 則不受影響。這讓我想到寫過鄒賽爾數 (Zeisel Number) 生成，由數個質數構成大數 $N$ 能測試更多的效能瓶頸吧。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXL (50000&gt;&gt;5)+1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GET(x) (mark[x&gt;&gt;5]&gt;&gt;(x&amp;31)&amp;1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SET(x) (mark[x&gt;&gt;5] |= 1&lt;&lt;(x&amp;31))</span></span><br><span class="line"><span class="keyword">int</span> mark[MAXL];</span><br><span class="line"><span class="keyword">int</span> P[<span class="number">50000</span>], Pt = <span class="number">0</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sieve</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">register</span> <span class="keyword">int</span> i, j, k;</span><br><span class="line">    SET(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">46340</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!GET(i)) &#123;</span><br><span class="line">            <span class="keyword">for</span> (k = n/i, j = i*k; k &gt;= i; k--, j -= i)</span><br><span class="line">                SET(j);</span><br><span class="line">            P[Pt++] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">mul</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> a, <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> b, <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="keyword">long</span> mod)</span> </span>&#123; </span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">0</span>; </span><br><span class="line">    <span class="keyword">for</span> (a %= mod, b %= mod; b != <span class="number">0</span>; b &gt;&gt;= <span class="number">1</span>, a &lt;&lt;= <span class="number">1</span>, a = a &gt;= mod ? a - mod : a) &#123;</span><br><span class="line">        <span class="keyword">if</span> (b&amp;<span class="number">1</span>) &#123;</span><br><span class="line">            ret += a;</span><br><span class="line">            <span class="keyword">if</span> (ret &gt;= mod)	ret -= mod;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="keyword">return</span> ret; </span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exgcd</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> y, <span class="keyword">long</span> <span class="keyword">long</span> &amp;g, <span class="keyword">long</span> <span class="keyword">long</span> &amp;a, <span class="keyword">long</span> <span class="keyword">long</span> &amp;b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (y == <span class="number">0</span>)</span><br><span class="line">        g = x, a = <span class="number">1</span>, b = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        exgcd(y, x%y, g, b, a), b -= (x/y) * a;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">llgcd</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (x &lt; <span class="number">0</span>)    x = -x;</span><br><span class="line">    <span class="keyword">if</span> (y &lt; <span class="number">0</span>)    y = -y;</span><br><span class="line">    <span class="keyword">if</span> (!x || !y)    <span class="keyword">return</span> x + y;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> t;</span><br><span class="line">    <span class="keyword">while</span> (x%y)</span><br><span class="line">        t = x, x = y, y = t%y;</span><br><span class="line">    <span class="keyword">return</span> y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">inverse</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> p)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> g, b, r;</span><br><span class="line">    exgcd(x, p, g, r, b);</span><br><span class="line">    <span class="keyword">if</span> (g &lt; <span class="number">0</span>)	r = -r;</span><br><span class="line">    <span class="keyword">return</span> (r%p + p)%p;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">mpow</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> y, <span class="keyword">long</span> <span class="keyword">long</span> mod)</span> </span>&#123; <span class="comment">// mod &lt; 2^32 </span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (y) &#123;</span><br><span class="line">        <span class="keyword">if</span> (y&amp;<span class="number">1</span>) </span><br><span class="line">            ret = (ret * x)%mod;</span><br><span class="line">        y &gt;&gt;= <span class="number">1</span>, x = (x * x)%mod;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret % mod;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">mpow2</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> x, <span class="keyword">long</span> <span class="keyword">long</span> y, <span class="keyword">long</span> <span class="keyword">long</span> mod)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (y) &#123;</span><br><span class="line">        <span class="keyword">if</span> (y&amp;<span class="number">1</span>) </span><br><span class="line">            ret = mul(ret, x, mod);</span><br><span class="line">        y &gt;&gt;= <span class="number">1</span>, x = mul(x, x, mod);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret % mod;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">isPrime</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> p)</span> </span>&#123; <span class="comment">// implements by miller-babin</span></span><br><span class="line">    <span class="keyword">if</span> (p &lt; <span class="number">2</span>)	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (p == <span class="number">2</span>)	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (!(p&amp;<span class="number">1</span>))	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> q = p<span class="number">-1</span>, a, t;</span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">0</span>, b = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (!(q&amp;<span class="number">1</span>))	q &gt;&gt;= <span class="number">1</span>, k++;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> it = <span class="number">0</span>; it &lt; <span class="number">2</span>; it++) &#123;</span><br><span class="line">        a = rand()%(p<span class="number">-4</span>) + <span class="number">2</span>;</span><br><span class="line">        t = mpow2(a, q, p);</span><br><span class="line">        b = (t == <span class="number">1</span>) || (t == p<span class="number">-1</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; k &amp;&amp; !b; i++) &#123;</span><br><span class="line">            t = mul(t, t, p);</span><br><span class="line">            <span class="keyword">if</span> (t == p<span class="number">-1</span>)</span><br><span class="line">                b = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (b == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="keyword">long</span> <span class="title">pollard_rho</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> n, <span class="keyword">long</span> <span class="keyword">long</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">register</span> <span class="keyword">long</span> <span class="keyword">long</span> x = <span class="number">2</span>, y = <span class="number">2</span>, d;</span><br><span class="line">    <span class="keyword">do</span> &#123; </span><br><span class="line">        x = mul(x, x, n)+c;</span><br><span class="line">        <span class="keyword">if</span> (x &gt;= n)	x -= n;</span><br><span class="line">        y = mul(y, y, n)+c;</span><br><span class="line">        <span class="keyword">if</span> (y &gt;= n)	y -= n;</span><br><span class="line">        y = mul(y, y, n)+c;</span><br><span class="line">        <span class="keyword">if</span> (y &gt;= n)	y -= n;</span><br><span class="line">        d = llgcd(x-y, n);</span><br><span class="line">        <span class="keyword">if</span>(d &gt; <span class="number">1</span>)    <span class="keyword">return</span> d;</span><br><span class="line">    &#125; <span class="keyword">while</span>(<span class="literal">true</span>);</span><br><span class="line">    <span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">factorize</span><span class="params">(<span class="keyword">int</span> n, <span class="built_in">vector</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>&gt; &amp;f)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; Pt &amp;&amp; P[i]*P[i] &lt;= n; i++) &#123;</span><br><span class="line">    	<span class="keyword">if</span> (n%P[i] == <span class="number">0</span>) &#123;</span><br><span class="line">    		<span class="keyword">while</span> (n%P[i] == <span class="number">0</span>)</span><br><span class="line">    			f.push_back(P[i]), n /= P[i];</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n != <span class="number">1</span>)	f.push_back(n);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">llfactorize</span><span class="params">(<span class="keyword">long</span> <span class="keyword">long</span> n, <span class="built_in">vector</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>&gt; &amp;f, <span class="keyword">int</span> i = <span class="number">2</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>)	</span><br><span class="line">        <span class="keyword">return</span> ;	</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1e+9</span>) &#123;</span><br><span class="line">        factorize(n, f);</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (isPrime(n)) &#123;</span><br><span class="line">        f.push_back(n);</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> d = n;</span><br><span class="line">    <span class="keyword">for</span> (; d == n; i++)</span><br><span class="line">        d = pollard_rho(n, i);</span><br><span class="line">    llfactorize(d, f, i);</span><br><span class="line">    llfactorize(n/d, f, i);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    sieve();</span><br><span class="line">    <span class="keyword">int</span> testcase;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span> (testcase--) &#123;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> n;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%lld"</span>, &amp;n);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">long</span> <span class="keyword">long</span>&gt; f;</span><br><span class="line">            </span><br><span class="line">        llfactorize(n, f);</span><br><span class="line">        sort(f.begin(), f.end());</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> (f.size() == <span class="number">1</span>)</span><br><span class="line">            <span class="built_in">puts</span>(<span class="string">"Prime"</span>);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%lld\n"</span>, f[<span class="number">0</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-zj-a761" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/07/08/zj-a761/" class="article-date">
@@ -114,7 +235,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/08/zj-a761/" data-id="cin2pv8g401cuwxxc6r3l8kyy" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/08/zj-a761/" data-id="cin8fd9cv00s4q2xc7vzaoshb" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/08/zj-a761/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -185,7 +306,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/08/zj-b436/" data-id="cin2pv8je01f8wxxckzkch5yz" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/08/zj-b436/" data-id="cin8fd9pj01j5q2xcug1i20pq" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/08/zj-b436/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -241,7 +362,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b434/" data-id="cin2pv8ir01erwxxcianb4595" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b434/" data-id="cin8fd9p101itq2xc9xn9npdb" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b434/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -298,7 +419,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b427/" data-id="cin2pv8ie01egwxxcmylym7uk" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b427/" data-id="cin8fd9ok01ijq2xcttgd2z6p" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b427/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -357,7 +478,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b426/" data-id="cin2pv8ib01edwxxcg8fejo1h" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b426/" data-id="cin8fd9oc01ihq2xc20jtebp6" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b426/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -416,7 +537,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b425/" data-id="cin2pv8i301e6wxxcef35mf9h" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b425/" data-id="cin8fd9o301ifq2xcmrkbw6f2" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b425/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -472,7 +593,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b424/" data-id="cin2pv8i701eawxxca9mp8ttk" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b424/" data-id="cin8fd9es00tpq2xcffdkf87w" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b424/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -540,7 +661,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b423/" data-id="cin2pv8hy01e3wxxcnaaxibg1" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/07/07/zj-b423/" data-id="cin8fd9ef00tdq2xcjwk0tql1" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/07/07/zj-b423/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -573,143 +694,9 @@
 
 
   
-    <article id="post-zj-b422" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/07/07/zj-b422/" class="article-date">
-  <time datetime="2015-07-06T23:18:31.000Z" itemprop="datePublished">2015-07-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/07/07/zj-b422/">b422. Colorful Life and Monochromatic Life</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b422/" data-id="cin2pv8ht01dzwxxcuuf67kvr" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/07/07/zj-b422/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/影像處理/">影像處理</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>將一張 rgb 表示的彩色影像變成灰階影像。</p>
-<p>套用公式 <code>round((r + g + b)/3)</code> 得到新的像素色彩。</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3 2</span><br><span class="line">1 2 3 4 5 6 7 8 9</span><br><span class="line">10 11 12 13 14 15 16 17 18</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">3 2</span><br><span class="line">2 2 2 5 5 5 8 8 8</span><br><span class="line">11 11 11 14 14 14 17 17 17</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span> </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, n, m);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">                <span class="keyword">int</span> r, g, b, w;</span><br><span class="line">                <span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;r, &amp;g, &amp;b);</span><br><span class="line">                w = (<span class="keyword">int</span>) round((r + g + b)/<span class="number">3.0</span>);</span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"%d %d %d%c"</span>, w, w, w, j == n<span class="number">-1</span> ? <span class="string">'\n'</span> : <span class="string">' '</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-zj-b419" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/07/07/zj-b419/" class="article-date">
-  <time datetime="2015-07-06T22:24:18.000Z" itemprop="datePublished">2015-07-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/07/07/zj-b419/">b419. 公平的硬幣</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/07/07/zj-b419/" data-id="cin2pv8hq01dwwxxcd4rc1qww" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/07/07/zj-b419/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數值積分/">數值積分</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/機率/">機率</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/自然分布/">自然分布</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/辛普森積分/">辛普森積分</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/近似公式/">近似公式</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>一天，liouzhou_101 去打印店裏打印了幾張複習資料，花了 4 毛錢，他給了店主1張塊錢的鈔票，結果店主補了他兩枚硬幣，一個5毛錢，一個 1 毛錢。</p>
-<p>在走回宿舍的途中，liouzhou_101 一直在想一個問題，5 毛錢的硬幣和 1 毛錢的硬幣哪個更公平？所謂公平，就是指將一枚硬幣拋擲 1 次，他正面朝上的概率是 12，反面朝上的概率也是 12。</p>
-<p>結果他一會去就把1毛錢的硬幣拋了 1000 次， 記下來有 531 次正面朝上。然後他突然說道：“這硬幣不公平！！！”</p>
-<p>真的不公平嗎？他希望你計算一下出現這種情況的概率。 </p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">10 5 5</span><br><span class="line">20 6 8</span><br><span class="line">100 40 60</span><br><span class="line">1000 531 531</span><br><span class="line">5000 2345 2456</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0.2461</span><br><span class="line">0.2310</span><br><span class="line">0.9648</span><br><span class="line">0.0037</span><br><span class="line">0.1093</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>跟柳柳州互相出題目，已經來到了第 n 天，儘管我出的都是垃圾跟搬運題目，一出題被電得好愉悅，出在多的垃圾題都電不到柳柳州。</p>
-<p>在擲硬幣找區間次數 $[a, b]$ 的機率，由於是離散的統計上就只能推組合數學，但又不是曲棍棒的模型 (Hockey Stick Pattern)，算了先手動窮舉，用 Stirling’s formula 計算組合，後來發現有幾組數據有問題。</p>
-<p>當 n 太大的時候，機率分布就相當稀疏，直接套用數值積分，直接去積分自然分布得到公式稍微困難，利用 simpson 或者是 romberg 去解決，但這樣還會有一個問題，只有在平均值的部分機率非常高 (類似離散的 00000100000)，導致自適應辛普森積分會判斷錯誤，提醒剖半積分後測資就正確了不少。似乎合作出了一個可怕的題目，儘管如此，還是得用 mathlab 或者是 wolframalpha 來協助測資的檢驗，剩下的部分就交給柳柳州了。</p>
-<p>關於自然分布 (normal distribution)：</p>
-<ul>
-<li>骰子擲 $n$ 次，命中的機率 $p = 1/2$</li>
-<li>期望值 $\mu = np = n/2$</li>
-<li>標準差為 $\sigma = \sqrt{np(1-p)} = \sqrt{n/4}$。</li>
-</ul>
-<p>期望值 $E[x] = \sum_{k=1}^{n} k \binom{n}{k} p^k (1-p)^{n-k}$，消階層之後提出，計算後得到 $E[x] = np$。</p>
-<p>而標準差 $\sigma$ 先從變異數下手</p>
-<ul>
-<li>定義： $Var[x] = E[(x - \mu)^2] = \sum (x - \mu)^2 P[X = x]$</li>
-<li>拆解步驟 1： $Var[x] = \sum (x^2 - 2 \mu x + \mu^{2}) P[X = x]$</li>
-<li>拆解步驟 2： $Var[x] = E[x^2] - 2 E[x] E[x] + E[x] E[x] = E[x^2] - E[x]^2$</li>
-<li>拆解步驟 3： $E[x^2] = E[x(x-1)] + E[x] = n(n-1)p^2 + np$</li>
-<li>拆解步驟 4： $Var[x] = np(1-p)$</li>
-</ul>
-<p>接下來直接帶入自然分布的公式，參數 $(\mu, \sigma)$，特別小心使用辛普森積分 $[a, b]$ 時，由於問題是離散的，要改變成 $[a - 0.5, b + 0.5]$，防止 $a = b$ 時造成積分錯誤。</p>
-<p>特別感謝學弟 firejox 的數學指導。</p>
-<p>不久之後，firejox 說道內建函數 <code>erf()</code> 可以解決積分問題，詳見 <a href="https://en.wikipedia.org/wiki/Error_function" target="_blank" rel="external">wiki Gauss error function</a>，因此這一題也可以不寫辛普森積分，套用內建函數在不到 10 行內解決此題。</p>
-<h3 id="暴力檢測"><a href="#暴力檢測" class="headerlink" title="暴力檢測"></a>暴力檢測</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">double</span> PI = <span class="built_in">acos</span>(<span class="number">-1</span>), e = <span class="built_in">exp</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> MAXN = <span class="number">100001</span>;</span><br><span class="line"><span class="keyword">double</span> f[MAXN];</span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">stirling</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; MAXN)</span><br><span class="line">        <span class="keyword">return</span> f[n];</span><br><span class="line">    <span class="keyword">return</span> log2(<span class="built_in">sqrt</span>(<span class="number">2</span>*PI*n)) + <span class="function">n*<span class="title">log2</span><span class="params">(n/e)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">logC</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> stirling(n) - stirling(n - m) - stirling(m);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    f[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; MAXN; i++)</span><br><span class="line">        f[i] = log2(i) + f[i<span class="number">-1</span>];</span><br><span class="line">    <span class="keyword">int</span> n, a, b;</span><br><span class="line">    <span class="keyword">int</span> cases = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;n, &amp;a, &amp;b) == <span class="number">3</span>) &#123;</span><br><span class="line">        <span class="keyword">double</span> ret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = a; i &lt;= b; i++)</span><br><span class="line">            ret += <span class="built_in">pow</span>(<span class="number">2</span>, logC(n, i) - log2(<span class="number">2</span>) * n);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%.4lf\n"</span>, ret);</span><br><span class="line">        <span class="keyword">if</span> (++cases &gt; <span class="number">100</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-<h3 id="數值積分"><a href="#數值積分" class="headerlink" title="數值積分"></a>數值積分</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">long</span> <span class="keyword">double</span> PI = <span class="built_in">acos</span>(<span class="number">-1</span>), e = <span class="built_in">exp</span>(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> MAXN = <span class="number">1001</span>;</span><br><span class="line"><span class="keyword">double</span> f[MAXN];</span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">stirling</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; MAXN)</span><br><span class="line">        <span class="keyword">return</span> f[n];</span><br><span class="line">    <span class="keyword">return</span> log2(<span class="built_in">sqrt</span>(<span class="number">2</span>*PI*n)) + <span class="function">n*<span class="title">log2</span><span class="params">(n/e)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">logC</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> stirling(n) - stirling(n - m) - stirling(m);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> SimpsonIntegral &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> eps = <span class="number">1e-6</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> pi = <span class="built_in">acos</span>(<span class="number">-1</span>);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> sqr2pi = <span class="built_in">sqrt</span>(<span class="number">2</span> * pi);</span><br><span class="line">    <span class="keyword">double</span> mu, sigma; <span class="comment">// function coefficient</span></span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span> x)</span> </span>&#123; <span class="comment">// usually replace</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">exp</span>(-(<span class="built_in">pow</span>(x - mu, <span class="number">2</span>)/<span class="number">2.0</span>/sigma/sigma))/ sigma / sqr2pi;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCoefficient</span><span class="params">(<span class="keyword">double</span> m, <span class="keyword">double</span> s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;mu = m, <span class="keyword">this</span>-&gt;sigma = s;</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">simpson</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> fa, <span class="keyword">double</span> fb, <span class="keyword">double</span> fab)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> (fa + <span class="number">4</span> * fab + fb) * (b - a) / <span class="number">6.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> l, <span class="keyword">double</span> r)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> integral(l, r, eps);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> c, <span class="keyword">double</span> eps, <span class="keyword">double</span> A, <span class="keyword">double</span> fa, <span class="keyword">double</span> fb, <span class="keyword">double</span> fc)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> ab = (a + b)/<span class="number">2</span>, bc = (b + c)/<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">double</span> fab = f(ab), fbc = f(bc);</span><br><span class="line">        <span class="keyword">double</span> L = simpson(a, b, fa, fb, fab), R = simpson(b, c, fb, fc, fbc);</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">fabs</span>(L + R - A) &lt;= <span class="number">15</span> * eps)</span><br><span class="line">            <span class="keyword">return</span> L + R + (L + R - A) / <span class="number">15.0</span>;</span><br><span class="line">        <span class="keyword">return</span> integral(a, ab, b, eps/<span class="number">2</span>, L, fa, fab, fb) + integral(b, bc, c, eps/<span class="number">2</span>, R, fb, fbc, fc);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">integral</span><span class="params">(<span class="keyword">double</span> a, <span class="keyword">double</span> b, <span class="keyword">double</span> eps)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span> ab = (a + b) /<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">double</span> fa = f(a), fb = f(b), fab = f(ab);</span><br><span class="line">        <span class="keyword">return</span> integral(a, ab, b, eps, simpson(a, b, fa, fb, fab), fa, fab, fb);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; tool;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">double</span> <span class="title">binom</span><span class="params">(<span class="keyword">double</span> n, <span class="keyword">double</span> a, <span class="keyword">double</span> b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">double</span> a1, b1;</span><br><span class="line">    <span class="keyword">double</span> d = <span class="built_in">sqrt</span>(n/<span class="number">2.0</span>);</span><br><span class="line">    a1 = <span class="number">0.5</span> * (<span class="number">1.0</span> + erf((a - n/<span class="number">2.0</span> - <span class="number">0.5</span>) / d));</span><br><span class="line">    b1 = <span class="number">0.5</span> * (<span class="number">1.0</span> + erf((b - n/<span class="number">2.0</span> + <span class="number">0.5</span>) / d));</span><br><span class="line">    <span class="keyword">return</span> b1 - a1;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    f[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; MAXN; i++)</span><br><span class="line">        f[i] = log2(i) + f[i<span class="number">-1</span>];</span><br><span class="line">    <span class="keyword">int</span> n, a, b;</span><br><span class="line">    <span class="keyword">int</span> cases = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;n, &amp;a, &amp;b) == <span class="number">3</span>) &#123;</span><br><span class="line">        cases++;</span><br><span class="line">        <span class="keyword">if</span> (n &lt; MAXN) &#123;</span><br><span class="line">            <span class="keyword">double</span> ret = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = a; i &lt;= b; i++)</span><br><span class="line">                ret += <span class="built_in">pow</span>(<span class="number">2</span>, logC(n, i) - log2(<span class="number">2</span>) * n);</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%.4lf\n"</span>, ret);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">//			tool.setCoefficient(n/2.0, sqrt(n/4.0));</span></span><br><span class="line"><span class="comment">//			double ret = 0, l = a - 0.5, r = b + 0.5;</span></span><br><span class="line"><span class="comment">//			if (r &lt; n/2.0 || l &gt; n/2.0)</span></span><br><span class="line"><span class="comment">//				ret = tool.integral(l, r);</span></span><br><span class="line"><span class="comment">//			else</span></span><br><span class="line"><span class="comment">//				ret = tool.integral(l, n/2.0) + tool.integral(n/2.0, r);</span></span><br><span class="line"><span class="comment">//			printf("%.4lf\n", ret);</span></span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%.4lf\n"</span>, binom(n, a, b));</span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/8/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/72/">72</a><a class="extend next" rel="next" href="/page/10/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/8/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><a class="page-number" href="/page/11/">11</a><span class="space">&hellip;</span><a class="page-number" href="/page/73/">73</a><a class="extend next" rel="next" href="/page/10/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -721,7 +708,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">73</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">75</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -731,6 +718,22 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10080/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10080. Fast Matrix Multiplication (pthread)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10086/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10086. Red/Blue Computation</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/16/2016-google-code-jam-1A/">
@@ -794,22 +797,6 @@
                 <i class="icon-file-o"></i> 
               
             UVa 13014 - Keep it energized</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13054/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13054 - Hippo Circus</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/08/uva-13032/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13032 - Marbles in Jars</a>
           </li>
         
       </ul>
