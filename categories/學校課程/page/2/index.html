@@ -89,6 +89,108 @@
         
           <section id="main">
   
+    <article id="post-realtime-system-add-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/realtime-system-add-scheduler/" class="article-date">
+  <time datetime="2016-01-21T07:27:07.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/3eq7W2z.jpg" rel="gallery_cin8fyk87006dqzxchzxn62pk">
+        <img src="http://i.imgur.com/3eq7W2z.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/realtime-system-add-scheduler/">即時系統 加入排程器</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/" data-id="cin8fyk87006dqzxchzxn62pk" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h2><p>修改 linux kernel，在 <code>kernel/sched.</code>} 相關 scheduler 部分增加 Weighted Round-Robin scheduler、Shortest Job First scheduler 以及 Rate-monotonic scheduler。最後藉由 Project 1 的練習撰寫測試程序驗證 scheduler 是否符合預期結果。</p>
+<h3 id="修改檔案列表"><a href="#修改檔案列表" class="headerlink" title="修改檔案列表"></a>修改檔案列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── README.md</span><br><span class="line">├── arch</span><br><span class="line">│   └── x86</span><br><span class="line">│       ├── include</span><br><span class="line">│       │   └── asm</span><br><span class="line">│       │       ├── unistd_32.h</span><br><span class="line">│       │       └── unistd_64.h</span><br><span class="line">│       └── kernel</span><br><span class="line">│           └── syscall_table_32.S</span><br><span class="line">├── include</span><br><span class="line">│   └── linux</span><br><span class="line">│       ├── sched.h</span><br><span class="line">│       └── syscalls.h</span><br><span class="line">└── kernel</span><br><span class="line">    ├── sched.c</span><br><span class="line">    ├── sched_fair.c</span><br><span class="line">    ├── sched_rt.c</span><br><span class="line">    └── sched_weighted_rr.c</span><br></pre></td></tr></table></figure>
+<p>特別注意到，若編譯環境為 <code>x86_64</code> 則需要額外修改 <code>arch/x86/include/asm/unistd_64.h</code> 複製 <code>arch/x86/include/asm/unistd_32.h</code> 增加的 syscall。 同理，增加自己定義的 syscall 時，需要修改 <code>arch/x86</code> 下的那三個檔案 (如果發現編譯 kernel 時，出現 <code>WARNING: syscall NOT IMPLEMENTION.</code> 大多數都是這個造成)。</p>
+<p>在 <code>include/linux/sched.h</code> 中，增加 task 的成員變數，提供接下來針對 task 操作需要的參數，特別的是在 <code>struct sched_rt_entity;</code> 中，相較於一般資料結構的寫法，linux 採用倒過來將節點訊息放在資料內部中，利用 <code>#define container_of(ptr, type, member)</code> 取得物件訊息，這種寫法方便解決 task 在數個 scheduler 中轉換。</p>
+<p>因為 syscall 的方式設定 task weighted，增加一個全區變數 <code>int weighted_rr_time_slice;</code>，每一次 syscall 去設定這一個全區變數值，然後 task 建立時，經過 <code>sched_fork</code>，直接利用被修改全區變數作為這一個 task 的 weight。若要特別針對 task 設定 weighted round-robin，在建立前都要呼叫 syscall 設定全區變數。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sched_rt_entity &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">struct</span> list_head weighted_rr_list_item;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">struct</span> task_struct &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> task_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr_prio</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> weighted_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: bonus RMS</span></span><br><span class="line">    <span class="keyword">int</span> period;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> weighted_rr_time_slice;</span><br></pre></td></tr></table></figure>
+<h3 id="Part-1-Weighted-Round-Robin-Scheduler"><a href="#Part-1-Weighted-Round-Robin-Scheduler" class="headerlink" title="Part 1. Weighted Round-Robin Scheduler"></a>Part 1. Weighted Round-Robin Scheduler</h3><ul>
+<li><p><code>enqueue_task_weighted_rr()</code><br>函數將會給予 task 和 rq，將 task 根據 rq 的資料結構重新將 task 放入。若按照 <code>list</code> 結構，直接模擬 queue 即可，由於 linux 提供 list 本身為雙向串列，直接加入尾端只需要 $\mathcal{O}(1)$ 時間。並且運行 <code>rq-&gt;weighted_rr.nr_running++;</code> 增加 rq 中的計數，隨後用來在回報該 scheduler 中有沒有存在 task 需要運行，方便在 $\mathcal{O}(1)$ 時間內完成，由於 Weighted round-robin 只需要確認 list 是否為空，那麼也可以利用 linux 提供的 <code>list_empty()</code> 確認。</p>
+</li>
+<li><p><code>dequeue_task_weighted_rr()</code><br>當 task 完成任務時，都要呼叫 <code>update_curr_weighted_rr</code> 進行統計運行多久，並且更新與 task 相關的排程權重。接著將 task 從 rq 串列中移除，並且更新 scheduler 的 task 計數 (<code>rq-&gt;weighted_rr.nr_running--;</code>)。時間複雜度 $\mathcal{O}(1)$</p>
+</li>
+<li><p><code>requeue_task_weighted_rr()</code><br>將一個 task 出列，在 Weighted round-robin 只需要直接對將 <code>task.weighted_rr_list_item</code> 移到串列最尾端，由於採用雙向串列，直接跟 scheduler 取得 list head (linux list 的 head 是不存放任何資訊) 直接加入尾端即可。時間複雜度 $\mathcal{O}(1)$</p>
+</li>
+<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
+</li>
+<li><p><code>pick_next_task_weighted_rr()</code><br>當最上層分配一段時間給 scheduler 運行，運行時會調用這個函數，並拿取要執行的 task，但並不用將其移除串列，並執行 <code>next-&gt;se.exec_start = rq-&gt;clock;</code> 紀錄 task 的開始運行時間，再呼叫 <code>void update_curr_weighted_rr(struct rq *)</code>。若不更新時間，則計算的相對運行時間會錯誤。</p>
+</li>
+<li><p><code>task_tick_weighted_rr()</code><br>當 scheduler 運行時，每隔一段固定的時間會呼叫此函數。若程序執行量超過 scheduler 的設定，則需要更新串列，特別注意到 <code>if (p-&gt;task_time_slice &amp;&amp; --p-&gt;task_time_slice)</code> 在原本預設是 <code>unsigned int</code> 型態，處理不當會造成 overflow，另一種情況會是一開始 quantum 設定為 0 所導致。<br>需根據不同的 task 要補充不同的量 <code>p-&gt;weighted_time_slice</code>，不只要讓這支程式重進進入串列，同時需要呼叫 <code>set_tsk_need_resched(p)</code> (參考 <code>kernel/sched_rt.c</code> 代碼)，藉以重新呼叫 <code>pick_next_task_weighted_rr(struct rq*)</code>，否則這支程序會運行到結束。</p>
+</li>
+</ul>
+<h3 id="Part-2-Shortest-Job-First-Scheduler"><a href="#Part-2-Shortest-Job-First-Scheduler" class="headerlink" title="Part 2. Shortest Job First Scheduler"></a>Part 2. Shortest Job First Scheduler</h3><ul>
+<li><p><code>enqueue_task_weighted_rr()</code><br>與 Weighted round-robin 類似，利用 list 做插入排序，可以在最慘 $\mathcal{O}(n)$ 時間內維護一個優先權由高至低的 list。需要 task 時，直接將串列的首元素移除。</p>
+</li>
+<li><p><code>dequeue_task_weighted_rr()</code><br>類同 Weighted round-robin。</p>
+</li>
+<li><p><code>requeue_task_weighted_rr()</code><br>在最短工作優先排程中，由於 task 優先權會變動，不方便確定執行過一陣子的 task 要移動到哪裡，最簡單的實作方式採用 <code>dequeue</code> 後再一次 <code>enqueue</code>。時間複雜度 $\mathcal{O}(n)$</p>
+</li>
+<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
+</li>
+<li><p><code>pick_next_task_weighted_rr()</code><br>類同 Weighted round-robin。 </p>
+</li>
+<li><p><code>task_tick_weighted_rr()</code><br>在最短工作優先排程中若按照 Weighted round-robin 的寫法且不補充 quantum，則會變成 non-preemptive SJF。相反地，若要實作 preemptive SJF，需要在 <code>check_preempt_curr_weighted_rr(struct rq*, struct task_struct*, int)</code> 檢查執行的程序是不是串列的首元素，意即是不是最高優先權，如果不是最高優先權，則呼叫 <code>resched_task()</code> 即可完成 (詳見 Bonus RMS 的寫法)。</p>
+</li>
+</ul>
+<h3 id="Bonus-RMS"><a href="#Bonus-RMS" class="headerlink" title="Bonus RMS"></a>Bonus RMS</h3><p>額外增加 syscall，修改三個檔案 <code>unistd_32.h</code>, <code>unistd_64.h</code>, <code>syscall_table_32.S</code>。增加 Rate-monotonic scheduler 的額外週期 (period) 和 syscall 函數主題，修改兩個檔案 <code>sched.h</code>, <code>sched.c</code>。</p>
+<h4 id="程式碼細節-sched-weighted-rr-c"><a href="#程式碼細節-sched-weighted-rr-c" class="headerlink" title="程式碼細節 sched_weighted_rr.c"></a>程式碼細節 <code>sched_weighted_rr.c</code></h4><ul>
+<li><code>enqueue_task_weighted_rr</code><br>使用與最短工作優先排程相同寫法，但利用週期 (period) 進行由優先權高到低排序。</li>
+<li><code>check_preempt_curr_weighted_rr</code><br>週期程式可能會搶之前正在運行程式，若發現運行程式的優先權低於要進入排程器的程式優先權，呼叫 <code>resched_task()</code> 重新排程。</li>
+<li>其餘類同 SJF。</li>
+</ul>
+<h4 id="測試程序-test-rms-c"><a href="#測試程序-test-rms-c" class="headerlink" title="測試程序 test_rms.c"></a>測試程序 <code>test_rms.c</code></h4><p>參考 Project 1 的寫法，linux 針對每一個 thread 有各自計時的計時器，當 thread 被 context-switch 時，計時器也會隨之停止。</p>
+<p>利用 main thread 產生週期性程式，<code>pthread_create</code> 並不會馬上將 thread 立即執行，迫使 main thread 的方式使用 <code>sleep(1)</code>，以秒為單位產生週期性程式。由於要考慮週期程式的執行時間，又能在輸出緩衝區觀察順序關係，利用 thread 的計時器，盡可能接近 1ms 才進行一次印出，但這也會造成幾毫秒的誤差，對於一支程序一秒大約印出 1000 個字元，測試程式中，將連續相同字元計數，若相同字元取用四捨五入到秒才進行印出，計時誤差部分就不予輸出。</p>
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/morris821028/hw-realtime-system" target="_blank" rel="external">https://github.com/morris821028/hw-realtime-system</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-realtime-system-qemu" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/01/21/realtime-system-qemu/" class="article-date">
@@ -105,7 +207,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cin8fd8uw006fq2xcd6xvf63b">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cin8fyk8a006gqzxcru6ygl9s">
         <img src="http://i.imgur.com/2sHgITS.jpg" itemprop="image">
       </a>
     
@@ -124,7 +226,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cin8fd8uw006fq2xcd6xvf63b" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cin8fyk8a006gqzxcru6ygl9s" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-qemu/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -207,7 +309,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cin8fd8uy006jq2xcorluwc0t">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cin8fyk8g006mqzxcs0hh7pmb">
         <img src="http://i.imgur.com/2L6Zmwa.jpg" itemprop="image">
       </a>
     
@@ -226,7 +328,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cin8fd8uy006jq2xcorluwc0t" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cin8fyk8g006mqzxcs0hh7pmb" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -312,7 +414,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cin8fd8vm007oq2xc7y4wqyby" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cin8fyk9j007tqzxcfnsjjbeo" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/23/security-notes7/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -391,7 +493,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cin8fd8vg007eq2xcv1ic0f2t" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cin8fyk9h007qqzxceydfwf7g" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/19/security-notes6/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -568,7 +670,7 @@ A     B     C
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cin8fd8qy001rq2xcqjcmx7vy">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cin8fyk2r001cqzxc8xv3npvc">
         <img src="http://i.imgur.com/6c9iCJd.png" itemprop="image">
       </a>
     
@@ -587,7 +689,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cin8fd8qy001rq2xcqjcmx7vy" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cin8fyk2r001cqzxc8xv3npvc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/16/cognitive-style-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -714,7 +816,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cin8fd9bv00rgq2xchnuvwzaa" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cin8fykyi016gqzxcqymdi11m" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/13/vr-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -798,7 +900,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cin8fd8vi007iq2xcupaosaec" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cin8fyk97007gqzxcuao1c3u6" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/12/security-notes5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -895,7 +997,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cin8fd9bj00rbq2xc6n4fmoxz" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cin8fykyf016cqzxc8ema3b0y" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/06/vr-note3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1009,7 +1111,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cin8fd8qm001fq2xchwml6h7g" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cin8fyk2p001aqzxc3xdtykn1" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/02/cognitive-style-note3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1394,132 +1496,6 @@ A     B     C
 
 
   
-    <article id="post-security-notes4" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/29/security-notes4/" class="article-date">
-  <time datetime="2015-05-28T22:51:10.000Z" itemprop="datePublished">2015-05-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/29/security-notes4/">資訊安全 小考 2 筆記</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cin8fd92v00i5q2xck32hdsp8" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/29/security-notes4/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>筆記錯誤多多，請以僅供參考的角度去質疑</p>
-</blockquote>
-<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><ol>
-<li><p>Below is a key distribution protocol.<br>(a) Please describe the details of “replay attack” when $N_1$ is removed from the protocol.<br>(b) Please modify the protocol to enable party A to confirm that party B already received $K_s$? </p>
-</li>
-<li><p>Please explain link encryption and end-to-end encryption.</p>
-</li>
-<li><p>(a) Please describe details of the Fermat’s theorem (or called Fermat’s little theorem).<br>(b) How to compute the multiplicative inverse of an integer $a$ modulo $p$ based on the Fermat’s theorem?<br>(c) What is the requirement for $a^{-1}$ to exist?</p>
-</li>
-<li><p>(a) Please describe details of the Euler’s theorem.<br>(b) Based on this theorem, please describe the <strong> basic idea </strong> of the RSA encryption and decryption process.</p>
-</li>
-<li><p>The Miller-Rabin algorithm is used to test whether an odd integer n is a<br>prime. Please complete the following missing steps of teh algorithm.   (15%)<br>(1) Find integers $k, q$ ($k$ &gt; 0, $q$ odd), so that $(n - 1)$ = <code>__________</code><br>(2) Select a random integer $a$, $1 &lt; a &lt; n - 1$<br>(3) if (<code>_______</code>) then return (“maybe prime”)<br>(4) for $j = 0$ to $k - 1$ do<br>(5)     if (<code>_________</code>) then return (“maybe prime”)<br>(6) return (“composite”)</p>
-</li>
-<li><p>Please describe details of the Chinese remainder theorem for the case of $n = p \times q$ where both $p$ and $q$ are primes. (Your anseer should include how to transform an ordinary domain integer $A$ to the CRT domain, and the CRT formula used to inverse-transform the CRT domain representation back to the ordinary domain integer).</p>
-</li>
-</ol>
-<h2 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h2><h3 id="Part-1"><a href="#Part-1" class="headerlink" title="Part 1"></a>Part 1</h3><p>基礎步驟如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(1) A -&gt; KDC : IDA || IDB || N1</span><br><span class="line">(2) KDC -&gt; A : E(Ka, [Ks || IDA || IDB || N1]) || E(Kb, [Ks || IDA])</span><br><span class="line">(3) A -&gt; B   : E(Kb, [Ks || IDA])</span><br><span class="line">(4) B -&gt; A   : E(Ks, N2)</span><br><span class="line">(5) A -&gt; B   : E(Ks, f(N2))</span><br></pre></td></tr></table></figure>
-<p>如果沒有 $N_1$，紀錄 <code>IDA || IDB、E(Ka, [Ks || IDA || IDB]) || E(Kb, [Ks || IDA])</code>，就能假冒 KDC 讓 A 用固定的 $K_s$ 去跟 B 連線。再藉由已知明文，就能知道雙方的溝通內容，進行竊聽。</p>
-<p>為了讓 A 知道 B 擁有 $K_s$ 修改其中兩個步驟</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">modify  (3) E(Kb, [Ks || IDA]) || Nx</span><br><span class="line">        (4) E(Ks, N2 || Nx)</span><br></pre></td></tr></table></figure>
-<h3 id="Part-2"><a href="#Part-2" class="headerlink" title="Part 2"></a>Part 2</h3><ul>
-<li>link encryption 屬於 router 之間的通訊，屬於低階網路層協定，在每一條連輸線路各自獨立的加解密，會修改訊息 header，可以增加 padding，保護流量偵測。</li>
-<li>end-to-end encryption 屬於原點、目的地之間的加密，它們共同享有一把 shared key，屬於高階網路層協定，用來保護資料安全，訊息 header 保留給傳輸用。</li>
-</ul>
-<h3 id="Part-3"><a href="#Part-3" class="headerlink" title="Part 3"></a>Part 3</h3><p>Fermat’s theorem : </p>
-<p>$$ a^{p-1} \equiv 1 (\text{mod } p) $$</p>
-<p>為了要求 $x^{-1}$，則利用費馬小定理 $x^{p-2} \times x \equiv 1 (\text{mod } p)$，因此 $x^{-1} \equiv x^{p-2} (\text{mod }p)$，特別小心 $p$ 一定要是質數，且滿足 $gcd(x, p) = 1$。</p>
-<h3 id="Part-4"><a href="#Part-4" class="headerlink" title="Part 4"></a>Part 4</h3><p>Euler’s theorem</p>
-<p>$$ a^{\phi(n)} \equiv 1 (\text{mod } n) \text{ , }gcd(a, n) = 1 $$</p>
-<p>先來複習一下 RSA 算法的產生與加解密</p>
-<ol>
-<li>select two large primes $p$ and $q$ at random.</li>
-<li>Let $N = p \times q$, $\phi(N) = (p-1)(q-1)$</li>
-<li>select (at random or fixed) the encryption key $e$<br> where $1 &lt; e &lt; \phi(N)$, $gcd(e,\phi(N))=1$<br> so, $e^{-1} \mod \phi(N)$ exists</li>
-<li>solve following equation to find decryption key $d = e^{-1}$, $e \times d \mod \phi(N)=1$</li>
-<li>publish public/encryption key:<span>$KP = \left \{ e,N \right \}$</span><!-- Has MathJax --></li>
-<li>keep secret private/decryption key:<span>$KS = \left \{ d, p, q \right \}$</span><!-- Has MathJax --></li>
-</ol>
-<p>encrypt a message $M$ the sender:</p>
-<ul>
-<li>obtains public key of <strong> recipient </strong><span>$KP = \left \{ e,N \right \}$</span><!-- Has MathJax --></li>
-<li>computes: $C = M^e \mod N$</li>
-</ul>
-<p>decryption a ciphertext $C$</p>
-<ul>
-<li>uses his private key<span>$KS = \left \{ d, p, q \right \}$</span><!-- Has MathJax --></li>
-<li>computes: $M = C^d \mod N$</li>
-</ul>
-<p>用來加解密，為什麼會是正確的呢？</p>
-<span>$$\begin{align}
-&amp; M \equiv (M^e)^d \mod N \\
-&amp; M \equiv M^{ed} \mod N  \\
-&amp; \because ed \equiv 1 \mod \phi(N) \text{ and Euler&apos;s theorem} \\
-&amp; \therefore M \equiv M^{ed \mod \phi(N)} \mod N \\
-&amp; M \equiv M^{1} \mod N
-\end{align}$$</span><!-- Has MathJax -->
-<p>這裡很神祕，假設 $n = 21$，則 $phi(n) = 12$，根據歐拉公式 $3^{12} \equiv 15 \mod 21$ 違反歐拉定理，但是在 ACM-ICPC 競賽中，有一點明白到，$a^i$ 在 $\mod n$ 下的餘數循環節長度 L，則滿足 $L | phi(n)$，藉由這一點來正確解密，至於到底算不算利用歐拉定理仍是個有趣問題。</p>
-<h3 id="Part-5"><a href="#Part-5" class="headerlink" title="Part 5"></a>Part 5</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(1) 2^k q</span><br><span class="line">(3) a^q == 1 mod n</span><br><span class="line">(5) a^(2^j q) == n-1 mod n</span><br></pre></td></tr></table></figure>
-<h3 id="Part-6"><a href="#Part-6" class="headerlink" title="Part 6"></a>Part 6</h3><p>雖然題目要求得不多，這裡直接拿 RSA 作範例</p>
-<ol>
-<li><p>$N = p \times q$</p>
-</li>
-<li><p>目標計算 $M = C^d \mod N $<br>分開計算得到兩個部分，這裡可以利用歐拉定理加快，因此 $d$ 可以先 $\mod \phi(p)$<br>$Mp = C^d \mod p$<br>$Mq = C^d \mod q$</p>
-</li>
-<li><p>套用中國餘式定理 CRT，簡單的模型如下：<br>$a_i = M \mod m_i$<br>$M = a_1 c_1 + a_2 c_2 + \text{ … } $<br>$Mi = m_1 \times m_2 … \times m_n / m_i$<br>$c_i = M_i \times (M_i^{-1}) \mod m_i$</p>
-</li>
-<li><p>因此 RSA 可以預先處理 $c_p = q \times (q^{-1} \mod p)$ 和 $c_q = p \times (p^{-1} \mod q)$，還原的算法則是 $M = Mp \times c_p + Mq \times c_q \mod N$</p>
-</li>
-</ol>
-<p>結論，由於拆分後的 bit length 少一半，乘法速度快 4 倍，快速冪次方快 2 倍 (次方的 bit length 少一半)，但是要算 2 次，最後共計快 4 倍。CPU 的乘法想必不會用快速傅立葉 FFT 來達到乘法速度為 $O(n \log n)$</p>
-<p>但是利用 CRT 計算容易受到硬體上攻擊，因為會造成 $p, q$ 在分解過程中獨立出現，當初利用 $N$ 很難被分解的特性來達到資訊安全，但是卻因為加速把 $p, q$ 存放道不同時刻的暫存器中。</p>
-<p>其中一種攻擊，計算得到 $M = Mp \times q \times (q^{-1} \mod p) + Mq \times p \times (p^{-1} \mod q) \mod N$ 當擾亂後面的式子 (提供不穩定的計算結果)。得到 $M’ = Mp \times q \times (q^{-1} \mod p) + (Mq + \Delta) \times p \times (p^{-1} \mod q) \mod N$</p>
-<p>接著 $(M’ - M) = (\Delta’ \times p) \mod N $，若要求 $p$ 的方法為 $gcd(M’ - M, N) = gcd(\Delta’ \times p, N) = p$，輾轉相除的概念呼之欲出，原來 $p$ 會被這麼夾出，當得到兩個 $p, q$，RSA 算法就會被破解。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="page-number current">2</span><a class="page-number" href="/categories/學校課程/page/3/">3</a><a class="page-number" href="/categories/學校課程/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/3/">Next &raquo;</a>
@@ -1534,7 +1510,7 @@ A     B     C
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">75</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">76</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1544,6 +1520,14 @@ A     B     C
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10022/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10022. Fast Matrix Multiplication</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/20/jg-10080/">
@@ -1615,14 +1599,6 @@ A     B     C
                 <i class="icon-file-o"></i> 
               
             UVa 13010 - Galactic taxes</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13014/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13014 - Keep it energized</a>
           </li>
         
       </ul>

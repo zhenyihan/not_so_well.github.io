@@ -89,6 +89,113 @@
         
           <section id="main">
   
+    <article id="post-lesson/NLP-paper2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/05/lesson/NLP-paper2/" class="article-date">
+  <time datetime="2014-12-05T01:39:42.000Z" itemprop="datePublished">2014-12-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/自然語言/">自然語言</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/12/05/lesson/NLP-paper2/">自然語言處理 論文研讀 2</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/12/05/lesson/NLP-paper2/" data-id="cin8fyles01t8qzxcyniigjl0" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/12/05/lesson/NLP-paper2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/自然語言/">自然語言</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="著重目標"><a href="#著重目標" class="headerlink" title="著重目標"></a>著重目標</h1><p>即使 Unigram 效果已經相當不錯，基於人類日常對話的模式，絕非單詞相依無關，藉由好幾個連詞表示出不同的意思是常有的事情，探討 n-grams (n &gt; 3) 對於當前的語意分類器的強化、優化。</p>
+<h1 id="已知問題"><a href="#已知問題" class="headerlink" title="已知問題"></a>已知問題</h1><p>當 n-grams (n &gt; 3) 時，語意的模糊性質會提高，可能同時把正反兩面的詞放置在一起，如此一來這一組的利用價值並不高，在計算分類上會將精準度稀釋，同時對於記憶體的負荷也會增加 (必須記錄各種組合，例如化學元素與化合物的數量大小關係)。</p>
+<p>接著 n-grams 通常是用在英文處理精準度比較好，因為 <strong> 單詞分明 </strong> (藉由空白隔開)，對於機器而言中文句子並不存在詞 (token)，都是一堆字元 (character)。</p>
+<p>研究顯示：<strong> 漢字順序並不一定影響閱讀 </strong></p>
+<blockquote>
+<p>請看下述文字－研究顯示：漢字序順並不定一影閱響讀。</p>
+</blockquote>
+<p>對於中文自然語言處理，斷詞的重要性、語意處理上有額外的研究領域，在這裡暫時不談論這些。也許可以談談看不考慮順序的 n-grams，型態從 tuple 變成 dag。</p>
+<h1 id="分類器"><a href="#分類器" class="headerlink" title="分類器"></a>分類器</h1><p>分類器分成線上訓練、離線訓練，就已知得到目前 SVM 仍然在實務上的效果是最好的，在這裡不談論 SVM，一部分原因是 SVM 太慢。</p>
+<p>下面是在不同領域的分類器構思，線上訓練、線性調整。大多數的分類器都必須定義特徵，對於每一個要分辨的項目是否存有這一個特徵 (boolean)，而在部分可允許模糊的模型，可以利用權重 (float) 表示特徵強弱。</p>
+<h2 id="類神經網路"><a href="#類神經網路" class="headerlink" title="類神經網路"></a>類神經網路</h2><h3 id="Passive-Aggressive-Algorithm"><a href="#Passive-Aggressive-Algorithm" class="headerlink" title="Passive-Aggressive Algorithm"></a>Passive-Aggressive Algorithm</h3><p>對於感知機的內容所知不多，每加入一筆結果，將劃分的依準疊加上預期的法向量，成為新的劃分依準線。大多依靠數學的微積分來完成，並非完全相信新加入的結果，因此會有一個計算的權重，來權衡影響的大小。</p>
+<p>訓練流程：</p>
+<span>$$\begin{align}
+&amp; \text{INITIALIZE : } w_{1} = (0 ... 0) \text{ as parameters of the classifier} \\
+&amp; \text{For } t = 1, 2, ... \\
+
+&amp; \text{receive instance : } x_{t} \in R^{n} \\
+&amp; \text{predict : } \hat{y_{t}} = sign(w_{t}, x_{t}) \\
+&amp; \text{receive correct label : } y_{t} \in {-1, +1} \\
+&amp; \text{suffer loss : } l_{t} = max\left \{  0, 1 - y_{t}(w_{t} \cdot x_{t}) \right \} \\
+&amp; \text{update-1: set : } \tau_{t} = \frac{l_{t}}{\left \| x_{t} \right \|^{2}} \\
+&amp; \text{update-2: update : } w_{t+1} = w_{t} + \tau_{t} y_{t} x_{t}
+\end{align}$$</span><!-- Has MathJax -->
+<h2 id="自然語言"><a href="#自然語言" class="headerlink" title="自然語言"></a>自然語言</h2><h3 id="Language-Modeling"><a href="#Language-Modeling" class="headerlink" title="Language Modeling"></a>Language Modeling</h3><p>就如上課內容所講的</p>
+<span>$$\begin{align}
+P(s) = \prod_{i = 1}^{l} P(w_{i}|w_{1}^{i-1})
+\end{align}$$</span><!-- Has MathJax -->
+<p>用 Good Turing 的方式去 smoothing 那些從未在模型中出現的詞語，它們是有機會的，絕非是機率 0。</p>
+<h2 id="機器學習"><a href="#機器學習" class="headerlink" title="機器學習"></a>機器學習</h2><h3 id="Winnow-algorithm"><a href="#Winnow-algorithm" class="headerlink" title="Winnow algorithm"></a>Winnow algorithm</h3><p>設定一個閥值作為是否存在此分類的依據，隨後根據閥值調整相關數據的參數大小。</p>
+<span>$h(x) = \sum_{w \in V}^{} f_{w}c_{w}(x)$</span><!-- Has MathJax -->
+<span>$f_{w}$</span><!-- Has MathJax --> 是需要調整的參數<span>$c_{w}(x)$</span><!-- Has MathJax --> 為資料在每一個特徵的權重向量，運算內積值為<span>$h(x)$</span><!-- Has MathJax -->。<br><br>訓練流程：<br><br><span>$$\begin{align}
+&amp; \text{Initialize all } f_{w} \text{ to 1.} \\
+&amp; \text{For each labeled revies x in the training set : } \\
+&amp; \text{Step 1. Calculate } h(x) \\
+&amp; \text{Step 2-1. If the revies is positive but Winnow predicts it as negative } \\ 
+&amp; h(x) &lt; V \text{ , update the weight} f_{w} \text{ where } c_{w}(x) = 1 \text{ by } f&apos;_{w} = f_{w} \times 2 \\
+&amp; \text{Step 2-2. If the revies is negative but Winnow predicts it as positive } \\ 
+&amp; h(x) &gt; V \text{ , update the weight} f_{w} \text{ where } c_{w}(x) = 1 \text{ by } f&apos;_{w} = f_{w} / 2 \\
+\end{align}$$</span><!-- Has MathJax -->
+<p>簡單來說，當判斷錯誤時，將相關的 (它有的) 特徵係數權重調整，將其變大使得納入分類中、或者將其變小踢出分類中。</p>
+<h1 id="調和"><a href="#調和" class="headerlink" title="調和"></a>調和</h1><p>為了加入 n-grams (n &gt; 3) 的機制，必然要學習 <strong> 忘記 </strong>、 <strong> 無視 </strong> 的才能，才能將垃圾訊息給捨去掉。同時也是降低記憶體的耗存的方法，這裡無法像人類有辦法根據時間將單詞組合抽象化，等到哪天 <strong> HTM 腦皮質學習算法 </strong> 成功實作，相信在取捨上會更為流暢。</p>
+<p>對於每一個特徵給予分數，保留前 K 好的特徵進行訓練，其餘特徵捨去，至於要保留的 K 大小將由實驗結果進行測試。</p>
+<p>分數計算：</p>
+<ul>
+<li>A：同一分類下，該屬性使用的資料筆數</li>
+<li>B：在其他分類下，該屬性被使用的資料筆數</li>
+<li>C：同一分類下，該屬性不使用的資料筆數</li>
+<li>D：在其他分類下，該屬性不被使用的資料筆數</li>
+<li>t：屬性</li>
+<li>c：分類</li>
+</ul>
+<span>$$\begin{align}
+x^{2}(t, c) = \frac{N \times (AD - CB)^{2} }{(A+C)\times (B + D) \times (A + B) \times (C + D)}
+\end{align}$$</span><!-- Has MathJax -->
+<h1 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h1><p>論文中提到，分別去了 50K、100K、200K 個分數高的 n-grams，又分別在 n = 3, 4, 5, 6 下進行測試，效果有那麼一點點地提升。</p>
+<p>接著就是考驗我們期末 Project 要怎麼體現這篇論文的思路、擴充。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-lesson/civilization-note" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/12/02/lesson/civilization-note/" class="article-date">
@@ -114,7 +221,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/02/lesson/civilization-note/" data-id="cin8fd9wf01rmq2xchztxqynv" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/12/02/lesson/civilization-note/" data-id="cin8fyla901q1qzxccaib9n7w" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/12/02/lesson/civilization-note/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -227,7 +334,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/" data-id="cin8fd9yy01toq2xcdtp0vtju" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/" data-id="cin8fylcx01rtqzxc45870zgj" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -418,7 +525,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/" data-id="cin8fd9wj01rpq2xca2zu0gai" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/" data-id="cin8fylad01q4qzxct8rb14rw" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -510,7 +617,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/22/lesson/NLP-paper1/" data-id="cin8fd9vq01r4q2xcq0dbs5us" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/22/lesson/NLP-paper1/" data-id="cin8fyl9u01prqzxcbuyatke3" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/22/lesson/NLP-paper1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -564,11 +671,11 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/XE220WR.png" rel="gallery_cin8fd9x501s5q2xcqit399ez">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/XE220WR.png" rel="gallery_cin8fylbc01qqqzxcykh79sbr">
         <img src="http://i.imgur.com/XE220WR.png" itemprop="image">
       </a>
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/4jDPBw2.png" rel="gallery_cin8fd9x501s5q2xcqit399ez">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/4jDPBw2.png" rel="gallery_cin8fylbc01qqqzxcykh79sbr">
         <img src="http://i.imgur.com/4jDPBw2.png" itemprop="image">
       </a>
     
@@ -587,7 +694,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/18/lesson/civilization-w9/" data-id="cin8fd9x501s5q2xcqit399ez" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/18/lesson/civilization-w9/" data-id="cin8fylbc01qqqzxcykh79sbr" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/18/lesson/civilization-w9/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -646,7 +753,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/12/lesson/civilization-exam/" data-id="cin8fd9wb01rhq2xcev74lsev" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/12/lesson/civilization-exam/" data-id="cin8fyl9x01ptqzxc4v5pwkud" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/12/lesson/civilization-exam/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -772,7 +879,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/10/lesson/NLP-hw2/" data-id="cin8fd9vv01r7q2xcys0zc6in" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/10/lesson/NLP-hw2/" data-id="cin8fyldl01s8qzxcc1wogi0e" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/10/lesson/NLP-hw2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -907,7 +1014,7 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/30/lesson/civilization-w6/" data-id="cin8fd9x901s8q2xc5szsna9m" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/30/lesson/civilization-w6/" data-id="cin8fylb801qnqzxcj3v1g7qk" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/30/lesson/civilization-w6/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -987,7 +1094,7 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/26/lesson/geometry-mid/" data-id="cin8fd9yi01t8q2xctqf0hzaw" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/26/lesson/geometry-mid/" data-id="cin8fylew01tbqzxcisnrqaa2" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/26/lesson/geometry-mid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1070,140 +1177,6 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
 
 
   
-    <article id="post-lesson/geometry-hw3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/10/26/lesson/geometry-hw3/" class="article-date">
-  <time datetime="2014-10-25T22:49:32.000Z" itemprop="datePublished">2014-10-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算幾何/">計算幾何</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/10/26/lesson/geometry-hw3/">計算幾何 - HW03</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/26/lesson/geometry-hw3/" data-id="cin8fd9yr01tgq2xc1ku7oswx" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/10/26/lesson/geometry-hw3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/計算幾何/">計算幾何</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Master-Theorem"><a href="#Master-Theorem" class="headerlink" title="Master Theorem"></a>Master Theorem</h2><span>$$T(n) = 
-\begin{cases}
-aT(n/b) + n^{c} &amp; \text{ if } n &gt; 1 \\
-d &amp; \text{ if } n = 1
-\end{cases}$$</span><!-- Has MathJax -->
-<p>1.<span>$\text{if } log_{b}a &lt; c, T(n) = \theta(n^{c})$</span><!-- Has MathJax --><br>2.<span>$\text{if } log_{b}a = c, T(n) = \theta(n^{c} log n)$</span><!-- Has MathJax --><br>3.<span>$\text{if } log_{b}a &gt; c, T(n) = \theta(n^{log_{b}a})$</span><!-- Has MathJax --></p>
-<h2 id="Extend-Master-Theorem"><a href="#Extend-Master-Theorem" class="headerlink" title="Extend Master Theorem"></a>Extend Master Theorem</h2><span>$$T(n) = 
-\begin{cases}
-aT(n/b) + f(n) &amp; \text{ if } n &gt; 1 \\
-d &amp; \text{ if } n = 1
-\end{cases} \\
-
-E = log_{b}(a)$$</span><!-- Has MathJax -->
-<p>1.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha &lt; -1, T(n) = \theta(n^{E})$</span><!-- Has MathJax --><br>2.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha = -1, T(n) = \theta(n^{E} log_{b} log_{b}(n))$</span><!-- Has MathJax --><br>3.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha &gt; -1, T(n) = \theta(n^{E}(log_{b}n)^{\alpha + 1})$</span><!-- Has MathJax --></p>
-<h1 id="Chapter-5"><a href="#Chapter-5" class="headerlink" title="Chapter 5"></a>Chapter 5</h1><h2 id="5-1"><a href="#5-1" class="headerlink" title="5.1"></a>5.1</h2><p>In the proof of the query time of the kd-tree we found the following<br>recurrence:<br><span>$$Q(n) = 
-\begin{cases}
-O(1) &amp; \text{ if } n = 1 \\
-2 + 2Q(n/4)&amp; \text{ if } n &gt; 1
-\end{cases}$$</span><!-- Has MathJax --><br>Prove that this recurrence solves to Q(n) = O(√n). Also show that Ω(√n) is a lower bound for querying in a kd-tree by defining a set of n points and a query rectangle appropriately.</p>
-<hr>
-<ol>
-<li>by master theorem,<span>$a = 2, b = 4, c = 0 \Rightarrow Q(n) = \Theta(\sqrt{n})$</span><!-- Has MathJax --><br>2.<span>$\Omega(\sqrt{n})$</span><!-- Has MathJax --> 是 kd-tree 的 lower_bound。如果 + 號存在的行都一直被執行，另外 - 號行都不會被執行，那麼複雜度就會達到<span>$\Omega(\sqrt{n})$</span><!-- Has MathJax -->，要明白如何加上 report 則會更慢，必須將包含的點依序回報。找一個不包含所有點的細長矩形於正中央即可，每次循環切割到 x 時，保證會留下 n/4 個節點。</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Algorithm: SEARCHKDTREE(v, R) </span><br><span class="line">if v is leaf</span><br><span class="line">    report the points stored at v if it lies in R.</span><br><span class="line">else</span><br><span class="line">-	if region(lc(v)) contains R</span><br><span class="line">        report subtree lc(v)</span><br><span class="line">+	else if lc(v) intersects R</span><br><span class="line">        SEARCHKDTREE(lc(v), R)</span><br><span class="line">  </span><br><span class="line">-	if region(rc(v)) contains R</span><br><span class="line">        report subtree rc(v)</span><br><span class="line">+ 	else if rc(v) intersects R</span><br><span class="line">        SEARCHKDTREE(rc(v), R)</span><br></pre></td></tr></table></figure>  
-<h2 id="5-3"><a href="#5-3" class="headerlink" title="5.3"></a>5.3</h2><p>In Section 5.2 it was indicated that kd-trees can also be used to store sets of points in higher-dimensional space. Let P be a set of n points in d-dimensional space. In parts a. and b. you may consider d to be a constant.</p>
-<ol>
-<li>Describe an algorithm to construct a d-dimensional kd-tree for the points in P. Prove that the tree uses linear storage and that your algorithm takes<span>$O(n log n)$</span><!-- Has MathJax --> time.</li>
-<li>Describe the query algorithm for performing a d-dimensional range query. Prove that the query time is bounded by<span>$O(n^{1&minus;1/d} +k)$</span><!-- Has MathJax -->.</li>
-<li>Show that the dependence on d in the amount of storage is linear, that is, show that the amount of storage is<span>$O(dn)$</span><!-- Has MathJax --> if we do not consider d to be a constant. Give the dependence on d of the construction time and the query time as well.</li>
-</ol>
-<hr>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Algorithm : build(int k, int l, int r, int dep)</span><br><span class="line">    if l &gt; r</span><br><span class="line">        return NULL</span><br><span class="line">    m = (l + r)/2</span><br><span class="line">    Node ret = median axis[k%K] of point[l, r] ----- O(n)</span><br><span class="line">    split points[l, r] by median               ----- O(n), C++ std::nth_element()</span><br><span class="line">    ret.lson = build((k+1)%K, l, m-1);</span><br><span class="line">    ret.rson = build((k+1)%K, m+1, r);</span><br><span class="line">    return ret;</span><br></pre></td></tr></table></figure>
-<ol>
-<li>利用 median of medians 算法找到中位數，數據儲存用指針來完成搜索，不用移動資料。<br>以上代碼根據遞迴公式<span>$T(n) = 2T(n/2) + O(n) \Rightarrow T(n) = \Theta(n log n)$</span><!-- Has MathJax -->，而 kd-tree 是一個 full binary tree，每一個節點都代表一個實際資料，因此空間複雜度<span>$O(n)$</span><!-- Has MathJax --> </li>
-<li>假設在 d 為空間，Q(n) 表示 n 個點的詢問，依序按照維度切割 (ex. x, y, z, x …)，現在只關注 x 軸上的切割，假設詢問範圍包含所有的 y, z，那麼在 2ed x 節點中，每一個節點具有<span>$n/2^{d}$</span><!-- Has MathJax --> 資料，而同一層會有<span>$2^{d-1}$</span><!-- Has MathJax --> 個 x 維度的子節點。然後遞迴詢問<span>$2^{d-1}$</span><!-- Has MathJax --> 所包含的範圍查找。<br>藉由 master theorem,<span>$a = 2^{d-1}, b = 2^{d}, c = 0 \Rightarrow Q(n) = \Theta(n^{1 - 1/d})$</span><!-- Has MathJax -->  <span>$$Q(n) =
-\begin{cases}
-O(1) &amp; \text{ if } n &lt; 2^{d} \\
-2^{d-1} + 2^{d-1} Q(n/2^{d}) &amp; \text{ if } n \geq 2^{d}
-\end{cases}$$</span><!-- Has MathJax --></li>
-<li>如果 d 不是常數，每一個內部節點空間 O(d)，有 n 個節點則需 O(dn) 的儲存空間。詢問上，需要在 intersected 花 O(d) 時間決定是否存在交集、包含，再來判斷是否走訪子樹，因此詢問是<span>$2dQ(n) = O(dn^{1-1/d})$</span><!-- Has MathJax -->，加上回報的效率為<span>$2dQ(n) = O(dn^{1-1/d} + k)$</span><!-- Has MathJax -->。</li>
-</ol>
-<h2 id="5-5"><a href="#5-5" class="headerlink" title="5.5"></a>5.5</h2><p>Algorithm SEARCHKDTREE can also be used when querying with other ranges than rectangles. For example, a query is answered correctly if the range is a triangle.</p>
-<p>a. Show that the query time for range queries with triangles is linear in the worst case, even if no answers are reported at all. Hint: Choose all points to be stored in the kd-tree on the line y = x.<br>b. Suppose that a data structure is needed that can answer triangular range queries, but only for triangles whose edges are horizontal, vertical, or have slope +1 or −1. Develop a linear size data structure that answers such range queries in O(n3/4+k) time, where k is the number of points reported. Hint: Choose 4 coordinate axes in the plane and use a 4-dimensional kd-tree.<br>c. Improve the query time to O(n2/3+k). Hint: Solve Exercise 5.4 first.</p>
-<hr>
-<ol>
-<li>最慘情況是 O(n)－詢問範圍為三角形。<br>詢問的範圍如圖，所有點落在 y = x 上，三角形範圍是一個很貼近 y = x 的三角形，三角形並沒有包含任何一個點，卻與所有劃分的區域有交集，因此必須走訪所有節點。</li>
-<li>如果要支持三角形範圍查找 (三角形的邊要不垂直、平行、斜率 +1、斜率 -1)。找到一個詢問<span>$O(n^{3/4} + k)$</span><!-- Has MathJax --> 的資料結構。<br>類似 kd-tree，但是輪替的標準為 <strong> x 軸 </strong>、<strong> y 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>，根據 5.3(b) 的公式，相當於 d = 4 的情況，得到<span>$O(n^{1 - 1/4} + k) = O(n^{3/4} + k)$</span><!-- Has MathJax -->。</li>
-<li>加快到<span>$O(n^{2/3} + k)$</span><!-- Has MathJax --> 的詢問時間。<br>在這裡想到是建立兩個 kd-tree，其中一個順序為 <strong> x 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>，另一個順序為 <strong> y 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>。前者可以回答向上、向下三角形，後者回答向左、向右三角形。相當於 d = 3 的切割，最多拆成 4 個範圍查找<span>$O(4n^{1 - 1/3} + k) = O(n^{2/3} + k)$</span><!-- Has MathJax -->。<ol>
-<li>在詢問矩形時，拆成四個三角形查找 (向上、向下、向左、向右三角形)</li>
-<li>在詢問三角形時，拆成兩個三角形查找</li>
-</ol>
-</li>
-</ol>
-<h2 id="5-9"><a href="#5-9" class="headerlink" title="5.9"></a>5.9</h2><p>One can use the data structures described in this chapter to determine whether a particular point (a,b) is in a given set by performing a range query with range [a : a]×[b : b]. </p>
-<ol>
-<li>Prove that performing such a range query on a kd-tree takes time O(logn).</li>
-<li>What is the time bound for such a query on a range tree? Prove your answer.</li>
-</ol>
-<hr>
-<ol>
-<li>對於 kd-tree 所消耗的時間 O(log n) 說明。  <span>$[a:a] \times [b:b]$</span><!-- Has MathJax --> 並不會跨區間。在 SEARCHKDTREE(v, R) 函數中，Line SEARCHKDTREE(lc(v), R) 和 SEARCHKDTREE(rc(v), R) 只會有一個符合。<span>$$Q(n) =
-\begin{cases}
-O(1) &amp; \text{ if } n = 1 \\
-1 + Q(n/2) &amp; \text{ if } n &gt; 1
-\end{cases}$$</span><!-- Has MathJax --></li>
-<li>對於 kd-tree 所消耗的時間 O(d log n) 說明。<br>首先能知道會先在第一維度探訪<span>$[a:a]$</span><!-- Has MathJax --> 的葉節點，中間經過 log n 個節點最後到葉節點，然後在其相對應的 y 軸 tree 中查找<span>$[b:b]$</span><!-- Has MathJax --> 也是 log n。因此是<span>$O(\sum{i = 1}^{d} log n) = O(d log n)$</span><!-- Has MathJax --></li>
-</ol>
-<h2 id="5-11"><a href="#5-11" class="headerlink" title="5.11"></a>5.11</h2><p>Let S1 be a set of n disjoint horizontal line segments and let S2 be a set<br>of m disjoint vertical line segments. Give a plane-sweep algorithm that<br>counts in O((n+m) log(n+m)) time how many intersections there are<br>in S1 ∪ S2.</p>
-<hr>
-<p>給 n 個不相交的水平線段、m 個不相交的垂直線段，在 O((n+m) log (n+m)) 的時間內找到焦點個數。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Algorithm:</span><br><span class="line">    1. sort all x-coordinate ----- O((n+m) log (n+m))</span><br><span class="line">    2. sweep x from small to large, maintain a segment tree or range tree.</span><br><span class="line"></span><br><span class="line">    for x = -oo to oo</span><br><span class="line">        for each horizontal line (sx, y)-(ex, y) in x</span><br><span class="line">            if sx = x</span><br><span class="line">                1Drangetree.add(y) 				----- O(log (n+m))</span><br><span class="line">        for each vertical line (x, sy)-(x, ey) in x</span><br><span class="line">            ret += 1Drangetree.query(sy, ey) 	----- O(log (n+m))</span><br><span class="line">        for each horizontal line (sx, y)-(ex, y) in x</span><br><span class="line">            if ex = x</span><br><span class="line">                1Drangetree.remove(y) 			----- O(log (n+m))</span><br><span class="line">    return ret</span><br></pre></td></tr></table></figure>
-<h1 id="Chapter-6"><a href="#Chapter-6" class="headerlink" title="Chapter 6"></a>Chapter 6</h1><h2 id="6-1"><a href="#6-1" class="headerlink" title="6.1"></a>6.1</h2><p>Draw the graph of the search structure D for the set of segments depicted<br>in the margin, for some insertion order of the segments.</p>
-<hr>
-<p>雖然沒有加入順序的考量，但是手爆一個 17 個線段、平面空間 29 個的建造 … 也許有點瘋狂，用最簡單的由上而下掃描，造成一個傾斜的樹也是各種不容易。</p>
-<h2 id="6-2"><a href="#6-2" class="headerlink" title="6.2"></a>6.2</h2><p>Give an example of a set of n line segments with an order on them that<br>makes the algorithm create a search structure of size Θ(n2) and worst-case<br>query time Θ(n).</p>
-<hr>
-<p>找到一個最慘空間<span>$\Theta(n^{2})$</span><!-- Has MathJax -->，最慘詢問時間<span>$\Theta(n)$</span><!-- Has MathJax -->。</p>
-<p>n 個線段，將其中 n/2 放置在同一個水平線上，對於剩餘 n/2 個：</p>
-<p>每次加入的順序 s1, s2, …, si，每次的線段的 x 值會包含前一個線段<span>$s_{i}.lx &lt; s_{i-1}.lx, s_{i}.rx &gt; s_{i-1}.rx$</span><!-- Has MathJax -->，美加入一個線段，會增加 n/2 個內部節點，並且最大深度增加 1。總計加入 n/2 次，增加的節點數量 O(n/2 x n/2) = O(n^2)，深度 O(n/2) = O(n)。</p>
-<h2 id="6-5"><a href="#6-5" class="headerlink" title="6.5"></a>6.5</h2><p>Given a convex polygon P as an array of its n vertices in sorted order along the boundary. Show that, given a query point q, it can be tested in time O(logn) whether q lies inside P.</p>
-<hr>
-<p>由於詢問次數相當多，必須將複雜度降到 O(log n)，採用的方式將凸包其中一個點當作基準，則如果在凸包的點而言，一定會落在某個以基點拉出的三角形內部中，為了方便計算，則可以拿外積的正負邊界上。得到可能的三角形後，從邊界中可以藉由外積計算是否同側。</p>
-<p>採用射線法 O(n) 肯定是吃大虧的。</p>
-<figure class="highlight plain"><figcaption><span>part of UVa 12048 - Inhabitants</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">double cross(Pt o, Pt a, Pt b) &#123;</span><br><span class="line">    return (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);</span><br><span class="line">&#125;</span><br><span class="line">int inside_convex(const Pt &amp;p, Pt ch[], int n) &#123;</span><br><span class="line">    if(n &lt; 3)</span><br><span class="line">        return false;</span><br><span class="line">    if(cross(ch[0], p, ch[1]) &gt; eps)</span><br><span class="line">        return false;</span><br><span class="line">    if(cross(ch[0], p, ch[n-1]) &lt; -eps)</span><br><span class="line">        return false;</span><br><span class="line">    </span><br><span class="line">    int l = 2, r = n-1;</span><br><span class="line">    int line = -1;</span><br><span class="line">    while(l &lt;= r) &#123;</span><br><span class="line">        int mid = (l + r)&gt;&gt;1;</span><br><span class="line">        if(cross(ch[0],p, ch[mid]) &gt; -eps) &#123;</span><br><span class="line">            line = mid;</span><br><span class="line">            r = mid - 1;</span><br><span class="line">        &#125; else l = mid + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    return cross(ch[line-1], p, ch[line]) &lt; eps;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/4/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/3/">3</a><a class="page-number" href="/categories/學校課程/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/categories/學校課程/page/6/">6</a><a class="page-number" href="/categories/學校課程/page/7/">7</a><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/6/">Next &raquo;</a>
@@ -1218,7 +1191,7 @@ O(1) &amp; \text{ if } n = 1 \\
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">75</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">76</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1228,6 +1201,14 @@ O(1) &amp; \text{ if } n = 1 \\
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/20/jg-10022/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10022. Fast Matrix Multiplication</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/20/jg-10080/">
@@ -1299,14 +1280,6 @@ O(1) &amp; \text{ if } n = 1 \\
                 <i class="icon-file-o"></i> 
               
             UVa 13010 - Galactic taxes</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13014/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13014 - Keep it energized</a>
           </li>
         
       </ul>
