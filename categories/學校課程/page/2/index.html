@@ -89,6 +89,88 @@
         
           <section id="main">
   
+    <article id="post-jg-10084" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/16/jg-10084/" class="article-date">
+  <time datetime="2016-03-16T01:20:59.000Z" itemprop="datePublished">2016-03-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/16/jg-10084/">批改娘 10084. Prefix Sum (pthread)</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/03/16/jg-10084/" data-id="cinmr0y77003ze8xcsdoyoea2" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/03/16/jg-10084/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/thread/">thread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/批改娘/">批改娘</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h2><p>給予序列 <span>$A \left[ 1 \cdots n \right]$</span><!-- Has MathJax -->，請計算前綴和序列 <span>$S \left[ 1 \cdots n \right]$</span><!-- Has MathJax -->，其中 $<span>$S \left[ i \right] = \sum_{k=1}^{i} A \left[ k \right]$</span><!-- Has MathJax -->$</p>
+<p>為了檢測方便，移除輸入和輸出時間，序列 <span>$A$</span><!-- Has MathJax --> 由一個簡單加密 <span>$\textit{key}$</span><!-- Has MathJax --> 得到序列 $<span>$A \left[ i \right] = \textit{encrypt}(i, \textit{key})$</span><!-- Has MathJax --><span>$以及輸出部分直接呼叫$</span><!-- Has MathJax -->\textit{output}(\textit{S}, n)<span>$。注意$</span><!-- Has MathJax -->S\left[ 0 \right] = 0<span>$，儲存答案的範圍為$</span><!-- Has MathJax -->S\left[ 1 \cdots n \right]$。</p>
+<h3 id="utils-h"><a href="#utils-h" class="headerlink" title="utils.h"></a>utils.h</h3><p>可以直接 <code>#include &quot;utils.h&quot;</code> 在你的程式中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> _UTILS_H</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _UTILS_H</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> uint32_t <span class="title">rotate_left</span><span class="params">(uint32_t x, uint32_t n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span>  (x &lt;&lt; n) | (x &gt;&gt; (<span class="number">32</span>-n));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> uint32_t <span class="title">encrypt</span><span class="params">(uint32_t m, uint32_t key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (rotate_left(m, key&amp;<span class="number">31</span>) + key)^key;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">output</span><span class="params">(uint32_t presum[], <span class="keyword">int</span> n)</span></span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="prefixsum-seq-c"><a href="#prefixsum-seq-c" class="headerlink" title="prefixsum-seq.c"></a>prefixsum-seq.c</h3><p>請修改這份程序。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;inttypes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"utils.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 10000005</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_THREAD 4</span></span><br><span class="line"><span class="keyword">uint32_t</span> prefix_sum[MAXN];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">uint32_t</span> key;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %"</span> PRIu32, &amp;n, &amp;key) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">uint32_t</span> sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            sum += encrypt(i, key);</span><br><span class="line">            prefix_sum[i] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">        output(prefix_sum, n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="secret-c-測試用"><a href="#secret-c-測試用" class="headerlink" title="secret.c (測試用)"></a>secret.c (測試用)</h3><p>實際情況會用助教寫好的平行方式進行計算且雜湊公式不同。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;inttypes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"utils.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">output</span><span class="params">(uint32_t presum[], <span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">uint32_t</span> hash = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)</span><br><span class="line">        hash += presum[i] * i;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%"</span> PRIu32 <span class="string">"\n"</span>, hash);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="輸入格式"><a href="#輸入格式" class="headerlink" title="輸入格式"></a>輸入格式</h2><p>輸入有多組測資，每組測資一行兩個整數 <span>$n$</span><!-- Has MathJax -->, <span>$\textit{key}$</span><!-- Has MathJax -->，分別為序列長度 <span>$n$</span><!-- Has MathJax -->，加密金鑰 <span>$\textit{key}$</span><!-- Has MathJax -->。</p>
+<ul>
+<li><span>$1 \le n \le 10^7$</span><!-- Has MathJax --></li>
+<li><span>$0 \le key &lt; 2^{32}$</span><!-- Has MathJax -->
+</li>
+</ul>
+<h2 id="輸出格式"><a href="#輸出格式" class="headerlink" title="輸出格式"></a>輸出格式</h2><p>對於每一組測資呼叫 <code>output(uint32_t presum[], int n)</code>，隨後會輸出一個數值。</p>
+<h2 id="範例輸入"><a href="#範例輸入" class="headerlink" title="範例輸入"></a>範例輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3 2</span><br><span class="line">10 5</span><br></pre></td></tr></table></figure>
+<h2 id="範例輸出"><a href="#範例輸出" class="headerlink" title="範例輸出"></a>範例輸出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">100</span><br><span class="line">54560</span><br></pre></td></tr></table></figure>
+<h2 id="範例解釋"><a href="#範例解釋" class="headerlink" title="範例解釋"></a>範例解釋</h2><ul>
+<li><span>$(n, \textit{key})=(3, 2)$</span><!-- Has MathJax -->，得 <span>$A \left[ 1 \cdots 3\right] = \left[ 4, 8, 12  \right]$</span><!-- Has MathJax -->，<span>$S \left[ 1 \cdots 3\right] = \left[ 4, 12, 24  \right]$</span><!-- Has MathJax -->，<span>$\text{hash} = 4 + 12 \times 2 + 24 \times 3 = 100$</span><!-- Has MathJax -->
+</li>
+</ul>
+<h2 id="編譯方式"><a href="#編譯方式" class="headerlink" title="編譯方式"></a>編譯方式</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -std=c99 -O2 -pthread prefixsum-seq.c secret.c -o prefixsum-seq</span><br></pre></td></tr></table></figure>
+<h2 id="測試主機資訊"><a href="#測試主機資訊" class="headerlink" title="測試主機資訊"></a>測試主機資訊</h2><p>推薦使用 4 個執行緒解決此問題，平行效能接近 2 倍改進。若使用過多的執行緒，將因為要排到另一個處理器上運行而變慢。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">processor   : 0</span><br><span class="line">vendor_id   : GenuineIntel</span><br><span class="line">cpu family  : 6</span><br><span class="line">model       : 62</span><br><span class="line">model name  : Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz</span><br><span class="line">stepping    : 4</span><br><span class="line">microcode   : 0x415</span><br><span class="line">cpu MHz     : 1200.000</span><br><span class="line">cache size  : 15360 KB</span><br><span class="line">physical id : 0</span><br><span class="line">siblings    : 12</span><br><span class="line">core id     : 0</span><br><span class="line">cpu cores   : 6</span><br><span class="line">apicid      : 0</span><br><span class="line">initial apicid  : 0</span><br><span class="line">fpu     : yes</span><br><span class="line">fpu_exception   : yes</span><br><span class="line">cpuid level : 13</span><br><span class="line">wp      : yes</span><br><span class="line"></span><br><span class="line">processor   : 1</span><br><span class="line">vendor_id   : GenuineIntel</span><br><span class="line">cpu family  : 6</span><br><span class="line">model       : 62</span><br><span class="line">model name  : Intel(R) Xeon(R) CPU E5-2620 v2 @ 2.10GHz</span><br><span class="line">stepping    : 4</span><br><span class="line">microcode   : 0x415</span><br><span class="line">cpu MHz     : 1200.000</span><br><span class="line">cache size  : 15360 KB</span><br><span class="line">physical id : 0</span><br><span class="line">siblings    : 12</span><br><span class="line">core id     : 1</span><br><span class="line">cpu cores   : 6</span><br><span class="line">apicid      : 2</span><br><span class="line">initial apicid  : 2</span><br><span class="line">fpu     : yes</span><br><span class="line">fpu_exception   : yes</span><br><span class="line">cpuid level : 13</span><br><span class="line">wp      : yes</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>利用 <span>$P$</span><!-- Has MathJax --> 的 thread，分開計算區間 <span>$[1, N/P], \; [N/P+1, 2N/P], \cdots$</span><!-- Has MathJax --> 的前綴和，由於前綴和只有利用加法計算，加法具有結合律，隨後傳遞前 <span>$i$</span><!-- Has MathJax --> 段的和，可以循序 <span>$\mathcal{O}(P)$</span><!-- Has MathJax --> 完成，或者利用樹形平行 (tree-based) 的方式在 <span>$\mathcal{O}(\log P)$</span><!-- Has MathJax -->，在實務上直接循序即可。</p>
+<p>由於採用分治方式，需要平行兩次，時間複雜度為 <span>$\mathcal{O}(2 \frac{N}{P} + P)$</span><!-- Has MathJax -->。</p>
+<ul>
+<li>當 <span>$P = 3$</span><!-- Has MathJax --> 時，只獲得 1.5 倍的加速</li>
+<li>當 <span>$P = 4$</span><!-- Has MathJax --> 時，獲得 2 倍加速</li>
+<li>當 <span>$P &gt; 4$</span><!-- Has MathJax --> 時，要將記憶體的部分傳到另一顆 CPU 上，假設搬運時間是線性正比，計算複雜度也是線性時間，那麼搬運時間不如在同一顆 CPU 上運行。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdint.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;inttypes.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"utils.h"</span></span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> Argu &#123;</span><br><span class="line">    <span class="keyword">int</span> l, r;</span><br><span class="line">    <span class="keyword">uint32_t</span> *psum;</span><br><span class="line">    <span class="keyword">uint32_t</span> key;</span><br><span class="line">&#125; Argu;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">min</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x &lt; y ? x : y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">subtask1</span><span class="params">(<span class="keyword">void</span> *argu)</span> </span>&#123;</span><br><span class="line">    Argu data = *((Argu *) argu);</span><br><span class="line">    <span class="keyword">int</span> l = data.l, r = data.r;</span><br><span class="line">    <span class="keyword">uint32_t</span> *psum = data.psum; </span><br><span class="line">    <span class="keyword">uint32_t</span> sum = <span class="number">0</span>, key = data.key;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = l, j = <span class="number">0</span>; i &lt;= r; i++, j++) &#123;</span><br><span class="line">        sum += encrypt(i, key);</span><br><span class="line">        psum[j] = sum;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(argu);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">subtask2</span><span class="params">(<span class="keyword">void</span> *argu)</span> </span>&#123;</span><br><span class="line">    Argu data = *((Argu *) argu);</span><br><span class="line">    <span class="keyword">int</span> l = data.l, r = data.r;</span><br><span class="line">    <span class="keyword">uint32_t</span> *psum = data.psum; </span><br><span class="line">    <span class="keyword">uint32_t</span> base = data.key;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = l, j = <span class="number">0</span>; i &lt;= r; i++, j++)</span><br><span class="line">        psum[j] += base;</span><br><span class="line">    <span class="built_in">free</span>(argu);</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 10000005</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_THREAD 4</span></span><br><span class="line"><span class="keyword">uint32_t</span> prefix_sum[MAXN];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">uint32_t</span> key;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %"</span> PRIu32, &amp;n, &amp;key) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">int</span> BLOCK = (n+MAX_THREAD<span class="number">-1</span>) / MAX_THREAD, m = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">pthread_t</span> threads[MAX_THREAD];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; ) &#123;</span><br><span class="line">            Argu *argu = (Argu *) <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Argu));</span><br><span class="line">            argu-&gt;l = i, argu-&gt;r = min(n, i + BLOCK - <span class="number">1</span>);</span><br><span class="line">            argu-&gt;psum = prefix_sum + i, argu-&gt;key = key;</span><br><span class="line">            i += BLOCK;</span><br><span class="line">            pthread_create(&amp;threads[m], <span class="literal">NULL</span>, subtask1, argu), m++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++)</span><br><span class="line">            pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line"> </span><br><span class="line">        m = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">uint32_t</span> block_sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i) &#123;</span><br><span class="line">            <span class="keyword">uint32_t</span> tmp = block_sum;</span><br><span class="line">            block_sum += prefix_sum[min(n, i+BLOCK<span class="number">-1</span>)];</span><br><span class="line">            Argu *argu = (Argu *) <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Argu));</span><br><span class="line">            argu-&gt;l = i, argu-&gt;r = min(n, i + BLOCK - <span class="number">1</span>);</span><br><span class="line">            argu-&gt;psum = prefix_sum + i, argu-&gt;key = tmp;</span><br><span class="line">            i += BLOCK;</span><br><span class="line">            pthread_create(&amp;threads[m], <span class="literal">NULL</span>, subtask2, argu), m++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++)</span><br><span class="line">            pthread_join(threads[i], <span class="literal">NULL</span>);</span><br><span class="line">        output(prefix_sum, n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-rendering-bvh-contract-and-traversal" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/01/21/rendering-bvh-contract-and-traversal/" class="article-date">
@@ -114,7 +196,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/" data-id="cinmm0egb0074alxchz9pw716" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/" data-id="cinmr0y9t0078e8xcto0k9ibq" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -290,7 +372,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-environment-lights/" data-id="cinmm0eg6006yalxc8emg9um0" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-environment-lights/" data-id="cinmr0y9u007be8xcvvc0pbqo" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-environment-lights/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -423,7 +505,7 @@ Y_c = \frac{\sum^{}_{(x, y) \in \mathit{region}} L^2_{(x, y)} \; y}{\sum^{}_{(x,
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/" data-id="cinmm0egk007lalxcux3nji6c" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/" data-id="cinmr0ya1007ne8xcggq1y61x" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -694,7 +776,7 @@ Y_c = \frac{\sum^{}_{(x, y) \in \mathit{region}} L^2_{(x, y)} \; y}{\sum^{}_{(x,
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-height-field/" data-id="cinmm0egc0077alxcg1mwxrki" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-height-field/" data-id="cinmr0y9w007ee8xct55w4st7" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-height-field/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -789,7 +871,7 @@ N_y = \begin{bmatrix}
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/3eq7W2z.jpg" rel="gallery_cinmm0eg3006ralxcgqeoo49x">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/3eq7W2z.jpg" rel="gallery_cinmr0y9o006we8xci2fpyrta">
         <img src="http://i.imgur.com/3eq7W2z.jpg" itemprop="image">
       </a>
     
@@ -808,7 +890,7 @@ N_y = \begin{bmatrix}
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/" data-id="cinmm0eg3006ralxcgqeoo49x" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/" data-id="cinmr0y9o006we8xci2fpyrta" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -891,7 +973,7 @@ N_y = \begin{bmatrix}
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cinmm0efy006halxcg82nn2p6">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cinmr0y9q0070e8xc3e7350g9">
         <img src="http://i.imgur.com/2sHgITS.jpg" itemprop="image">
       </a>
     
@@ -910,7 +992,7 @@ N_y = \begin{bmatrix}
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cinmm0efy006halxcg82nn2p6" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cinmr0y9q0070e8xc3e7350g9" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-qemu/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -993,7 +1075,7 @@ N_y = \begin{bmatrix}
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cinmm0eg90071alxcr44euzzi">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cinmr0y9r0074e8xc6urtwue7">
         <img src="http://i.imgur.com/2L6Zmwa.jpg" itemprop="image">
       </a>
     
@@ -1012,7 +1094,7 @@ N_y = \begin{bmatrix}
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cinmm0eg90071alxcr44euzzi" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cinmr0y9r0074e8xc6urtwue7" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1098,7 +1180,7 @@ N_y = \begin{bmatrix}
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cinmm0egx008calxcpz9jdkqc" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cinmr0yah008fe8xc9zuf6bbm" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/23/security-notes7/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1177,7 +1259,7 @@ N_y = \begin{bmatrix}
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cinmm0egq0080alxcc2wldo31" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cinmr0yab0087e8xckj3fdjsh" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/19/security-notes6/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1342,146 +1424,9 @@ A     B     C
 
 
   
-    <article id="post-cognitive-style-note4" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/16/cognitive-style-note4/" class="article-date">
-  <time datetime="2015-06-15T23:55:33.000Z" itemprop="datePublished">2015-06-16</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cinmm0eby001falxc4tf1nhvg">
-        <img src="http://i.imgur.com/6c9iCJd.png" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/16/cognitive-style-note4/">遊戲問卷設計 Game Guestionnaire</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cinmm0eby001falxc4tf1nhvg" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/06/16/cognitive-style-note4/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>問卷設計跟面試方法一樣，如何了解使用者的需求與能力，如何發問、如何誘導都是相當有趣的。對於每一種人格特質，在面對不同問題的問法時，作答的難易度是有影響的，這對面試官也是相當重要的課題，因此需要了解到問題設計的方法。</p>
-<h2 id="關於問卷"><a href="#關於問卷" class="headerlink" title="關於問卷"></a>關於問卷</h2><p>問卷通常會分成兩種</p>
-<ul>
-<li>定量分析<br>  詢問回答者的意見 <strong> 程度 </strong>，通常採用二值化，在從正到反極劃分數個單位，讓使用者選擇。</li>
-<li>定性分析<br>  單純詢問使用者的 <strong> 看法 </strong>，在不給予任何提示下，讓使用者根據自身的經驗回答問題。</li>
-</ul>
-<p>當不知道問題的答案分布，既不是好與壞兩者，那麼定量分析就不能作為評估，採用開放式作答的定性分析，讓使用者回答它們所理解的，通常開放式有一個缺點，會導致過於雜亂的回答，很難得到期望的答案。想必很多人在不理解 <strong> 問題描述 </strong> 就會答非所問。定量分析的面向去設計，會得不到意想不到的答案，兩種方法各有優缺。</p>
-<h3 id="問卷設計"><a href="#問卷設計" class="headerlink" title="問卷設計"></a>問卷設計</h3><p>按照上述的兩種情況分成 <strong> 選項 </strong> 跟 <strong> 申論 </strong> 兩種。申論題就不必說，留給使用者提出自己的看法，欄位設計就是文字欄位而非選項欄位。</p>
-<p>特別介紹一下選項部分，通常會有 <strong> 是 / 否 </strong>、<strong> 喜歡 / 不喜歡 </strong>，再複雜一點就是 <strong> 非常喜歡 - 喜歡 - 沒意見 - 不喜歡 - 非常不喜歡 </strong>。如果在量表中只有偶數選項，通常是不存在中立立場，希望每個應答者都給予一個立場去回答，反之在奇數選項中，給予中立立場的應答機會，通常會得到非常多的 <strong> 沒意見 </strong> 此時有效問卷的數量相對少。</p>
-<h2 id="關於面談"><a href="#關於面談" class="headerlink" title="關於面談"></a>關於面談</h2><p>面談通常會分成三種</p>
-<ul>
-<li>結構化<br>  封閉式對答，在已知答案中做決策。循序讓使用者回答問題。</li>
-<li>半結構<br>  相較於結構化問題，不要求詢問順序性，或者是確切的答案回答。</li>
-<li>非結構<br>  問題會隨著應答者回答的方式變化。</li>
-</ul>
-<p>通常第三者的非結構面談相當輕鬆，如果變化問題不特別刁難，面談者也會根據應答者的能力詢問相關問題。然而在結構化問題中，相當一板一眼，容易對應答者感到緊張，當問題卡住的時候，接下來的問題就會影響到應答者的狀態。半結構化則介於兩者之間。</p>
-<h3 id="團體面談"><a href="#團體面談" class="headerlink" title="團體面談"></a>團體面談</h3><ul>
-<li>部分應答者很容易被忽略，需要主持人去引導，觀察每個應答者在聽取其他人回答的肢體語言，適時地將每個人的意見引出。</li>
-<li>很難獲得想要的資訊。</li>
-<li>回答之間會相互影響。</li>
-</ul>
-<p>特別小心主持人不應該讓面談者們 <strong> 達到共識 </strong>，而是讓他們分享所知。誤導或誘答的情況應該避免，否則有可能會造成馬拉松領先者帶著一群人走錯方向的感覺。感覺不少情況會設下陷阱去讓面談者誤答，在問題描述上不給予明確的規範，在算法問題上也常常會這樣，至於算不算誤答就不曉得，當一個人對問題的背景認知不同時，問題本身就不一樣，能不能 <strong> 取悅 </strong> 面試官呢？</p>
-<h2 id="歸納問卷"><a href="#歸納問卷" class="headerlink" title="歸納問卷"></a>歸納問卷</h2><p>回收問卷後，利用定性方式去得到的答案是最難分析，只能靠觀察去理解，對於定量方式去設計的，將要看採用的數學模型來決策，例如消頭去尾後得到的平均數、眾數、中位數 … 等。不管哪一種方案，要看應答者的文化習慣，是否會造成不願意表態，極端情況是否正常 … 等因素，適時地消去一些實驗數據進行統計。</p>
-<p>問卷介面也要有所區別，通常會有數個相似領域的問題，整合在一起，並且給予一個問題大綱有助於對問題的理解，特別注意到問題設計時要確定題目是否能二極化。</p>
-<h2 id="各組設計"><a href="#各組設計" class="headerlink" title="各組設計"></a>各組設計</h2><p>最奇葩的要來了，針對認知風格進行問卷調查，針對先前設計的遊戲，不同認知風格對遊戲介面的觀感。，各組提出的問卷問題如下：</p>
-<h3 id="塔防遊戲"><a href="#塔防遊戲" class="headerlink" title="塔防遊戲"></a>塔防遊戲</h3><ul>
-<li>遊戲中介面的引導對你有哪些幫助？</li>
-<li>升級頁面的兵種介紹對你有何影響？</li>
-<li>過多提示會不會扼殺你對遊戲的興趣？為什麼？</li>
-<li>你覺得遊戲中哪一個功能最不直觀？為什麼？</li>
-<li>是否希望一開始就解鎖所有關卡？為什麼？</li>
-<li>無法順利通關時，你都如何應對？</li>
-<li>升級頁面的兵種能力數值是否能幫助你理解兵種特性？如果不行，希望如何改善？</li>
-<li>你覺得遊戲中哪一個功能最不直觀？為什麼？</li>
-<li>你覺得遊戲中在哪個部分自由度不夠？希望如何改善？</li>
-<li>你希望遊戲中哪些介面能夠讓你自行調整？</li>
-</ul>
-<h3 id="角色扮演"><a href="#角色扮演" class="headerlink" title="角色扮演"></a>角色扮演</h3><ul>
-<li>你覺得主畫面看起來如何 (例如背景顏色、排版、標題等等)或是其他？</li>
-<li>你覺得說明文件的詳細度以及對於操作的說明還有排版等恰當嗎，能助你了解遊戲怎麼進行？</li>
-<li>關卡劇情有沒有讓你覺得充滿故事性、關聯性，讓你進入遊戲中？</li>
-<li>遊戲的流程、難度、還有系統的圖示資訊你覺得夠完善嗎，能幫助你遊戲順利？</li>
-<li>你覺得遊戲的音樂選擇跟切換時機有讓你覺得非常合理，並且具有強大代入感嗎？</li>
-<li>您覺得遊戲難度是否可以自行解決？為什麼</li>
-</ul>
-<hr>
-<p>我們組所提出的七個問題如下</p>
-<ul>
-<li>您覺得遊戲難度是否可以自行解決？為什麼</li>
-<li>您最喜歡、討厭這遊戲哪一部分，討厭的話，想改成什麼？</li>
-<li>您覺得遊戲內介面的看法如何？</li>
-<li>您對於介面的動畫效果的看法如何？</li>
-<li>您玩完這款遊戲後，對遊戲目標瞭解程度 (例如劇情 …)？</li>
-<li>AI 擬真程度對遊戲操作的感受？</li>
-<li>原本期望的效果、事物卻沒在遊戲中的是什麼？</li>
-</ul>
-<h3 id="解謎遊戲"><a href="#解謎遊戲" class="headerlink" title="解謎遊戲"></a>解謎遊戲</h3><ul>
-<li>在遊戲進行當中在覺得最困難的部分為何？</li>
-<li>如果在遊戲中加入選關模式，你有什麼看法？</li>
-<li>對於遊戲介面，你認為有什麼可以改善的地方？</li>
-<li>教學關卡對你學習遊戲的操作模式有什麼影響？</li>
-<li>對於破關後才加入競速模式，你有什麼看法？ </li>
-<li>你認為遊戲劇情有何改善空間？</li>
-</ul>
-<h2 id="問卷統計範例"><a href="#問卷統計範例" class="headerlink" title="問卷統計範例"></a>問卷統計範例</h2><p>本課程教學極為詭異，應該請全班人一起填，總共才七組來卻只要求自己去找 <strong> 課程班上 </strong> 十個人來填問卷，互填對方設計的遊戲問卷難道這麼困難嗎？老師應該要直接請全班來填寫吧，用鼓勵的方式，居然在畢業前一周要大家填問卷，一星期統計好並且報告，明顯地大家都在忙畢業典禮的拍照，問卷也很晚統計回來。</p>
-<p>當然十個人的樣本數只能自我安慰，下什麼結論都是不具有信用的，只好按照老師的調調亂扯一通。就算遊戲做得再差，問卷回饋不如預期的對答，也許按照自己的預測方式去報告就行，問卷感覺就是裝飾用的。自己的教授自己靠北？</p>
-<h3 id="問卷結果"><a href="#問卷結果" class="headerlink" title="問卷結果"></a>問卷結果</h3><p>分別對於兩個版本，非常非常少的實驗數據。</p>
-<p>遊戲難度 Holist 認為難度簡單，對遊戲進行不算困難，對於 Serialist 比較有新事物認知上的起手問題。</p>
-<p>在遊戲偏好上，大部份的 Holist 看到了整體的光影效果對此深感好奇，而 Serialist 不少指出遊戲說明上的困惑與扣除血量的細節。</p>
-<p>在遊戲內介面上，Holist 對於道具切換、使用狀態有強烈的要求，太過簡潔的界面是介意的地方，而在 Serialist 對於顏色要求較為強烈，對於簡介的介面設計滿意。</p>
-<p>在遊戲介面動畫上，Holist 比較偏向回答遊戲內部的元素動畫，而 Serislist 則比較在意流血效果和字體閱讀。在這一部分的回答可以說是有點誤導，預期是想要讓他們回應遊戲介面動畫，而非遊戲內的元素動畫。</p>
-<p>在遊戲目標上，一致都朝著遊戲通關目標為基準，而非劇情走向，估計是劇情走向對遊戲進行流程不影響，所以沒有必要去注意遊戲劇情內容。</p>
-<p>在人工智慧 AI 上，Holist 比較偏向滿意，對有一些與現實邏輯不合的反應介意，對於 Serialist 對於 AI 的反應比較兩極，有好有壞。</p>
-<p>對於預測遊戲進行上，Holist 比較想要的是局部性改變，例如效果與道具使用上、遊戲進行邏輯、新的功能利於闖關。而 Serialist 比較喜歡全局性的擴充，如新增關卡、不同類型的通過條件、關卡成就感、角色成長的需求。</p>
-<h2 id="課程意見"><a href="#課程意見" class="headerlink" title="課程意見"></a>課程意見</h2><p>請不要一堂課的結尾就喊出成績來決定一個學生的價值，若要從認知風格中挑選一種分類，老師的認知風格屬於一種衝動型，部分是需要不斷反思來接受新的資訊。不強求這門課的走向，但從做遊戲方面，可說是此次教學的創舉，既然要我們寫程式，麻煩就以資工系的方式引導，時間跟計劃不是一兩個星期前講就了事，牽涉到設計與構思，不給一個明確的方向，導致各組面向不同種遊戲，類型不同的遊戲設計出來就不能隨意說好與壞，若是要符合你們口味的網路學習，那直接說做益智遊戲即可，有些探討問題也因遊戲類型扯不上關係。</p>
-<p>若要用小組程式作業、設計作為不上課的理由實在說不過去，導致這一學期很多次沒上課，起碼可以一個小時上課，後兩個小時討論的方式。而在論文上台報告卻有報告老師的同一篇論文，導致報告內容重複且冗長。上課投影片請不要用講稿模式 (兩攔筆記式，另一半的筆記欄位不知道給誰看的)，可以請助教弄全螢幕的投影片。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/categories/學校課程/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="page-number current">2</span><a class="page-number" href="/categories/學校課程/page/3/">3</a><a class="page-number" href="/categories/學校課程/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/3/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/categories/學校課程/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="page-number current">2</span><a class="page-number" href="/categories/學校課程/page/3/">3</a><a class="page-number" href="/categories/學校課程/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/9/">9</a><a class="extend next" rel="next" href="/categories/學校課程/page/3/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1493,7 +1438,7 @@ A     B     C
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">80</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">602</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">465</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">81</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">11</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">604</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">467</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1503,6 +1448,30 @@ A     B     C
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10087/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10087. Sparse Matrix Multiplication (OpenMP)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/uva-13009/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13009 - Fence the vegetables fail</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/uva-13046/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13046 - Bus Collisions</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/30/uva-1718/">
@@ -1558,30 +1527,6 @@ A     B     C
                 <i class="icon-file-o"></i> 
               
             批改娘 10022. Fast Matrix Multiplication</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/20/jg-10080/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10080. Fast Matrix Multiplication (pthread)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/20/jg-10086/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10086. Red/Blue Computation</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/16/2016-google-code-jam-1A/">
-              
-                <i class="icon-file-o"></i> 
-              
-            2016 Google Code Jam Round 1A</a>
           </li>
         
       </ul>
