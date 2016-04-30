@@ -89,6 +89,453 @@
         
           <section id="main">
   
+    <article id="post-vr-note" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/27/vr-note/" class="article-date">
+  <time datetime="2015-04-27T01:55:00.000Z" itemprop="datePublished">2015-04-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/27/vr-note/">虛擬實境 論文研讀 Part 1</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/04/27/vr-note/" data-id="cinmkxufl00rm2xxczavdcmv2" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/04/27/vr-note/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <blockquote>
+<p>期末上繳報告啊，不知道要寫多少才對得起自己。理解正確性不敢保證，相當可怕。</p>
+</blockquote>
+<h2 id="單詞概要"><a href="#單詞概要" class="headerlink" title="單詞概要"></a>單詞概要</h2><ul>
+<li>Computed Tomography - 電腦斷層掃描 (X 光)，簡稱 CT</li>
+<li>Shepp-Logan filter - 影像去噪中，一種運算操作</li>
+<li>Delaunay - 計算幾何中 Delaunay Triangulation</li>
+<li>ODT - optimal Delaunay Triangulation</li>
+<li>Tetrahedron - 四面體</li>
+<li>Isosufrface - 等價曲面</li>
+<li>Truncate - 切去頭端</li>
+<li>Hausdorff distance - 空間中，集合之間的距離描述 <a href="http://en.wikipedia.org/wiki/Hausdorff_distance" target="_blank" rel="external">wiki</a></li>
+<li>Marching cubes - 用於 CT 模型，重建時的建構 3D 時，根據取樣點得到的最小構造單位。</li>
+<li>QEM - Quadric Error Mactrics</li>
+</ul>
+<h2 id="本文"><a href="#本文" class="headerlink" title="本文"></a>本文</h2><p><strong><em> The Sinogram Polygonizer for Reconstructing 3D Shapes </em></strong> 這篇論文主要拿 Grid-base 掃描重建方法以及根據取樣點重建 3D 模型的算法探討。</p>
+<p>首先從離散取樣中重建，最基礎的做法是根據 z-index 作切割，得到 xy 平面，在其上作 Grid-base 網格狀的取樣，得到座標 (x, y, z) 是否在該物體內部。</p>
+<p>當取樣數量越多時，密集程度越高，能造就的邊緣就越明顯。藉由 Grid-base 取樣的缺點在於邊緣的凸顯仍然不夠明確於三角化，取樣點的數量必須非常多，才能表示非平行三軸的邊緣。</p>
+<p>從 CT 圖中，掃描資料為數張正弦圖 (sinogram)，將一個物體放置於轉盤上，轉動轉盤將 X 光照射上去，根據物體的阻射程度得到正弦圖，相當於是光線投影到平面的強度 (CT value)。當一個物體只由一種材質構成時，其阻礙程度與阻礙光線的長度成線性關係，如此一來 CT value 就能有效地反應在物體表面的距離。</p>
+<p>這裡補充一點，通常物體不會只由一個材質構成，因此在某些重建工作時會特別弱，如人體掃描重建，則會在眼睛材質上難以得到好的效果。阻礙能力會擴散到其他的正弦圖上，在複合材料的重建工作則會相對地困難。</p>
+<p>CT 圖存在些許的干擾，受到鄰近材質的阻射影響。看到網路上文章寫到，即便現代的降噪算法相當厲害，對於醫院普遍使用的成像仍然使用幾十年前的算法，其最重要的原因是擔憂降噪算法捨棄掉的部分到底是不是正確的，去掉資訊若是重要的反而會造成判斷失誤，因此學術界使用 CT 圖的降噪算法仍然不普及於醫學界。</p>
+<h3 id="CT"><a href="#CT" class="headerlink" title="CT"></a>CT</h3><p>目前 Shepp-Logan filter 相當好用，在 CT 去噪效果受到肯定！公式如下：</p>
+<span>$$f(p) = \frac{1}{2} \int_{0}^{2 \pi} \alpha(R_\theta p)^{2} S_{\theta}(P(R_{\theta} p)) d \theta \\
+S_{\theta}(q) \leftarrow \int_{-\infty }^{\infty} {\beta(\tilde{q}(x)) S_{\theta}(\tilde{q} (x)) h(x - (q)_{x})} dx \\
+h(t) = 2 / (\pi^{2} \delta^{2}  - 4 t^{2}) \\$$</span><!-- Has MathJax -->
+<span>$S_{\theta}(q)$</span><!-- Has MathJax --> 表示在轉盤角度為<span>$\theta$</span><!-- Has MathJax --> 時成像於 q 點的數值<span>$\beta(q) = cos(\angle qso)$</span><!-- Has MathJax -->，點 q 連線到光源 s、再連線到圓盤圓心點 o。並且<span>$\tilde{q}$</span><!-- Has MathJax --> 限定為與點 q 具有相同的 y 值，就是說對水平方向上鄰近點數值去噪<span>$\delta$</span><!-- Has MathJax --> 為取樣的像素大小於成像畫面。<br><br>從數學公式中看出，受到鄰近點<span>$\tilde{q}$</span><!-- Has MathJax --> 影響與光源的偏角差異、與點 q 的距離呈現的關係。<br><br>#### 補充 CT 重建 ####<br><br><a href="http://blog.csdn.net/shuangyue/article/details/5810789" target="_blank" rel="external">CT 重建方法</a> 中，存在三種常見的方式<br><br><em> 迭代法
+</em> 反投影法 backprojection<br><em> 濾波反投影法 filtered backprojection<br><br>在掃瞄資料中，根據不同角度進行掃描投影，會得到數張 2D 影像，對於實際物體離散取樣，把每一個樣本都當作一個變數 <span>$x_{i}$</span><!-- Has MathJax -->，根據模擬的方式，可以得到好幾條方程式，解出方程式後，就能知道每個位置上是否有實體 (在物體內部)。但是這樣的效能並不好，會有成千上萬的變數和方程式，甚至有可能發生多組解。<br><br><br>##### 迭代法 #####<br><br>迭代法提供一個逼近方法，類似模擬退火法的那種梯度迭代，每一次迭代逐漸將變數數值增加，增加後與實際投影比較，不斷地逼近投影實際值，捨棄掉不合法的數值，每迭代一次讓解更加地接近，當誤差小於某個定值後即可停止。這種作法通常會很慢，但迭代過程中可以加入很多彈性的參數變化，彈性較高。<br><br>##### 反投影法 #####<br><br>反投影法則是將投影值結果反投影回去，投影的 2D 影像上的某一個點的數值，會反投影到射線上的每一個點，多次反投影後。若該位置存在於物體中，則貢獻於投影像的次數會很多，因此反投影的累加的值也會比較高。接著給定閥值、誤差修正來判斷，效果會更為顯著。反投影法概念上非常簡單，但在邊緣的結果會很模糊。<br><br>##### 濾波反投影法 #####<br><br>濾波反投影法這部分不是很理解，看起來是先利用 <strong> 卷積 </strong> (Convolution) 操作，再利用傅立葉卷積的反變換，變換過程中需要一個濾波器協助，反變換回來後，再進行反投影法。在傅立葉反變換中需要濾波器，因此選擇濾波器變得相當重要，本篇論文選的是 Shepp-Logan filter 來完成。濾波反投影法的優點是在於輪廓清楚，但會發生 <strong> 吉布斯現象 </strong> (Gibbs phenomenon)，逼近原圖時，不連續的函數截面附近會發生震盪。<br><br>## 接續 ##<br><br>在濾波後，反投影後得到 CT value <span>$f(p)$</span><!-- Has MathJax -->。當然 <span>$f(p)$</span><!-- Has MathJax --> 是一個連續函數的積分，事實上處理時離散的 (因為機器再怎麼精密，齒輪轉角也不會是連續，就看齒數多寡來決定)。<br><br>論文中用了 <strong> 迭代法 </strong> 和 <strong> 濾波反投影法 </strong> 重建比較，可以得到非常相似的結果。來確認使用的儀器是相當可靠的精準度。<br><br>接下來要進行建模，簡單會具有以下幾個步驟。<br><br>1. 可以決定要用幾個四面體構成。<br>2. 三角網格藉由二值化 (CT value 來判定是在物體中還是外部) 抓取，並且加入四面體中。<br>3. 三角網格到等值曲面的 QEM (Quadric Error Mactrics) 要最小化。<br>4. 三角網格上的點座標，移動距離購小的時候，算法停止迭代。否則返回第二步，繼續鬆弛新的節點。<br><br>第一步進行四面體構成時，通常會採用 <em>* Delaunay Tetrahedralization </em></em> (相對於 2D 平面的 Delaunay Trianglution，Delaunay Trianglution 是由 2D Voronoi Diagram，那麼 Delaunay Tetrahedralization 就是由 3D Voronoi Diagram 搭建完成)，事實上還有數種建模的方法 (如 Marching cubes 之類的)，稍後有機會會提及到。但不管一開始選定的四面體採用哪種策略，經由往後的迭代，將會修整到差不多 QEM。<br><br>### 邊緣擷取 ###<br><br>對於每一個四面體，找到四面體的重心<span>$g_{i}$</span><!-- Has MathJax --> 並且計算 CT value <span>$f(g_{i})$</span><!-- Has MathJax -->
+<p>對於相鄰的四面體，計算 <span>$Tiso= (f(gi)+f(gj))/2$</span><!-- Has MathJax --> 接下來要找等值曲面 <span>$Tiso$</span><!-- Has MathJax -->，找到一個點 p 位於等值曲面上，並且 p 在 gi, gj 的連線上。對於 p 所在的等值曲面上計算法向量 <span>$n_{k}$</span><!-- Has MathJax -->，等下要用來計算 QEM 用的。</p>
+<h3 id="QEM"><a href="#QEM" class="headerlink" title="QEM"></a>QEM</h3><p>下篇待續</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-security-galois-field" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/25/security-galois-field/" class="article-date">
+  <time datetime="2015-04-25T11:16:42.000Z" itemprop="datePublished">2015-04-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/25/security-galois-field/">資訊安全 Galois Fields C++ 軟體實作體驗</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/04/25/security-galois-field/" data-id="cinmkxtte007o2xxcx8k3lwut" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/04/25/security-galois-field/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>在 AES 中，利用 Galois fields<span>$GF(2^{8})$</span><!-- Has MathJax --> 為運算單位，有效地在 8-bits CPU 上高效地實作。</p>
+<p>Galois Fields<span>$GF(p^{n})$</span><!-- Has MathJax --> 限定在質數 p 的 n 次方，便可存在有限的元素集合，支持加減乘除，同時可以利用 <strong> 擴充歐幾里算法 </strong> 得得到乘法反元素。從最簡單的 p = 2 開始看起，將 f(x) 視為一個元素。則</p>
+<span>$$f(x) = a_{n-1}x^{n-1} + a_{n-2}x^{n-2} + ... + a_{1}x + a_{0} \\
+a_{i} \in [0, p)$$</span><!-- Has MathJax -->
+<p>當 p = 2 時，f(x) 就跟一般的二進制數字儲存相同。當選定在 p 的 n 次方時，必須找一個 degree = n 的多項式，不被集合內的任何元素整除，來約束所有的運算保持在一個大小內。特別的是當 p = 2 時，加法和減法是等價運算 (在 p = 2 下，1 乘法反元素是自己本身)。</p>
+<p>AES 取 8-bits 作為運算單位的用意很多，其一反元素可以在極小空間內儲存，可以用查表的方式得到。之所以選定 p = 2 的好處在於計算機的儲存架構，若在某些特殊硬體可以支持三進位的情況下，p = 3 則會比較有效率的使用，不然取用 p = 3 在二進制的電腦架構，需要轉換的儲存單位是很沒效率，並且覆蓋的集合大小也沒辦法全部使用。</p>
+<p>GF 有什麼好處呢？其一的道理在於加解密設計要 <strong> 防止線性關係 </strong> (線性代數太邪惡，很多種攻擊可以繞過線性關係的運算，拋開未知數也能求解)，對於 AES 的設計概念來說 GF 恰好符合這個條件。</p>
+<h3 id="AES"><a href="#AES" class="headerlink" title="AES"></a>AES</h3><p>AES 選用<span>$GF(2^{8})$</span><!-- Has MathJax -->，並且取<span>$m(x) = x^8 + x^4 + x^3 + x + 1$</span><!-- Has MathJax --> 作為模數，然後再設計一個以 GF 作為常數類型的多項式 Polynominal</p>
+<span>$f(x) = s_{3}x^{3} + s_{2}x^{2} + s_{1}x + s_{0}$</span><!-- Has MathJax -->
+<p>每一個<span>$s_{i}$</span><!-- Has MathJax --> 都是一個 8-bits 的儲存單位，也就是說這個多項式是 32-bits 儲存。並且取用<span>$m(x) = x^4 + 1$</span><!-- Has MathJax --> 作為多項式的模數。AES 藉由 <strong> 多項式相乘 </strong>，將 4 個 8-bits 的資料交互影響產生出新的 4 個 8-bits，這在密碼學裡面造成 <strong> 雪崩效應 </strong>。</p>
+<p>跟之前講的一樣，GF 一定存在反操作，也就是乘法反元素，因此取用<span>$03 x^{3} + 01 x^{2} + 01 x^{1} + 02$</span><!-- Has MathJax --> 其乘法反元素為<span>$0B x^{3} + 0D x^{2} + 09 x^{1} + 0E$</span><!-- Has MathJax -->。</p>
+<p>接著，寫一個程式驗證反元素的計算吧！</p>
+<blockquote>
+<p>備註：GF 裡面套用 GF 相當有趣，感覺可以無限擴充大小，當然任意質數也可以找反元素，但也只有 <strong> 梅森質數 </strong> 比較適合在電腦二進制系統中吧？</p>
+</blockquote>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">no input</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">00 01 8D F6 CB 52 7B D1 E8 4F 29 C0 B0 E1 E5 C7</span><br><span class="line">74 B4 AA 4B 99 2B 60 5F 58 3F FD CC FF 40 EE B2</span><br><span class="line">3A 6E 5A F1 55 4D A8 C9 C1 0A 98 15 30 44 A2 C2</span><br><span class="line">2C 45 92 6C F3 39 66 42 F2 35 20 6F 77 BB 59 19</span><br><span class="line">1D FE 37 67 2D 31 F5 69 A7 64 AB 13 54 25 E9 09</span><br><span class="line">ED 5C 05 CA 4C 24 87 BF 18 3E 22 F0 51 EC 61 17</span><br><span class="line">16 5E AF D3 49 A6 36 43 F4 47 91 DF 33 93 21 3B</span><br><span class="line">79 B7 97 85 10 B5 BA 3C B6 70 D0 06 A1 FA 81 82</span><br><span class="line">83 7E 7F 80 96 73 BE 56 9B 9E 95 D9 F7 02 B9 A4</span><br><span class="line">DE 6A 32 6D D8 8A 84 72 2A 14 9F 88 F9 DC 89 9A</span><br><span class="line">FB 7C 2E C3 8F B8 65 48 26 C8 12 4A CE E7 D2 62</span><br><span class="line">0C E0 1F EF 11 75 78 71 A5 8E 76 3D BD BC 86 57</span><br><span class="line">0B 28 2F A3 DA D4 E4 0F A9 27 53 04 1B FC AC E6</span><br><span class="line">7A 07 AE 63 C5 DB E2 EA 94 8B C4 D5 9D F8 90 6B</span><br><span class="line">B1 0D D6 EB C6 0E CF AD 08 4E D7 E3 5D 50 1E B3</span><br><span class="line">5B 23 38 34 68 46 03 8C DD 9C 7D A0 CD 1A 41 1C</span><br><span class="line">03 x^3 + 01 x^2 + 01 x^1 + 02 x^0</span><br><span class="line">0B x^3 + 0D x^2 + 09 x^1 + 0E x^0</span><br><span class="line">00 x^3 + 00 x^2 + 00 x^1 + 01 x^0</span><br><span class="line">0B x^3 + 0D x^2 + 09 x^1 + 0E x^0</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>暴力實作，模擬運算，不考慮電路架構，用最樸素的方式儲存每一個欄位。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">// in AES, GF(2^8), m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">class GaloisField &#123;</span><br><span class="line">public:</span><br><span class="line">    unsigned char v[32];</span><br><span class="line">    int n;</span><br><span class="line">    GaloisField() &#123;</span><br><span class="line">        n = 8;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField(int val) &#123;</span><br><span class="line">        n = 8;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">        for (int i = 0; i &lt; 8; i++)</span><br><span class="line">            v[i] = (val&gt;&gt;i)&amp;1;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField(const int a[], int an) &#123;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">        n = 8;</span><br><span class="line">        for (int i = 0; i &lt;= an; i++)</span><br><span class="line">            v[i] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator+(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt;= r.n; i++)</span><br><span class="line">            r.v[i] = v[i] xor a.v[i];</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator-(const GaloisField &amp;a) const &#123;</span><br><span class="line">        return (*this) + a;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator*(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt;= n; i++)</span><br><span class="line">            for (int j = 0; j &lt;= a.n; j++) </span><br><span class="line">                r.v[i+j] = r.v[i+j] xor (v[i] and a.v[j]);</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField shift(int sn) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt; n; i++)</span><br><span class="line">            r.v[i + sn] = v[i];</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    bool operator&lt;(const GaloisField &amp;a) const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (v[i] == 1 &amp;&amp; a.v[i] == 1)</span><br><span class="line">                return true;</span><br><span class="line">            if (v[i] == 1 &amp;&amp; a.v[i] == 0)</span><br><span class="line">                return false;</span><br><span class="line">            if (v[i] == 0 &amp;&amp; a.v[i] == 1)</span><br><span class="line">                return false;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator/(const GaloisField &amp;a) const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (a.v[i] == 1 &amp;&amp; v[i] == 0)</span><br><span class="line">                return GaloisField();</span><br><span class="line">            if (a.v[i] == 0 &amp;&amp; v[i] == 1)</span><br><span class="line">                break;</span><br><span class="line">        &#125;</span><br><span class="line">        GaloisField r, b = (*this), c;</span><br><span class="line">        </span><br><span class="line">        for (int i = n; i &gt;= 0; i--) &#123;</span><br><span class="line">            c = a.shift(i);</span><br><span class="line">            if (c &lt; b) &#123;</span><br><span class="line">                r.v[i] = 1;</span><br><span class="line">                for (int j = 16; j &gt;= 0; j--)</span><br><span class="line">                    b.v[j] = b.v[j] xor c.v[j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator%(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField ret = (*this) - (*this) / a * a;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">    bool isZero() const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--)</span><br><span class="line">            if (v[i])	return 0;</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField inverse() &#123;</span><br><span class="line">        const int m[] = &#123;1, 1, 0, 1, 1, 0, 0, 0, 1&#125;, mn = 8; // m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">        GaloisField y(m, mn);</span><br><span class="line">        GaloisField g, a, b;</span><br><span class="line">        </span><br><span class="line">        exgcd((*this), y, g, a, b); // a x + b y = g</span><br><span class="line">        return a;</span><br><span class="line">    &#125;</span><br><span class="line">    void exgcd(GaloisField x, GaloisField y, GaloisField &amp;g, GaloisField &amp;a, GaloisField &amp;b) &#123;</span><br><span class="line">        if (y.isZero()) &#123;</span><br><span class="line">            g = x, a = GaloisField(1), b = GaloisField(0);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            exgcd(y, x%y, g, b, a), b = b - (x / y) * a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void normal() &#123;</span><br><span class="line">        const int m[] = &#123;1, 1, 0, 1, 1, 0, 0, 0, 1&#125;, mn = 8; // m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">        for (int i = 16; i - mn &gt;= 0; i--) &#123;</span><br><span class="line">            if (v[i] == 1) &#123;</span><br><span class="line">                for (int j = mn, k = i; j &gt;= 0; j--, k--)</span><br><span class="line">                    v[k] = v[k] xor (m[j]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void print() const &#123;</span><br><span class="line">        for (int i = 7; i &gt;= 0; i--) &#123;</span><br><span class="line">            printf("%d", v[i]);</span><br><span class="line">            if (i%4 == 0)	printf(" ");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("");</span><br><span class="line">    &#125;</span><br><span class="line">    int getHbits() const &#123;</span><br><span class="line">        return v[7]&lt;&lt;3 | v[6]&lt;&lt;2 | v[5]&lt;&lt;1 | v[4];</span><br><span class="line">    &#125;</span><br><span class="line">    int getLbits() const &#123;</span><br><span class="line">        return v[3]&lt;&lt;3 | v[2]&lt;&lt;2 | v[1]&lt;&lt;1 | v[0];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">void testGF() &#123;</span><br><span class="line">    int va[] = &#123;1, 1, 1, 0, 1, 1, 0, 0&#125;;</span><br><span class="line">    int vb[] = &#123;0, 1, 0, 0, 0, 0, 1, 0&#125;;</span><br><span class="line">    for (int i = 0; i &lt; 256; i++) &#123;</span><br><span class="line">        GaloisField a(i);</span><br><span class="line">        GaloisField b = a.inverse();</span><br><span class="line">        printf("%X%X ", b.getHbits(), b.getLbits());</span><br><span class="line">        if (i%16 == 15) puts("");</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class GF_Polynominal &#123;</span><br><span class="line">public:</span><br><span class="line">    GaloisField v[32];</span><br><span class="line">    int n;</span><br><span class="line">    GF_Polynominal() &#123;</span><br><span class="line">        n = 4;</span><br><span class="line">        for (int i = 0; i &lt; 16; i++)</span><br><span class="line">            v[i] = GaloisField();</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal(const GaloisField a[], int an) &#123;</span><br><span class="line">        n = 4;</span><br><span class="line">        for (int i = 0; i &lt;= an; i++)</span><br><span class="line">            v[i] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator+(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt;= r.n; i++)</span><br><span class="line">            r.v[i] = v[i] + a.v[i];</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator-(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        return (*this) + a;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator*(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt;= n; i++)</span><br><span class="line">            for (int j = 0; j &lt;= a.n; j++) </span><br><span class="line">                r.v[i+j] = r.v[i+j] + (v[i] * a.v[j]);</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal shift(int sn) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt; n; i++)</span><br><span class="line">            r.v[i + sn] = v[i];</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    bool operator&lt;(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (!v[i].isZero() &amp;&amp; !a.v[i].isZero())</span><br><span class="line">                return true;</span><br><span class="line">            if (v[i].isZero() != a.v[i].isZero())</span><br><span class="line">                return false;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator/(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (!a.v[i].isZero() &amp;&amp; v[i].isZero())</span><br><span class="line">                return GF_Polynominal();</span><br><span class="line">            if (a.v[i].isZero() &amp;&amp; !v[i].isZero())</span><br><span class="line">                break;</span><br><span class="line">        &#125;</span><br><span class="line">        GF_Polynominal r, b = (*this), c;</span><br><span class="line">        </span><br><span class="line">        for (int i = n; i &gt;= 0; i--) &#123;</span><br><span class="line">            c = a.shift(i);</span><br><span class="line">            if (c &lt; b) &#123;</span><br><span class="line">                GaloisField t, x, y;</span><br><span class="line">                for (int j = 16; j &gt;= 0; j--) &#123;</span><br><span class="line">                    if (!c.v[j].isZero()) &#123;</span><br><span class="line">                        y = c.v[j], x = b.v[j];</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                t = y.inverse() * x;</span><br><span class="line">//				b.print();</span><br><span class="line">//				c.print();</span><br><span class="line">//				printf("gg %d\n", i);</span><br><span class="line">//				y.print();</span><br><span class="line">//				x.print();</span><br><span class="line">//				y.inverse().print();</span><br><span class="line">//				t.print();</span><br><span class="line">                r.v[i] = t;</span><br><span class="line">                for (int j = 8; j &gt;= 0; j--)</span><br><span class="line">                    b.v[j] = b.v[j] - c.v[j] * t;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">//		printf("---&gt; mod "); b.print();</span><br><span class="line">//		puts("");</span><br><span class="line">//		puts("div begin");</span><br><span class="line">//		print();</span><br><span class="line">//		a.print();</span><br><span class="line">//		r.print();</span><br><span class="line">//		(r * a).print();</span><br><span class="line">//		(r * a + b).print();</span><br><span class="line">//		puts("div end\n");</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator%(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal ret = (*this) - (*this) / a * a;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">    bool isZero() &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--)</span><br><span class="line">            if (!v[i].isZero())	return 0;</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal inverse() &#123;</span><br><span class="line">        const GaloisField m[] = &#123;GaloisField(1), GaloisField(0), GaloisField(0), GaloisField(0), GaloisField(1)&#125;;</span><br><span class="line">        const int mn = 4; // m(x) = x^4 + 1</span><br><span class="line">        GF_Polynominal y(m, mn);</span><br><span class="line">        GF_Polynominal g, a, b;</span><br><span class="line">        </span><br><span class="line">        exgcd((*this), y, g, a, b); // a x + b y = g</span><br><span class="line">        </span><br><span class="line">        return a / g;</span><br><span class="line">    &#125;</span><br><span class="line">    void exgcd(GF_Polynominal x, GF_Polynominal y, GF_Polynominal &amp;g, GF_Polynominal &amp;a, GF_Polynominal &amp;b) &#123;</span><br><span class="line">//		puts("exgcd -----------------");</span><br><span class="line">//		x.print();</span><br><span class="line">//		y.print();</span><br><span class="line">//		getchar();</span><br><span class="line">        if (y.isZero()) &#123;</span><br><span class="line">            const GaloisField m1[] = &#123;GaloisField(1)&#125;;</span><br><span class="line">            const GaloisField m0[] = &#123;GaloisField(0)&#125;;</span><br><span class="line">            g = x, a = GF_Polynominal(m1, 1), b = GF_Polynominal(m0, 1);</span><br><span class="line">            // a = g.inverse();</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            exgcd(y, x%y, g, b, a), b = b - (x / y) * a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void normal() &#123;</span><br><span class="line">        const GaloisField m[] = &#123;GaloisField(1), GaloisField(0), GaloisField(0), GaloisField(0), GaloisField(1)&#125;;</span><br><span class="line">        const int mn = 4; // m(x) = x^4 + 1</span><br><span class="line">        for (int i = 16; i - mn &gt;= 0; i--) &#123;</span><br><span class="line">            if (!v[i].isZero()) &#123;</span><br><span class="line">                GaloisField t = v[i];</span><br><span class="line">                for (int j = mn, k = i; j &gt;= 0; j--, k--)</span><br><span class="line">                    v[k] = v[k] - (m[j] * t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void print() const &#123;</span><br><span class="line">        for (int i = 3; i &gt;= 0; i--) &#123;</span><br><span class="line">            printf("%X%X ", v[i].getHbits(), v[i].getLbits());</span><br><span class="line">            printf("x^%d", i);</span><br><span class="line">            if (i)	printf(" + ");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("");</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">void testPoly() &#123;</span><br><span class="line">    const GaloisField m[] = &#123;GaloisField(2), GaloisField(1), GaloisField(1), GaloisField(3)&#125;;</span><br><span class="line">    const GaloisField m2[] = &#123;GaloisField(14), GaloisField(9), GaloisField(13), GaloisField(11)&#125;;</span><br><span class="line">    const int mn = 3, mn2 = 3;</span><br><span class="line">    GF_Polynominal a(m, mn), b(m2, mn2);</span><br><span class="line">    </span><br><span class="line">    a.print();</span><br><span class="line">    b.print();</span><br><span class="line">    </span><br><span class="line">    GF_Polynominal c = a * b;</span><br><span class="line">    c.print();</span><br><span class="line">    </span><br><span class="line">    GF_Polynominal d = a.inverse();</span><br><span class="line">    d.print();</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    testGF();</span><br><span class="line">    testPoly();</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-security-notes" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/24/security-notes/" class="article-date">
+  <time datetime="2015-04-24T02:37:28.000Z" itemprop="datePublished">2015-04-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/24/security-notes/">資訊安全 小考筆記</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/04/24/security-notes/" data-id="cinmkxtta007k2xxcrthfkanw" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/04/24/security-notes/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><ol>
+<li><p>Follow</p>
+<ol>
+<li>What is a monoalphabetic cipher ?</li>
+<li>How large is the key space of the monoalphabetic cipher applied to English (just consider lower case letters) ?</li>
+<li>What is the main security weakness of a monoalphabetic cipher ?</li>
+<li>Please provide at least 4 approaches to prevent the above weakness.</li>
+</ol>
+</li>
+<li><p>Block ciphers process messages in blocks like an extremely large substitution, but this is very difficult to implement for a very big block size. What is Shannon’s idea to realize a block cipher with big block size ?</p>
+</li>
+<li><p>The S-box of DES round operation is not invertable, but why DES can decrypt ?</p>
+</li>
+<li><p>Follow</p>
+<ol>
+<li>Please explain the OFB mode.</li>
+<li>In the OFB mode, we never reuse the same sequence (key+IV). If we reuse the key, then the attacker can recover message. Please describe very precisely (mathematiclly with symbols) how the attack works.</li>
+</ol>
+</li>
+<li><p>Please compare the CFB mode the OFB mode by providing a table indicating at least 5 of their advantage and corresponding disadvantage.</p>
+</li>
+<li><p>This question is about issues of random access of encryption and decryption. Define notations or symbols you need before providing your answer. Please describe how to use CFB mode and CTR mode to randomly encrypt and decrypt a file Why OFB mode is inappropriate to randomly encrypt and decrypt a file?</p>
+</li>
+<li><p>Describe the details (as much as you remember) of AES operation and describe how efficiently implement AES on an 8-bit CPU ?</p>
+</li>
+<li><p>How avalanche happens in AES within the first tow rounds ?</p>
+</li>
+</ol>
+<h2 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h2><h3 id="Part-1"><a href="#Part-1" class="headerlink" title="Part 1"></a>Part 1</h3><p>monoalphabetic cipher 簡單來說比凱薩加密難一點，從每個字母都 shift 固定的數量來說，變成變動式的。換句話說就是單純的英文字母替換 (substitute)。由於要維持可逆的解密，替換必須符合一對一，所以方法數為 <code>26! = 403291461126605635584000000</code>。</p>
+<p>但這種替換方式容易受到語言統計的攻擊，也就是說在英文的特性中，不是每個字母都出現相同的頻率，因為很多冗詞的使用，導致有些字母會特別多。也因此在找對應時，可以藉由這一個觀點，反向查找可能的替換，大幅度地降低搜索可能，讓解密變得相當容易。</p>
+<p>為了解決這一語言統計的攻擊，可以藉由</p>
+<ul>
+<li>壓縮明文，破壞語言特性，但是壓縮算法有儲存的字典部分，仍可能發生字典結構被攻擊，進而進行解壓縮。</li>
+<li>增加垃圾字，撥點冗詞穿插在其中，把頻率不均的問題消彌。</li>
+<li>多個字符一起加密，相對於單一字母的替換，可以同時替換兩個以上，如 <code>AA -&gt; WT</code> 之類的。</li>
+<li>使用多種替換，在不同時刻使用不同的替換表，同樣地可以把頻率問題解決。</li>
+<li>參照後續區段加密的一些技巧，如 CFB、OFB … 等，讓替換表進行變動。</li>
+</ul>
+<h3 id="Part-2"><a href="#Part-2" class="headerlink" title="Part 2"></a>Part 2</h3><p>區段加密具有相當大的強度，當一次加密 64 bits 時，可以達到的對應種類高達 <code>(2^64)!</code>，沒有辦法將這種表格存放在記憶體，因為也要消耗 <code>2^64</code> bits。</p>
+<p>因此有 Shannon’s idea，利用 substitution (S-box)、permutation (P-box) 來完成對應，藉由 S-P 的組合，提供 混淆(confusion) 和 差異 (diffusion)。組合的效應遠比想像中的還大，儘管組合的方法數遠小於 <code>(2^64)!</code>，連兆分之一都不到，但簡單的概念可以在 <code>64KB</code> 記憶體大小內完成，效應上算相當划算。</p>
+<h3 id="Part-3"><a href="#Part-3" class="headerlink" title="Part 3"></a>Part 3</h3><p>DES 的 S-box 屬於不可逆的操作 (8-bits to 6-bits)，然而 DES 在解密時，不需要將 S-box 往回推導，也就是不需要逆向操作，因為加密的 key 來自於 master key 和另一段的訊息 L(i) ，最後用 key 加密 R(i) 得到 L(i+1)。解密時，只需要將 R(i+1) (L(i) 會變成 S(i+1))帶入 S-box，就能重新產生出 key。</p>
+<p>至於 DES 為什麼可以正確加解密，定義對於所有的任意明文 A, B，產生的密文 E(A) != E(B)。若明文差異在 L(i)，則在 R(i+1) 一定會不同。若明文差異在 R(i)，則在 key 相同，做 L(i+1) = R(i) XOR key 時，L(i+1) 也必定會不同。</p>
+<h3 id="Part-4"><a href="#Part-4" class="headerlink" title="Part 4"></a>Part 4</h3><span>$$O_{i} = E_{k}(O_{i-1}); O_{-1} = IV \\
+C_{i} = P_{i} \text{ XOR } O_{i}$$</span><!-- Has MathJax -->
+<p>為什麼 OFB 不能重新使用 key + IV 呢？原因是因為 <strong> 已知明文攻擊 (Known plaintext attack) </strong> 。假設每一天都重新啟動，那麼攻擊者可以在事後得到密文對應的明文 (可能隔天才知道，儘管對應仍然是很難的)，那麼可以藉由數學概念來完成解密，無須考慮 key 是什麼內容。</p>
+<span>$$C_{i} = P_{i} \text{ XOR } O_{i} \\
+C_{j} = P_{j} \text{ XOR } O_{i} \\
+C_{i} \text{ XOR } C_{j} = P_{i} \text{ XOR } P_{j}$$</span><!-- Has MathJax -->
+<p>假設 i 和 j 重複使用 key，那麼會發生已知密文<span>$C_{i}, C_{j}$</span><!-- Has MathJax --> (傳輸上一定會被發現) 和已知明文<span>$P_{i}$</span><!-- Has MathJax -->，只要夾擊做 XOR，就可以直接得到<span>$P_{j}$</span><!-- Has MathJax -->，當已知明文相當長時，竊取的效果就越好。</p>
+<h3 id="Part-5"><a href="#Part-5" class="headerlink" title="Part 5"></a>Part 5</h3><p>比較 CFB 和 OFB。</p>
+<table>
+<thead>
+<tr>
+<th>特性\模式</th>
+<th>CFB</th>
+<th>OFB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>自同步 (self-synchronization)</td>
+<td>可</td>
+<td>不可</td>
+</tr>
+<tr>
+<td>錯誤擴散 (error propagation)</td>
+<td>有</td>
+<td>無</td>
+</tr>
+<tr>
+<td>預先計算 (preprocess key)</td>
+<td>不可</td>
+<td>可</td>
+</tr>
+<tr>
+<td>隨機存取 (random access)</td>
+<td>可</td>
+<td>不可</td>
+</tr>
+<tr>
+<td>資訊安全性 (message security)</td>
+<td>高</td>
+<td>低</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong> 自同步 (self-synchronization) </strong>，不用告知對方加密狀態，可以藉由數次的傳輸訊息，自動地將兩邊的狀態一致，在此之前會造成一段雜訊。斷線時，不必重複使用 IV 讓兩邊同步 (狀態相同時，才能正確解密)。</li>
+<li><strong> 錯誤擴散 (error propagation) </strong> ，也因為自同步的設計，導致在同步前都會有雜訊，或者在訊息被攻擊者竄改時，會影響該週期的狀態 (<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax --> )。</li>
+<li><strong> 預先計算 (preprocess key) </strong> ，預先計算 key 可以加快加解密速度，同時便可支持平行運算，這原因是因為 message-independent/dependent 之間的差異，狀態不依靠正在傳遞的訊息時，就可以預先處理。</li>
+<li><strong> 隨機存取 (random access) </strong> ，當要解析某個密文時，CFB 可以往前查找密文<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax -->，得到當前的解密器所需要的狀態，放上 master key 就能進行解密。OFB 辦不到這一點，狀態不依賴訊息，那就要知道當前是哪個回合，從 IV 開始推導狀態，若密文在第 n 個位置，需要 O(n) 的時間來得到狀態，相對於 CFB 的 O(k) = O(1)來說相當耗時。</li>
+<li><strong> 資訊安全性 (message security) </strong> ，由於狀態與訊息獨立，會導致被攻擊者竄改內容時不易發現。在 CFB 中，由於依賴傳遞的訊息，當攻擊者竄改某個密文時會造成錯誤擴散，影響的解密時的明文不只一個，這也讓安全性提高。可以說是一體兩面的特性。</li>
+</ul>
+<h3 id="Part-6"><a href="#Part-6" class="headerlink" title="Part 6"></a>Part 6</h3><ul>
+<li>CFB 狀態為 master key +<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax --></li>
+<li>CTR 狀態為 master key + counter</li>
+</ul>
+<p>CFB 解密某個密文時，往前查找密文即可解密。CTR 知道密文 offset 便可得到 counter。在獲得資訊上都是 O(k) 常數，因此支持隨機存取。</p>
+<blockquote>
+<p>OFB 辦不到這一點，狀態不依賴訊息，那就要知道當前是哪個回合，從 IV 開始推導狀態，若密文在第 n 個位置，需要 O(n) 的時間來得到狀態，相對於 CFB 的 O(k) = O(1)來說相當耗時。</p>
+</blockquote>
+<p>CFB 和 CTR 到底誰的隨機存取能力好呢？若檔案儲存會切割成數個，那 CFB 的隨機存取能力就更高一點。CTR 必須計算 offset，相較於 CFB 的紀錄架構會稍微地麻煩。</p>
+<h3 id="Part-7"><a href="#Part-7" class="headerlink" title="Part 7"></a>Part 7</h3><p>AES 的計算結構都落在 GF(2^8)，一個 cell 的內容都是 GF(2^8)</p>
+<ul>
+<li>substitue 需要 8-bits to 8-bits</li>
+<li>shift rows 對於 8-bit 關聯不大 (移動記憶體的位置)</li>
+<li>mixColume 上是 8-bits x 8-bits</li>
+<li>add round key 對於每一個 cell XOR 8-bit keys</li>
+</ul>
+<p>因此 AES 可以在 8-bits CPU 上有更好的實作效能，所需要的 clock cycle 會比較短。</p>
+<h3 id="Part-8"><a href="#Part-8" class="headerlink" title="Part 8"></a>Part 8</h3><p>假設有兩個明文的 <strong> 漢明距離 (Hamming distance) </strong> 為 1，在 128 bits 中有一個 1 bits 不同，意即<span>$H(P, Q) = 1$</span><!-- Has MathJax -->。</p>
+<table>
+<thead>
+<tr>
+<th>Step\Round</th>
+<th>Round 1</th>
+<th>Round 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Substitue bytes</td>
+<td>4 bits</td>
+<td>16 bits</td>
+</tr>
+<tr>
+<td>Shift rows</td>
+<td>4 bits</td>
+<td>16 bits</td>
+</tr>
+<tr>
+<td>Mix Columes</td>
+<td>16 bits</td>
+<td>64 bits</td>
+</tr>
+<tr>
+<td>Add Round key</td>
+<td>16 bits</td>
+<td>64 bits</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>在 Substitue bytes 步驟時，S-box 會設計成期望當有一個 1-bits 不同，則替換出來的結果會有 4-bits 不同 (一個 cell 具有 8-bits。替換 8-bits 時，差異最少 0 bits、最多 8-bits，期望值是 4-bits)。</li>
+<li>在 Shift rows 步驟時，單純移動 cell 不影響差異。</li>
+<li>在 Mix Columes 步驟時，每一個 colume 會根據上一個 colume 的 4 個元素相互影響，因此會增加 4 倍。</li>
+<li>在 Add Round key 步驟時，由於 XOR 相同的 key，因此差異並不會改變。</li>
+</ul>
+<p>最後，在 Round 2 時，能得到平均 64 bits 的差異。加密的明文一次 128 bits，差異期望值也就是一半的情況 64 bits，因此很快地就能達到期望的差異性。在隨後的 Round X 中，差異會在 64-bits 上下浮動都是有可能的。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-game-maker-design" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/04/22/game-maker-design/" class="article-date">
+  <time datetime="2015-04-21T23:15:21.000Z" itemprop="datePublished">2015-04-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/04/22/game-maker-design/">Game Maker 遊戲介面設計</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/04/22/game-maker-design/" data-id="cinmkxtmx002n2xxcuv6jrs6m" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/04/22/game-maker-design/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/game/">game</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>學校課程番外篇，有興趣者可以查閱 <a href="https://github.com/morris821028/hw-GameMaker" target="_blank" rel="external">Github</a>。</p>
+<h2 id="本文"><a href="#本文" class="headerlink" title="本文"></a>本文</h2><p>本課程一開始著重 <strong> 尼爾森法則 </strong> 的介面設計，不只是在網頁操作等介面設計，雖然遊戲沒有複雜的狀態跟操作流程，但在設計上的操作反應、都應該要符合尼爾森法則。</p>
+<p>Game Maker 這套軟體只是製作 UI 方便，遊戲性跟高難度設計不是很著重，<strong> 不看你的代碼或實作複雜度 </strong>。這也是本課程最弔詭的地方。Game Maker 有一個缺點，製作時的分工無法按照軟體分工的方式，實作部分代碼來完成，除非組員們都會寫 script 並且了解語法的變數存取方式。</p>
+<h2 id="從設計開始講起"><a href="#從設計開始講起" class="headerlink" title="從設計開始講起"></a>從設計開始講起</h2><p>可以從課程問卷中看到 <a href="https://github.com/morris821028/hw-GameMaker/blob/master/project/doc/game_questionnaire.md" target="_blank" rel="external">link</a> 幾個遵循的法則。</p>
+<h3 id="Visibility-of-system-status"><a href="#Visibility-of-system-status" class="headerlink" title="Visibility of system status"></a>Visibility of system status</h3><p>狀態可視有幾格要點，玩家方便知道當前狀態，例如所在關卡、遊戲模式的狀態、角色資訊的狀態、完成關卡的結算畫面 … 等。</p>
+<p><img src="http://i.imgur.com/RKM583h.png" alt="紅框位置處表示狀態"></p>
+<p>同時在需要連續操作的完成流程，如銀行手續的設計，會顯示當前步驟進行到幾分之幾，來提示使用者其實還沒有完成所有步驟。然而在遊戲上，完成比例通常不是著重的一環，而是有哪關卡可以玩、有哪些關卡還沒去探訪過。</p>
+<h3 id="Match-between-system-and-the-real-world"><a href="#Match-between-system-and-the-real-world" class="headerlink" title="Match between system and the real world"></a>Match between system and the real world</h3><p>主要為圖示運用，<a href="http://www.flaticon.com/packs/" target="_blank" rel="external">icon</a> 對應的操作符合普遍性，通常會遇到的第一個錯誤設計是將原本用在某個地方的圖示拿來放在不應擺放的位置。例如音樂撥放器的撥放、暫停、停止、前轉、循環、 … 等，很容易在選擇上誤用箭頭的格式。</p>
+<p>接著是在文字對應，選項的文字也要具有普遍性，符合直觀的反應文字，詞性也應選擇恰當 (當心誤用形容詞當選項文字)，問題描述的正面詢問與反面詢問，反應在選擇選項時應足夠明確 (反問內容是否合理，不常見的反面詢問應該捨棄，防止使用者用既有概念進行操作)。</p>
+<p>遊戲規則設計符合合理，當要貼切真實世界時，如物理反應與遊戲元素之間的關聯應該符合，如遊戲中運用到水和火，兩物體若發生碰撞，反應結果應符合消滅對方的關係。</p>
+<h3 id="User-control-and-freedom"><a href="#User-control-and-freedom" class="headerlink" title="User control and freedom"></a>User control and freedom</h3><p>所謂的自由度，玩家不會被困在一本道的遊戲設計，但是在抖 M 類型的遊戲中，只要一失敗就必須從頭打起。玩家不會一直被系統帶著跑，而無法中斷、暫停遊戲，同時也表明重新步入遊戲時，可以選擇自己進行的模式。</p>
+<p>自由度的操控有很多，客製化玩家的操作、給予玩家改變遊戲的部分設計，如鍵盤控制的改變、允許玩家更動角色的樣貌、樣式，可以更動關卡模式，例如 L4D2 可以選擇專家模式 … 等。</p>
+<h3 id="Consistency-and-standards"><a href="#Consistency-and-standards" class="headerlink" title="Consistency and standards"></a>Consistency and standards</h3><p>一致性設計，相當於風格設計。</p>
+<ul>
+<li>按鈕的圖示在不同狀態若具有相同功能，使用圖示相同。</li>
+<li>UI 擺放位置，不常因不同模式而更動 (突然放左、突然放右。)</li>
+<li>文字字型的使用統一使用，並且區分遊戲劇情與系統介面，相同類型的文字說明應符合一致。</li>
+</ul>
+<h3 id="Error-prevention"><a href="#Error-prevention" class="headerlink" title="Error prevention"></a>Error prevention</h3><p>防止錯誤操作，當玩家已經在別款遊戲中擅長使用快捷鍵時，那很有可能在遊戲中使用快捷鍵操作，這可能會造成不預期的反應，如快速關閉遊戲、啟動某個遊戲的系統功能。</p>
+<p>因此在防止錯誤，通常會用 <strong> 第二次詢問 </strong> 來防止。在快捷操作上，二次詢問要利用不同的快捷鍵觸發，防止連按的快速操作，如連按兩次 <code>ESC</code> 突然跳出遊戲的蠢事。</p>
+<p>提示操作的後果也是相當重要，必須在文字說明上明確描述，盡可能使用簡短的句子和例子來說明操作後果。說明時著重使用者觀點，而非功能性介紹 (介紹對於使用者的感受可能會變成怎麼樣，而不去說明電腦架構的效能 … 等專業知識)。</p>
+<p>當遊戲需要高度複雜的邏輯，導致道具使用上的 <strong> 順序性會影響流程 </strong>。當玩家處於無法通關的狀態時，提示哪個步驟錯誤，同時也告知玩家應該重新挑戰。這一類型就是引導提示。</p>
+<h3 id="Recognition-rather-than-recall"><a href="#Recognition-rather-than-recall" class="headerlink" title="Recognition rather than recall"></a>Recognition rather than recall</h3><p>在遊戲功能分類上，遊戲道具的使用類型應該設計主動操作與被動操作，在欄位劃分上是其中一種設計。當空間不足與進行欄位劃分，在道具的背景、顏色上的區分是一個解決方案，例如用三角形的外框表示消耗型道具、六角形表示永久的增益型道具。<strong> 用圖示背景與位置來區分操作類型 </strong>，防範使用者如猴子般地等待道具效果。</p>
+<h3 id="Flexibility-and-efficiency-of-use"><a href="#Flexibility-and-efficiency-of-use" class="headerlink" title="Flexibility and efficiency of use"></a>Flexibility and efficiency of use</h3><p>操作相當具有彈性跟有效地使用！</p>
+<p>有些遊戲需要高度複雜的組合鍵來完成一個動作，同時也要求組合鍵的有效時間。先不論組合鍵的設計，若存在組合鍵，是否符合效率使用，是否可縮減成另一個指令，當分化深度歧異過大時，考量壓縮組合鍵的長度。例如有 5 個技能是由 3 個鍵組合觸發，4 個技能是由 5 個鍵組合觸發，壓縮到 4 個鍵以內 … 等。</p>
+<p>正常情況下，有多少使用者會直觀這麼做，組合鍵設計是否合理，是否可以藉由 <strong> 系統輔助來簡化操作流程 </strong> ？這些考量將成為易上手，入門玩家最需要的部分。就如 vim 編輯器的使用，直接面向高端使用者，入門就會相當地困難。</p>
+<h3 id="Aesthetic-and-minimalist-design"><a href="#Aesthetic-and-minimalist-design" class="headerlink" title="Aesthetic and minimalist design"></a>Aesthetic and minimalist design</h3><p>提示、排版設計，在 Apple 軟體看得很明顯，操作相當簡單，不會一次把很多功能塞在同一個頁面。在功能性很強的軟體，常常會把很多參數調校放在同一個頁面，而沒有做好區別與預設，即使功能性很強、軟體很好用，但很多功能反而會被忽略，由於沒有好的簡化設計，第一手想要嘗試的使用者，會跳過好幾個功能設定進行反饋。 <strong> 開發者開發的功能就白費了！ </strong></p>
+<p>盡可能讓畫面簡潔，縮減不必要的進階資訊，用額外的方式體現，設計不同的介面模式。</p>
+<h3 id="Help-users-recognize-diagnose-and-recover-from-errors"><a href="#Help-users-recognize-diagnose-and-recover-from-errors" class="headerlink" title="Help users recognize, diagnose, and recover from errors"></a>Help users recognize, diagnose, and recover from errors</h3><p>系統發生錯誤時，是否有足夠的資訊讓使用者查覺到 <strong> 不是遊戲正常設定 </strong>，來讓使用者回報這些程式設計 Bug。在系統設計的魯棒性，不應一個 Bug 產生而造成系統崩潰，遊戲也是一樣，讓使用者返回上一個正常的狀態，不會造成卡關、或者卡關之後遊戲損毀。</p>
+<p>復原狀態對於小遊戲設計上相當困難啊！</p>
+<h3 id="Game"><a href="#Game" class="headerlink" title="Game"></a>Game</h3><ul>
+<li>故事劇情 (Storyline)</li>
+<li>遊戲性 (GamePlay)</li>
+<li>美學圖形 (Artistic/Graphics)</li>
+<li>音效特效 (Sound/Special effects)</li>
+<li>人工智慧 (AI)</li>
+</ul>
+<p>故事劇情可以結合真實部分，在真假交織下發展。</p>
+<p>可以參考 <strong> 《额外加分 Extra Credits》 </strong> 、 <strong> 《TUN高品位低调宅》 </strong> 系列影片，這將會告訴你遊戲如何設計才具有特色。</p>
+<p>下面列了兩個影片，更多可以直接去觀看 youtube 上的頻道。</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=UjclHHR2hMk" target="_blank" rel="external">额外加分 Extra Credits：关联学习法</a></li>
+<li><a href="https://www.youtube.com/watch?v=__BHBWhSw4g" target="_blank" rel="external">TUN高品位低调宅之黑暗之魂好在哪？</a></li>
+</ul>
+<p>其他的列點就是一種個人價值觀體現，還沒有詳細學習。</p>
+<h2 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h2><div class="video-container"><iframe src="//www.youtube.com/embed/In0U3oQJ1LI" frameborder="0" allowfullscreen></iframe></div>
+<p>影片加速展示內容。</p>
+<h2 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h2><script type="text/javascript" src="http://morris821028.github.io/hexo-tag-oj/jquery.githubRepoWidget.js"></script><div class="github-widget" data-repo="morris821028/hw-GameMaker"></div>
+<p>遊戲執行檔和開源代碼都在其中，當然還有遊戲的編輯器。更多的遊戲截圖在裡頭，只支持 windows 平台。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-security-block-ciphers" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/03/21/security-block-ciphers/" class="article-date">
@@ -114,7 +561,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/21/security-block-ciphers/" data-id="cin8umu220072qoxcna0diob1" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/21/security-block-ciphers/" data-id="cinmkxtt4007e2xxc7tb1l4cs" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/21/security-block-ciphers/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -267,7 +714,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/03/09/bigdata-page-rank/" data-id="cin8umtuq000lqoxcw0l5ndvk" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/03/09/bigdata-page-rank/" data-id="cinmkxtjw000o2xxcxc9fxxza" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/03/09/bigdata-page-rank/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -326,7 +773,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/01/16/lesson/NLP-project/" data-id="cin8umv7801u3qoxcpmiiymws" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/01/16/lesson/NLP-project/" data-id="cinmkxv9401vx2xxcv1cwoguj" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/01/16/lesson/NLP-project/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -447,7 +894,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/01/14/lesson/civilization-project/" data-id="cin8umv7v01ucqoxcypi94zok" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/01/14/lesson/civilization-project/" data-id="cinmkxvae01wa2xxc5ae0mplj" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/01/14/lesson/civilization-project/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -648,7 +1095,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review2/" data-id="cin8umvak01vrqoxckqr7ryxw" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review2/" data-id="cinmkxvdr01xp2xxcyn1jwrax" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/01/10/lesson/database-review2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -769,7 +1216,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review/" data-id="cin8umvae01vnqoxcn59egiv9" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review/" data-id="cinmkxvdi01xl2xxcdceicvw5" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/01/10/lesson/database-review/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1020,440 +1467,6 @@
 
 
   
-    <article id="post-lesson/database-bcnf" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/12/30/lesson/database-bcnf/" class="article-date">
-  <time datetime="2014-12-29T23:48:51.000Z" itemprop="datePublished">2014-12-30</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/12/30/lesson/database-bcnf/">資料庫正規化 Database BCNF</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/30/lesson/database-bcnf/" data-id="cin8umva401vkqoxcecm044hg" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/12/30/lesson/database-bcnf/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/資料庫系統/">資料庫系統</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/鬼畜/">鬼畜</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>stackoverflow : Decomposing a relation into BCNF.</p>
-<p>資料庫講到正規化，針對 1NF, 2NF, 3NF 的做法。正規化的目的<br>－要避免資料重複或相互矛盾的情形，並使資料庫在使用時能更有效率、更容易維護。</p>
-<p>關於 1NF, 2NF, 3NF 的細節操作就上網查吧。也就是在還沒正規化前，可能會遭遇到</p>
-<ul>
-<li>修改一個 f(x) = y 值時，可能修改非常大量的 row，因為有可能 f(x, z) = y，無用相依關係的 z 很多。</li>
-<li>刪除某個元素時，造成 y 值沒有被任何相依，導致 y 的資訊無法存入資料庫。 … 如此類推。</li>
-</ul>
-<p>現在給定 relation 和 functional dependencies，正規化它們！</p>
-<p>舉個例子：(直接從 stackoverflow 的例子來說)</p>
-<ul>
-<li>Relation : <em> R(A, C, B, D, E) </em> </li>
-<li>Functional dependencies (FD): <em> A -&gt; B, C -&gt; D </em></li>
-</ul>
-<p>Functional dependencies 簡單來說就是一個決定性的一對多、或者是一對一的相依關係，可以根據 LHS (left hand side) 決策 RHS (right hand side)，當然 function dependencies 的訊息只有部分，也暗示著具有遞移關係。因此例如 <em> A-&gt;B, B-&gt;C </em> 則可以推論出 <em> A-&gt;C </em>。</p>
-<p>定義 X+ 為 X 的遞移閉包，因此假設知道 <em> A-&gt;B, B-&gt;C </em> 則 <em> {A}+ = {A, B, C} </em>，假設知道 <em> AB-&gt;C </em> 則 <em> {A, B}+ = {A, B, C} </em></p>
-<p>回到例子，每一步要找到違反 BCNF 規則 (violates BCNF) 的 R’ 進行拆分。怎麼樣才算違反 BCNF 規則？可以找到一個 <em> X != X+ != [R’ all attributes] </em>，就可以對 R’ 進行拆分。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Step 1:</span><br><span class="line">S = &#123;ABCDE&#125;       </span><br><span class="line">    R&apos; = ABCDE, </span><br><span class="line">    find &#123;A&#125; != &#123;A, B&#125; != &#123;A, B, C, D, E&#125;, </span><br><span class="line">    R1 = (X+) = &#123;A, B&#125;</span><br><span class="line">    R2 = R&apos; - ((X+) - X) = &#123;A, C, D, E&#125;</span><br><span class="line">Step 2:</span><br><span class="line">S = &#123;ACDE, AB&#125;</span><br><span class="line">    R&apos; = ACDE,</span><br><span class="line">    find &#123;C&#125; != &#123;C, D&#125; != &#123;A, C, D, E&#125;, </span><br><span class="line">    R1 = (X+) = &#123;C, D&#125;</span><br><span class="line">    R2 = R&apos; - ((X+) - X) = &#123;A, C, E&#125;</span><br><span class="line">Step 3:</span><br><span class="line">S = &#123;ACE, AB, CD&#125;</span><br><span class="line">    // NOT FOUND END.</span><br></pre></td></tr></table></figure>
-<p>在程式實作 (非人工) 的時候，如何找到 X 滿足上述的條件很重要，由於 X 是所有變數的 subset 情況，相當於 <em> O(2<sup>n</sup>) </em>，很多項目是無用的。假如 <em> R’ = ABE </em>，針對 <em> X = AC </em> 是無效的操作，基本上只要拿所有 function dependencies 的 X = LHS 進行測試即可？這貪心的做法應該是對的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BCNF_Decompose(R)</span><br><span class="line">    find X s.t.: X != (X+) != [all attributes]</span><br><span class="line">    if (not found) then “R is in BCNF”</span><br><span class="line">    let Y = (X+) - X</span><br><span class="line">    let Z = [all attributes] - (X+)</span><br><span class="line">    decompose R into R1(X union Y) and R2(X union Z) </span><br><span class="line">    continue to decompose recursively R1 and R2</span><br></pre></td></tr></table></figure>
-<p>說真的，老師上課講的練習答案還有錯，講算法時也不夠確切，真不知道教授怎麼教的，還是我沒認真上課。當教授發現全班答題有極端的相似錯誤時，到底是我們學不好？還是他沒教好？教授一點都不會反思。</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">5 2</span><br><span class="line">A-&gt;B</span><br><span class="line">C-&gt;D</span><br><span class="line">6 3</span><br><span class="line">AC-&gt;B</span><br><span class="line">C-&gt;D</span><br><span class="line">A-&gt;EF</span><br><span class="line">6 6</span><br><span class="line">AB-&gt;C</span><br><span class="line">BC-&gt;AD</span><br><span class="line">D-&gt;E</span><br><span class="line">CF-&gt;B</span><br><span class="line">BC-&gt;A</span><br><span class="line">BC-&gt;D </span><br><span class="line">5 3</span><br><span class="line">AB-&gt;C</span><br><span class="line">DE-&gt;C</span><br><span class="line">B-&gt;E</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;B</span><br><span class="line">S = &#123;AB, ACDE&#125;</span><br><span class="line">C-&gt;D</span><br><span class="line">S = &#123;AB, CD, ACE&#125;</span><br><span class="line">  </span><br><span class="line">C-&gt;D</span><br><span class="line">S = &#123;CD, ABCEF&#125;</span><br><span class="line">A-&gt;EF</span><br><span class="line">S = &#123;ABC, CD, AEF&#125;</span><br><span class="line">  </span><br><span class="line">AB-&gt;C</span><br><span class="line">S = &#123;ABCDE, ABF&#125;</span><br><span class="line">D-&gt;E</span><br><span class="line">S = &#123;ABCD, DE, ABF&#125;</span><br><span class="line">  </span><br><span class="line">AB-&gt;C</span><br><span class="line">S = &#123;ABD, ABCE&#125;</span><br><span class="line">B-&gt;E</span><br><span class="line">S = &#123;ABC, ABD, BE&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;set&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"><span class="comment">// stackoverflow Database: Decomposing a relation into BCNF</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">parsingStmt</span><span class="params">(<span class="built_in">string</span> s, <span class="built_in">string</span> &amp;l, <span class="built_in">string</span> &amp;r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">size_t</span> pos = s.find(<span class="string">"-&gt;"</span>);</span><br><span class="line">    l = s.substr(<span class="number">0</span>, pos);</span><br><span class="line">    r = s.substr(pos + <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">toBitmask</span><span class="params">(<span class="built_in">string</span> s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">        assert(s[i] &gt;= <span class="string">'A'</span> &amp;&amp; s[i] &lt;= <span class="string">'Z'</span>);</span><br><span class="line">        ret |= <span class="number">1</span>&lt;&lt;(s[i] - <span class="string">'A'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printBitmask</span><span class="params">(<span class="keyword">int</span> state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; (<span class="number">1</span>&lt;&lt;i) &lt;= state; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((state&gt;&gt;i)&amp;<span class="number">1</span>)</span><br><span class="line">            <span class="built_in">putchar</span>(i + <span class="string">'A'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; LHS, RHS;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">findFD</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ss = i;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; LHS.size(); j++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((LHS[j]&amp;i) == LHS[j])</span><br><span class="line">            ss |= RHS[j];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ss != i)</span><br><span class="line">    	<span class="keyword">return</span> findFD(ss);</span><br><span class="line">    <span class="keyword">return</span> ss;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; decomposing(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; state, <span class="keyword">int</span> fdlhs, <span class="keyword">int</span> fdrhs) &#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ret;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; state.size(); i++) &#123; <span class="comment">// X-&gt;Y</span></span><br><span class="line">        <span class="keyword">int</span> X = fdlhs, Y = fdrhs&amp;state[i];</span><br><span class="line">        <span class="keyword">if</span> (Y != state[i] &amp;&amp; (X&amp;state[i]) == X &amp;&amp; Y &amp;&amp; X &amp;&amp; X != Y) &#123;</span><br><span class="line">            ret.push_back(state[i]^X^Y);</span><br><span class="line">            ret.push_back(Y);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ret.push_back(state[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sort(ret.begin(), ret.end());</span><br><span class="line">    ret.resize(unique(ret.begin(), ret.end()) - ret.begin());</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printResult</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;ret)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"S = &#123;"</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ret.size(); i++) &#123;</span><br><span class="line">        printBitmask(ret[i]);</span><br><span class="line">        <span class="keyword">if</span> (i != ret.size() - <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">", "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"&#125;"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="built_in">string</span> s;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m) &#123;</span><br><span class="line">        LHS.clear(), RHS.clear();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="built_in">cin</span> &gt;&gt; s;</span><br><span class="line">            <span class="built_in">string</span> lhs, rhs;</span><br><span class="line">            parsingStmt(s, lhs, rhs);</span><br><span class="line">            LHS.push_back(toBitmask(lhs));</span><br><span class="line">            RHS.push_back(toBitmask(rhs));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ret;</span><br><span class="line">        <span class="keyword">int</span> update = <span class="number">0</span>;</span><br><span class="line">        ret.push_back((<span class="number">1</span>&lt;&lt;n) - <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            update = (<span class="keyword">int</span>) ret.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">                ret = decomposing(ret, LHS[i], findFD(LHS[i]));</span><br><span class="line">                <span class="keyword">if</span> (ret.size() &gt; update) &#123;	</span><br><span class="line">                    printBitmask(LHS[i]);</span><br><span class="line">                	<span class="built_in">printf</span>(<span class="string">"-&gt;"</span>);</span><br><span class="line">                	printBitmask(RHS[i]);</span><br><span class="line">                	<span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">                    printResult(ret);</span><br><span class="line">                	<span class="keyword">break</span>;</span><br><span class="line">                &#125;            </span><br><span class="line">            &#125;</span><br><span class="line">            update = ret.size() &gt; update;</span><br><span class="line">        &#125; <span class="keyword">while</span> (update);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/geometry-hw5" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/12/28/lesson/geometry-hw5/" class="article-date">
-  <time datetime="2014-12-28T00:56:01.000Z" itemprop="datePublished">2014-12-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算幾何/">計算幾何</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/12/28/lesson/geometry-hw5/">計算幾何 - HW05</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/28/lesson/geometry-hw5/" data-id="cin8umvb601w9qoxcj5syia8z" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/12/28/lesson/geometry-hw5/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/計算幾何/">計算幾何</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Chapter-10"><a href="#Chapter-10" class="headerlink" title="Chapter 10"></a>Chapter 10</h2><h3 id="10-1"><a href="#10-1" class="headerlink" title="10.1"></a>10.1</h3><p>In Section 10.1 we solved the problem of finding all horizontal line segments in a set that intersect a vertical segment. For this we used an interval tree with priority search trees as associated structures. There is also an alternative approach. We can use a 1-dimensional range tree on the y-coordinate of the segments to determine those segments whose y-coordinate lies in the y-range of the query segment. The resulting segments cannot lie above or below the query segment, but they may lie completely to the left or to the right of it. We get those segments in O(logn) canonical subsets. For each of these subsets we use as an associated structure an interval tree on the x-coordinates to find the segments that actually intersect the query segment.</p>
-<p>a. Give the algorithm in pseudocode.<br>b. Prove that the data structure correctly solves the queries.<br>c. What are the bounds for preprocessing time, storage, and query time of this structure? Prove your answers.</p>
-<p>給 n 個水平線段，詢問垂直的線段與那些水平線段有相交，輸出所有有相交的線段。</p>
-<p>a. Algorithm:</p>
-<ol>
-<li>對 n 個線段建造 interval tree，使用課本上 CONSTRUCTINTERVALTREE(l) 的做法。</li>
-<li>對 interval tree 上每一個 node 建造 Priority Search Tree，node 依照 x 劃分，分別對 node.x 的左右兩側建造 PST，距離 node.x 越遠的端點，其優先權越高，左右子樹依照 y-value 分兩堆。</li>
-<li>詢問調用 QUERYINTERVALTREE(v, qx)，得到相對應的 ndoe 後，查找每個 node 下的 Priority Search tree 與線段相交，調用 QUERYPRIOSEARCHTREE()。</li>
-</ol>
-<p>b. Prove that the data structure correctly solves the queries.<br>上述的作法與 axis-parallel rectangular query window 相同。而此問題的詢問是 axis-parallel rectangular query window 的 subset，一個線段的詢問是 <em> qx = qx’</em> 的情況，故得證。</p>
-<p>c. What are the bounds for preprocessing time, storage, and query time of this structure? Prove your answers.</p>
-<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>store space : <strong><em> O(n) </em></strong><br>query time : <strong><em> O(log n + k) </em></strong></p>
-<p>前處理因 interval tree 最慘 <em> T(n) = 2 T(n/2) + O(n) </em>，建造 PST 只需要 <em> O(n) </em>，每個線段最多在兩個 PST 中，得到記憶體空間最多為 <em> O(n) </em>。詢問最多為 interval tree 的深度 <em> O(log n) </em></p>
-<h3 id="10-2"><a href="#10-2" class="headerlink" title="10.2"></a>10.2</h3><p>Let P be a set of n points in the plane, sorted on y-coordinate. Show that, because P is sorted, a priority search tree of the points in P can be constructed in <em> O(n) </em> time.</p>
-<p>類似 bottom0up heap construction，已知 bottom-up heap 可在 O(n) 時間內完成。</p>
-<p>假設最後的樹高 H，第 i 次的 bottom-up 會調整 2<sup>H-i</sup> 個元素，每個元素最多下降 i 層。則</p>
-<span>$$O(\sum_{i = 1}^{H} i \times 2^{H-i}) = O(1 \times 2^{H-1} + 2 \times 2^{H-2} + ... ) \\
-= O((2^{H-1} + 2^{H-2} + ... + 1) + (2^{H-2} + 2^{H-3} + ... + 1) + ...) \\
-= O(2^{H} + 2^{H-1} + ... + 1) = O(2^{H+1}) = O(n)$$</span><!-- Has MathJax -->
-<p>雖然要求左右子樹的 y 值要符合左小、右大，但由於已經根據 y 排好，bottom-up 時，保證調整的 shiftdown 操作會符合其性質。</p>
-<h3 id="10-6"><a href="#10-6" class="headerlink" title="10.6"></a>10.6</h3><p>Let I be a set of intervals on the real line. We want to be able to count the number of intervals containing a query point in O(logn) time. Thus, the query time must be independent of the number of segments containing the query point.</p>
-<p>a. Describe a data structure for this problem based on segment trees, which uses only O(n) storage. Analyze the preprocessing time, and the query time of the data structure.<br>b. Describe a data structure for this problem based on interval trees. You should replace the lists associated with the nodes of the interval tree with other structures. Analyze the amount of storage, preprocessing time, and the query time of the data structure.<br>c. Describe a data structure for this problem based on a simple binary search tree. Your structure should have O(n) storage and O(logn) query time. (Hence, segment trees are actually not needed to solve this problem efficiently.)</p>
-<p>有 n 個 [l<sub>i</sub>, r<sub>i</sub>]，詢問一個點 x 被多少個區間包含，輸出為一個整數。</p>
-<p>a. 使用 segment tree 儲存所有的 interval。</p>
-<p>對於其 node(u) 會 cover(l, r) 的區間，紀錄有多少區間 cover(l, r)，最多有 <em> 2n </em> 個葉節點，樹節點最多 <em> 4n </em> 個，每個 node 只有一個額外的整樹紀錄區間個數。然而一個區間最多被拆分 <em> O(log n) </em> 個，依序插入需消耗共計 <em> O(n log n) </em> 時間。</p>
-<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>query time : <strong><em> O(log n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
-<p>b. 使用 inteerval tree 處理 interval。</p>
-<p>對於每個 node 分別對左右兩側建造平衡樹，這個平衡樹要支持某數字是第 k 大或第 k 小的操作。對於一個 node 而言，會有數個區間交 node.x，假設詢問點 qx 在 node.x 左側，則根據左側的平衡樹，查找 qx 是第 k 小，用以回報個數。每一個區間對多在 2 個平衡樹中，故空間複雜度為 <em> O(n) </em>。</p>
-<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>query time : <strong><em> O(log<sup>2</sup> n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
-<p>c. 使用 simple binary search tree。</p>
-<ol>
-<li>將 n 個線段的端點，共計 2n 個丟入 binary search tree。</li>
-<li>每一個 node 紀錄有多少個區間包含它，如果 node 是某個線段的右端點，則無視此區間的包含情況。</li>
-<li>對於每個詢問 qx，輸出 node = lower_bound(qx) 的包含結果。</li>
-</ol>
-<p>將所有端點排序後，會得到 [a<sub>0</sub>, a<sub>1</sub>, a<sub>2</sub>, …, a<sub>2n</sub>]，每一個 node 的資訊是 [a<sub>i</sub>, a<sub>i+1</sub>) 的區間包含訊息。簡單地說，切成最小塊的相鄰資訊，與 segment tree 反過來的概念。</p>
-<p>前處理使用 line sweep algorithm 掃描線算法，來找到每一個端點被多少個線段包含。掃描線算法需要 <em> O(n log n) </em>，binary search tree 只需要 <em> O(n) </em>，查找 lower_bound 只需要 <em> O(log n) </em>，保證最多 2n 個端點，樹最多使用 <em> O(n) </em> 個空間。</p>
-<p>preprocessing time : <strong><em> O(n log n + n) = O(n log n) </em></strong><br>query time : <strong><em> O(log n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
-<h3 id="10-7"><a href="#10-7" class="headerlink" title="10.7"></a>10.7</h3><p>a. We want to solve the following query problem: Given a set S of n disjoint line segments in the plane, determine those segments that intersect a vertical ray running from a point (qx,qy) vertically upwards to infinity. Describe a data structure for this problem that uses O(nlogn) storage and has a query time of O(logn+k), where k is the number of reported answers.<br>b. Now suppose we only want to report the first segment hit by the query ray. Describe a data structure for this problem with O(n) expected storage and O(logn) expected query time. Hint: Apply the locus approach</p>
-<p>給定 n 個不相交的線段，詢問一點開始的射線，射線方向向 y 軸正向，輸出所有交到的線段。</p>
-<p>a. 使用 segment tree，依照所有的端點的 x 值，接著對於每個 node 建造以 y 值得 binary search tree，儲存數個線段，因為不相交，保證 binary search tree 在 [xl, xr] 區間的所有線段都是單調的。每個線段最多切成 <em> O(log n) </em>，故使用空間 <em> O(n log n) </em>，詢問 <em> O(log n + k) </em>，只須訪問 <em> O(log n) </em> 個節點，從 binary tree tree 最遠的開始往下輸出即可。</p>
-<p>b. 只找第一個碰到的線段，使用 trapezoidal map 找到 point location，走訪 DG 其最後一個 segment below 的情況就是輸出結果。已知 trapezoidal map 在隨機增量算法中，expected size of search structure <em> O(n) </em>，expected query time <em> O(log n) </em>。</p>
-<h2 id="Chapter-11"><a href="#Chapter-11" class="headerlink" title="Chapter 11"></a>Chapter 11</h2><h3 id="11-1"><a href="#11-1" class="headerlink" title="11.1"></a>11.1</h3><p>In Chapter 1 we defined the convex hull of a set P of points as the intersection of all convex sets containing the points. In the current chapter we saw another definition: the convex hull of P is the set of all convex combinations of the points in P. Prove that these two definitions are equivalent, that is, prove that a point q is a convex combination of points in P if and only if q lies in every convex set containing P.</p>
-<p>首先 convex combinations 指得是<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax -->，證明 q 會在所有的凸包集中，也就是 q 點相當於任抓幾點出來，會在這幾點形成的凸包中，公式計算類似物理上的質心計算。</p>
-<p>(=&gt;)<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax -->. Prove q lies in every convex set containing P.</p>
-<ul>
-<li>Base :  <span>$n = 2, q = \lambda_{1} p_{1} + \lambda_{2} p_{2}$</span><!-- Has MathJax -->, q lies on segment p<sub>1</sub>p<sub>2</sub>, which must be a subset of every convex set containing p<sub>1</sub>, p<sub>2</sub>.</li>
-<li>Suppose:  <span>$n \le k$</span><!-- Has MathJax --> 均成立，當 <em> n = k + 1 </em> 時<span>$\lambda_{k+1} = 0$</span><!-- Has MathJax --> 必定成立。  </li>
-</ul>
-<span>$$\begin{align}
-&amp; q = \lambda_{1} p_{1} + \lambda_{2} p_{2} + ... + \lambda_{k} p_{k} + \lambda_{k+1} p_{k+1} \\
-&amp; = (1 - \lambda_{k+1}) \left [ \frac{\lambda_{1}}{1 - \lambda_{k+1}} p_{1} + \frac{\lambda_{2}}{1 - \lambda_{k+1}} p_{2} + ... + \frac{\lambda_{k}}{1 - \lambda_{k+1}} p_{k} \right ] + \lambda_{k+1} p_{k+1} \\
-&amp; = (1 - \lambda_{k+1}) ({\lambda_{1}}&apos; p_{1} + {\lambda_{2}}&apos; p_{2} + ... + {\lambda_{k}}&apos; p_{k}) + \lambda_{k+1} p_{k+1} \\
-&amp; \text{where } {\lambda_{i}}&apos; = \frac{\lambda_{i}}{1 - \lambda_{k+1}}, \lambda_{1} + \lambda_{2} + ... + \lambda_{k} = 1 - \lambda_{k+1} \\
-&amp; \sum_{i = 1}^{k} {\lambda_{i}}&apos; = \sum_{i = 1}^{k} \frac{\lambda_{i}}{1 - \lambda_{k+1}} = \frac{1}{1 - \lambda_{k+1}} \sum_{i = 1}^{k} \lambda{i} = 1
-\end{align}$$</span><!-- Has MathJax -->  
-<p>Hence, the point<span>${q}&apos; = \sum_{i=1}^{k} {\lambda_{i}}&apos; p_{i}$</span><!-- Has MathJax --> is convex combination of p<sub>1</sub>, p<sub>2</sub>, …, p<sub>k</sub>, q’ lies every convex set containing the them.  </p>
-<span>$q = (1 - \lambda_{k+1}) {q}&apos; + \lambda_{k+1} p_{k+1}$</span><!-- Has MathJax -->  
-<p>every convex set containing p<sub>1</sub>, p<sub>2</sub>, …, p<sub>k</sub>, q’. Since it also contains p<sub>k+1</sub> the set must contain q as a convex combination of two points.<br>(&lt;=) Prove q lies in every convex set containing P =&gt;<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax --><br>In particular, q lies in the smallest convex set, the convex hull of P. Triangulate the convex hull, q must lie in one of the triangles<span>$\triangle p_{1} p_{2} p_{3}$</span><!-- Has MathJax -->. Connect q to p<sub>1</sub>, p<sub>2</sub>, p<sub>3</sub>. This partitions the triangle into tree smaller ones.  </p>
-<span>$$\left\{\begin{matrix}
-\triangle p_{1} p_{2} p_{3} = A \\
-\triangle q p_{2} p_{3} = A_{1} \\ 
-\triangle q p_{1} p_{3} = A_{2} \\ 
-\triangle q p_{1} p_{2} = A_{3} \\
-A = A_{1} + A_{2} + A_{3}
-\end{matrix}\right. \Rightarrow q = \frac{A_{1}}{A} p_{1} + \frac{A_{2}}{A} p_{2} + \frac{A_{3}}{A} p_{3}$$</span><!-- Has MathJax -->  
-<p>得證。</p>
-<h3 id="11-2"><a href="#11-2" class="headerlink" title="11.2"></a>11.2</h3><p>Prove that the worst case running time of algorithm CONVEXHULL is O(n3), and that there are sets of points where a bad choice of the random permutation makes the algorithm actually need Θ(n3) time.</p>
-<p>CONVEXHULL 共有三層 for loop.</p>
-<ul>
-<li>LINE 7 如果每次的新加入的 p<sub>i</sub> 都在 convex hull 外面，即 F<sub>conflict</sub>(p<sub>i</sub>) 非空。</li>
-<li>LINE 10<span>$e \in \pounds$</span><!-- Has MathJax -->，而最多有 i - 1 個，投影的情況下，最多 i 個點都在凸包上，因此最多產生 i - 1 個 facets。</li>
-<li>LINE 18 對每個新加入的 facets 最多增加 n - i 個 conflict 點。</li>
-</ul>
-<p>故最慘 O(n<sup>3</sup>)。</p>
-<h3 id="11-6"><a href="#11-6" class="headerlink" title="11.6"></a>11.6</h3><p>Describe a data structure that allows you to test whether a query point q lies inside a convex polytope with n vertices in R3. (Hint: Use the results from Chapter 6.)</p>
-<p>快速判斷一個點是否在 3D convex hull 中。</p>
-<ul>
-<li>方案一：3D point location by 3D trapezoidal map. 感覺非常難做，弄出很多柱狀體。</li>
-<li>方案二：convex hull 最多會有 3n - 6 個面，最多有 3n - 6 個面不等式，判斷是否全在同一側 <em> O(n) </em>。</li>
-<li>方案三：將做好的 3D convex hull，將所有點投影到 x-y 平面，每一個梯形區域會由 2 個 convex hull 的面覆蓋，要不沒有面。對於投影的 2D 建造 trapezoidal map。query 一個點 q 時，先投影到 x-y 平面，找到所在的梯形區域，針對兩面的不等式進行判斷。預處理 <em> O(n log n) </em>，詢問 <em> O(log n) </em>。</li>
-</ul>
-<h3 id="11-8"><a href="#11-8" class="headerlink" title="11.8"></a>11.8</h3><p>Describe a randomized incremental algorithm to compute the intersection of half-planes, and analyze its expected running time. Your algorithm should maintain the intersection of the current set of half-planes. To figure out where to insert a new half-plane, maintain a conflict graph between the vertices of the current intersection and the half-planes that are still to be inserted.</p>
-<ul>
-<li><p>維護半平面 hi 與 Sj 的相交資訊。</p>
-</li>
-<li><p><code>add half-place</code><br>繞外部 (半平面的另一側的凸包邊) 的 edge e，將 h<sub>conflict</sub>(e) 移除掉 intersection(e, h<sub>conflict</sub>(e)) in<span>$\bar{h_{i}}$</span><!-- Has MathJax -->。<br>期望值的複雜度依賴中間過程中產生的交集點個數。</p>
-</li>
-<li><p>假設 c(H, h) 表示 inter(H) 和 h 的 conflict vertice 個數。<br>則<span>$\sum_{i = 1}^{n} \left [ \frac{2}{i} \sum_{h \in S \setminus S_{i} }{c(H,  h)} \right ]$</span><!-- Has MathJax -->－所有的花費。  </p>
-</li>
-</ul>
-<span>$$E[c(S_{i}, h_{i})] = \frac{1}{n-i} \sum_{h \in S \setminus S_{i} } c(S_{i}, h) \\
-\Rightarrow \sum_{i = 1}^{n} \left ( \frac{2}{i} \sum_{h \in S \setminus S_{i} }{c(H,  h)} \right ) = \sum_{i = 1}^{n} \left ( \frac{2}{i} \sum_{h \in S \setminus S_{i} }{E(S_{i},  h_{i-1})} \right ) \\
-= \sum_{i = 1}^{n} \left ( \frac{2}{i} (n - i) E(S_{i},  h_{i-1}) \right ) = \sum_{i = 1}^{n} \left ( \frac{2(n-i)}{i} E[\text{the number of of vertices destroy ed at i+1}] \right )$$</span><!-- Has MathJax -->  
-<p>對於每一個 vertice v 被創建的時間為 tc(v), 被移除的時間 td(v)。</p>
-<span>$$\sum_{i = 1}^{n} \left ( \frac{2(n-i)}{i} E[\text{the number of vertices destroy ed at i+1}] \right ) \\
-= \sum_{v} \frac{2(n - td(v) + 1)}{td(v) - 1} \le \sum_{v} \frac{2(n - tc(v)) + 2}{tc(v)} \\
-\le \sum_{n}^{i=1} \frac{2(n - i) + 2}{i} E[\left |v \mid tc(v) = i \right |] \\
-= \sum_{n}^{i=1} \frac{2(n - i) + 2}{i} \times 2
-= O(\sum_{n}^{i=1} \frac{n}{i} - 1) = O(n ln n)$$</span><!-- Has MathJax -->  
-<p>得證。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson-database" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/12/17/lesson-database/" class="article-date">
-  <time datetime="2014-12-17T05:13:28.000Z" itemprop="datePublished">2014-12-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/12/17/lesson-database/">資料庫系統－劉寶鈞</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/17/lesson-database/" data-id="cin8umtz00041qoxcrpqhi8fj" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/12/17/lesson-database/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/資料庫系統/">資料庫系統</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/鬼畜/">鬼畜</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>single value function 的意思？問問 <strong> 劉寶鈞 </strong> 老師 吧！</p>
-</blockquote>
-<h2 id="課程心得"><a href="#課程心得" class="headerlink" title="課程心得"></a>課程心得</h2><p><strong> 強烈建議遠離 </strong> 此課程，分析如下描述，<strong> 劉寶鈞 </strong> 老師強烈建議把定義背得一模一樣，最好不要翻譯，因為很難達到一樣的水平，也很難說好。資料庫歷史悠久，因此歷史課程會持續一陣子，課程內容並沒有相當多的實務經驗。老師秉持著數年專業，保證嚴格批閱所有考卷。</p>
-<p>如果沒人抱怨，我來說說這鬼畜的經歷，絕不能讓其消散。</p>
-<h2 id="期中考分析"><a href="#期中考分析" class="headerlink" title="期中考分析"></a>期中考分析</h2><blockquote>
-<p>保證題目描述與錯字 100% 複製考卷</p>
-</blockquote>
-<ol>
-<li><p>傳統檔案系統為何不能共享 而資料庫如何做到可以共享？(10 分)<br><strong> 傳統檔案系統的資料存在各自的電腦中，而且格式不一，有相當大的重複資料，由於各自管理所需要的資料，更新時間也會不一致，因此在共享的支援相當不利，共享的結果不一定是最新、不能同時匹配在不同的電腦中的資料。</strong><br><strong> 資料庫系統將資料集中化管理，收集到同一個系統中，並且藉由 SQL 中的 DML 支持使用者進行共享資料的存取、檢索，由系統管理同一時間多名使用者對資料的存取。</strong><br>上述為零分作答，劉寶鈞老師說明若沒提到 <code>SCHEME DATA</code> 一律零分。</p>
-</li>
-<li><p>以 Relation Model 為例 說明 Data Model 之三要素。(10 分)<br>略說－有 資料表示法、資料的操作、約束條件，舉幾個例子便可完事。<br>此題作答還算正常，但是沒有舉例子大致上會被扣到慘不忍睹。</p>
-</li>
-<li><p>比較說明 DDL 及 DML。(10 分)<br>略說－Data Definition Language、Data Manipulation Language，分別是定義資料庫、資料表用的，另一個是對使用者詢問、操作資料。<br>此題作答還算正常，但是沒有舉例子大致上會被扣到慘不忍睹。</p>
-</li>
-<li><p>何謂 3-value logic ？並證明 <code>P OR (NOT P) = 1</code> 在 2-value logic 是成立的，但在 3-value logic is not always true。(10 分)<br>3-value logic 分別為 <code>true</code>, <code>false</code>, <code>unknown</code>。    </p>
-</li>
-</ol>
-<p>在 2-value 中</p>
-<table>
-<thead>
-<tr>
-<th>P</th>
-<th>NOT P</th>
-<th>P OR (NOT P)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>T</td>
-<td>F</td>
-<td>T</td>
-</tr>
-<tr>
-<td>F</td>
-<td>T</td>
-<td>T</td>
-</tr>
-</tbody>
-</table>
-<p>在 3-value 中</p>
-<table>
-<thead>
-<tr>
-<th>P</th>
-<th>NOT P</th>
-<th>P OR (NOT P)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>T</td>
-<td>F</td>
-<td>T</td>
-</tr>
-<tr>
-<td>F</td>
-<td>T</td>
-<td>T</td>
-</tr>
-<tr>
-<td>unknown</td>
-<td>unknown</td>
-<td>unknown</td>
-</tr>
-</tbody>
-</table>
-<p>用 0 表示 false, 1 表示 true, 1/2 表示 unknown，AND = MIN, OR = MAX, NOT = 1 - x。<br>=&gt; P = 1/2, P OR (NOT P) = MAX(0.5, 1 - 0.5) = 0.5 = unknown。</p>
-<p>unknown 不屬於 true，因此 3-value 在 <code>P OR (NOT P) = 1</code> not always true。<br>以上作答零分，劉寶鈞老師在考卷上對 <code>unknown</code> 用紅筆寫了 <code>What ?</code> 一開始直接零分，之後才勉為其難拿到五分。投影片上面也這麼寫的，到底在 <code>What ?</code> 什麼勁，你自己拿出來講的東西上都這麼寫，寫下去分數還沒有？</p>
-<ol>
-<li><p>寫出若含 NULL value 五個 single value function 的規則。(10 分)<br>WHAT the fuck about <code>single value function</code> ?<br>略列表 AND OR NOT EQUAL PRODUCT 的幾種情況。<br>上述為零分作答，劉寶鈞老師說明 single value function 的要寫出 aggregate function。我問老師「為什麼不直接寫 aggregate function？」老師回答道「就是故意不這麼寫。」</p>
-</li>
-<li><p>寫出 SQL query 之 SELECT, FROM, WHERE, GROUP BY, HAVING 之義意。(10 分)<br>錯字直接按表抄，這一題原本對於 HAVING 的解釋不夠完善，掛掉直接只剩下五分。WTF，五個定義錯一個就直接砍一半分數？對於 HAVING 只有寫提供 WHERE 無法進行 aggregation function 的判斷條件，必須與 GROUP BY 一起使用。這樣難道錯了嗎？GROUP BY 都解釋了，你還說我錯？</p>
-</li>
-</ol>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>我不是肚子裡的肥蟲，一定是我蠢得無可救藥，拿了不及格的成績？</p>
-<p>很久沒有衝動想要殺人，這下子又開始想殺人。</p>
-<p>助教不替老師改考卷，讓老師這樣改考卷行嗎？</p>
-<p>我是個壞學生，這門課真的氣死人，出口罵髒話根本不足以洩憤。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/civilization-w11" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/12/05/lesson/civilization-w11/" class="article-date">
-  <time datetime="2014-12-05T07:47:24.000Z" itemprop="datePublished">2014-12-05</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/NA67biS.png" rel="gallery_cin8umv8i01upqoxc8h0a4tkr">
-        <img src="http://i.imgur.com/NA67biS.png" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/12/05/lesson/civilization-w11/">[通識] 文明的進程 Week 11</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/05/lesson/civilization-w11/" data-id="cin8umv8i01upqoxc8h0a4tkr" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/12/05/lesson/civilization-w11/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="主題－攻擊欲的轉變"><a href="#主題－攻擊欲的轉變" class="headerlink" title="主題－攻擊欲的轉變"></a>主題－攻擊欲的轉變</h1><p>不知何時開始，人們對於暴力行為開始無法容忍，逐漸地喪失對於暴力的經驗。曾經也打過架，恨不得把對方殺了，即使捶得再大力也弄不出傷口來，也許被馴化的怒火無法傷害任何人，只剩下精神上的威嚇。拿刀殺人的場景不是在電視情節中，就只能在夢裡、幻想裡去想這些。</p>
-<p>同類相互攻擊在大自然中常見不過的事，為什麼在人類身上卻逐漸消失？沒錯！因為我們有穿越好幾世代的外部記憶體－文化。</p>
-<h2 id="攻擊欲"><a href="#攻擊欲" class="headerlink" title="攻擊欲"></a>攻擊欲</h2><p>曾經的人們為了生活，長久時間的定居，明天在哪都不曉得。只要一戰爭，贏了高興，輸了什麼都沒，生命就是這麼地短暫，中古世紀曾有一段話「看見死亡才能安心、吃得好、睡得好」那是在什麼樣的生存條件下，活著不是殺死對方，又是被殺、被壓迫的日子。面對死亡才能安心，這才是真正的活著！「<strong> 未知死，焉知生 </strong>」古人說得有道理。</p>
-<p>為什麼至今仍有黑道白道之分？當白道無法解決的事情，黑道顯得更有威震力，看看「<a href="http://zh.wikipedia.org/wiki/%E5%B1%B1%E5%8F%A3%E7%B5%84" target="_blank" rel="external">日本黑道山口組</a>」在許多電影情節中，黑道的存在反而凸顯了到底是傾聽社會聲音做事？還是聽從自己的本能。社會給予的牢籠，促使我們不做暴力的行為，隱藏自己的情感，然而這些情感去哪了？</p>
-<p>沒有暴力的行為，如何表示自己的不滿？敵意？產生出的無力感、關係冷漠、義憤，用另外一種方式宣洩自己的攻擊欲，「<strong> 如果這些世界不接受我，那就摧毀這個世界吧！ </strong>」沒了直來直往的暴力世界，卻產生出兩個極端的世界，被壓抑著暴力的人們何時會爆發呢？</p>
-<p>殘暴的必要性－對敵人寬厚，就是壯大對方，未來必有危害，「斬草不除根，春風吹又生」不殺行嗎？用仁慈看那個世界，你就是找死！然而現今的攻擊欲，單純的攻擊欲也傷不了任何人，用武器所需要的技術越來越高，沒有技術也殺不死人，這片高牆越來越高厚呢。</p>
-<h2 id="陽剛"><a href="#陽剛" class="headerlink" title="陽剛"></a>陽剛</h2><p>起初所謂的陽剛只得是什麼？不正是那殘暴的事實嗎？現今看看那些陽剛的定義，早已經被陰柔化，受到捧吹的帥哥又是在古時的男人嗎？追求性別平等的代價，造成暴力的消失，如果還要展現自己的暴力，只能迂迴表達自己那一身的肌肉。</p>
-<h2 id="行刑"><a href="#行刑" class="headerlink" title="行刑"></a>行刑</h2><p>既然沒法殺人，公開行刑正是大眾娛樂，一個人被處刑，整座城市的人都在看，這是為什麼？在電影情節中，殺人的血腥畫面是否令人振奮？追求安心才是本能！</p>
-<p>現在有很多不殺人的行刑，例如剝奪尊嚴，相當於利用羞恥感、價值觀的攻擊，文化的禁忌－身體的隱蔽性，這還不讓人精神崩潰嗎？讓一個人不成人形的方式很多，精神是如此地脆弱。</p>
-<h2 id="死亡"><a href="#死亡" class="headerlink" title="死亡"></a>死亡</h2><p>過去人們很難活長，活到三、四十歲就算有幸，也因為戰爭死亡相當常見，如果人們對死亡感到悲傷，豈不是沒辦法過生活？整年都要哭天喊地的，你能說他們無情嗎？不行，他們本應該這麼做，否則沒辦法前進。</p>
-<p>古人很容易 <strong> 認命 </strong>，對於前途未卜的不安，明天還能活著嗎？戰爭就在那麼一夕之間開打，生計被土地綁著，想走也走不了。有一夜沒一夜的的恐懼，「<strong> 今宵有酒今宵醉 </strong>」死了就什麼都沒了，為何不現在享用？總是 <strong> 盤算未來 </strong>，那是你們現代人的奢侈。</p>
-<p>血濃於水，資產階級興起後，家族之間的私鬥相當常見，衝突一來，不少家族因此滅絕。信得過的人只有血緣關係的人，不要說為何當官的都想找自己人，找不同處境的人，不怕在背後被人捅一刀嗎？(不論豬隊友)</p>
-<p><strong> 活在當下，並非沒有遠見、逃避現實 </strong>，誰知道明天在哪？那等絕望，你還有盤算未來的本錢嗎？</p>
-<h2 id="剝奪"><a href="#剝奪" class="headerlink" title="剝奪"></a>剝奪</h2><p>如何表示對別人的不滿？當下只剩下視覺的攻擊，作為一個活在現代的人，動手動腳就已經輸一半，觸覺已被作為侵略他人身體的領域，嗅覺則不能作為認識人的方法 (因為那如野獸一樣)。</p>
-<p>視覺已成為唯一攻擊欲的發揮。觀賞球類運動也是如此，作為球迷欣賞支持的隊伍侵略，但自己除了看，什麼事情都不能做，一旦做了就是不文明的舉動。</p>
-<p>暴力遊戲會使得人暴力嗎？愚蠢的人們啊，在怎麼轉換情感，也不可能百分百的宣洩。</p>
-<h2 id="魅力化"><a href="#魅力化" class="headerlink" title="魅力化"></a>魅力化</h2><p>論吸血鬼、狼人的暴力魅力化，腐女們準備好了嗎？</p>
-<p>以下開放暴動。本文 … 略。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/3/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><a class="page-number" href="/categories/學校課程/page/2/">2</a><a class="page-number" href="/categories/學校課程/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/categories/學校課程/page/5/">5</a><a class="page-number" href="/categories/學校課程/page/6/">6</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/5/">Next &raquo;</a>
@@ -1468,7 +1481,7 @@ A = A_{1} + A_{2} + A_{3}
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">76</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">80</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1478,6 +1491,38 @@ A = A_{1} + A_{2} + A_{3}
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10082/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10082. Fast Find Prime Number (OpenMP)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10081/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10081. Fast Game of Life</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10026/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10026. Fast N-Queen</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10025/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10025. Fast Image Match (OpenMP)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/20/jg-10022/">
@@ -1525,38 +1570,6 @@ A = A_{1} + A_{2} + A_{3}
                 <i class="icon-file-o"></i> 
               
             數據分割 區間分塊小技巧</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/03/16/jg-10085/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10085. Parallel Count (debug)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/03/16/jg-10084/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10084. Prefix Sum (pthread)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13006/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13006 - Cake cut</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13010/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13010 - Galactic taxes</a>
           </li>
         
       </ul>

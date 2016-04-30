@@ -89,6 +89,715 @@
         
           <section id="main">
   
+    <article id="post-vr-note4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/13/vr-note4/" class="article-date">
+  <time datetime="2015-06-12T23:31:58.000Z" itemprop="datePublished">2015-06-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/13/vr-note4/">虛擬實境 建模 SVD 筆記</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cinmkxufv00ry2xxc7hbk26f4" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/06/13/vr-note4/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <p>由於在選讀論文時，和上課都遇到相關問題，但一直對這 SVD 的實際感觸沒很深，了解數學計算，卻不知道特性一直很困惑我。在這裡收集一下曾經學過的內容，當初在線性代數時沒有學到這一塊，至於 <span>$LU$</span><!-- Has MathJax --> 分解有沒有上到過，我自己也深感困惑，不過看一下網路資源勉強還能理解。</p>
+<p>至於 SVD 則在線性代數非常重要，在許多領域時常會遇到，如巨量資料 (massive data)？機器學習？影像處理？就我所知理解看看吧！</p>
+<h2 id="SVD"><a href="#SVD" class="headerlink" title="SVD"></a>SVD</h2><p>定義從一般式</p>
+<span>$$A_{m, n} = U_{m, m} \Sigma_{m, r} V_{n, r}^T$$</span><!-- Has MathJax -->
+<p>得到縮減過後的相似矩陣</p>
+<span>$$A_{m, n} \cong U_{m, r} \Sigma_{r, r} V_{n, r}^T$$</span><!-- Has MathJax -->
+<p>給定 <span>$A$</span><!-- Has MathJax --> 矩陣，要變成三個矩陣相乘，可以壓縮儲存空間，一般來說都是拿來得到近似的 <span>$A$</span><!-- Has MathJax --> 矩陣，藉由刪除過小的 eigenvalue 來完成，eigenvalue 就是所謂的矩陣特徵值。</p>
+<p>在學線性代數時，沒有仔細想過 eigenvalue 的意義所在，每一個 eigenvalue 也會對應一個 eigenvector，這些 eigenvalue 大小對應的分佈的相關性大小，而 eigenvector 則表示新的轉換軸的方向。類似最小平方法得到的結果。</p>
+<p>但在巨量資料課程中我們可以知道一件事情，若是稀疏矩陣 <span>$A$</span><!-- Has MathJax -->，經過 SVD 運作後，得到 <span>$U, V$</span><!-- Has MathJax --> 矩陣都是稠密的，因此空間儲存反而划不來，因此會有另外一種解法 CUR，可以上網搜尋 massive data mining coursera 在 <a href="http://www.mmds.org/" target="_blank" rel="external">這裏</a> 可以知道關於 CUR 的資訊。</p>
+<p>從課程中的例子來看，假設在電影評論系統中，則 A 矩陣表示電影對人的喜好度，則 SVD 相當於如下描述 (假想，單純的矩陣概念)</p>
+<ul>
+<li><span>$A(i, j)$</span><!-- Has MathJax --> 電影編號 i 對用戶 j 的好感度</li>
+<li><span>$U(i, j)$</span><!-- Has MathJax --> 電影編號 i 對電影屬性 j 的成分程度</li>
+<li><span>$\Sigma(i, j)$</span><!-- Has MathJax --> 電影屬性 i 跟電影屬性 j 的之間重要性。</li>
+<li><span>$V(i, j)$</span><!-- Has MathJax --> 表示用戶 i 對電影屬性 j 的偏愛程度。</li>
+</ul>
+<p>也就是說有一些電影屬性不是很重要，可以移除掉，這樣的表示法得到一個近似的矩陣 <span>$A$</span><!-- Has MathJax -->。</p>
+<p>在巨量資料中一個有趣的運用，可以用在購物推薦系統中，來達到預測相關性，跟某人對其他產品的喜好程度或者是需求性，但是在處理之前會遇到矩陣過大，但又非常稀疏，為了解決紀錄問題，就有奇奇怪怪的 Dimensionality Reduction 來完成，SVD 就是其中一種方法。</p>
+<p>其他應用部分，將不重要的特徵值消除，來求得哪些元素是需要的，看到有一篇 <a href="http://www.cnblogs.com/leftnoteasy/archive/2011/01/19/svd-and-applications.html" target="_blank" rel="external">文章</a> 在做 PCA 主成份分析。</p>
+<span>$$\begin{align}
+&amp; A_{m, n} V_{n, r} = U_{m, r} \Sigma_{r, r} V_{n, r}^T V_{n, r} \\
+&amp; \because V_{n, r}^T V_{n, r} = I \\
+&amp; \therefore A_{m, n} V_{n, r} = U_{m, r} \Sigma_{r, r} \\
+\end{align}$$</span><!-- Has MathJax --> 
+<p>如此一來就可以知道要保留哪幾個主要資訊。</p>
+<p>在虛擬實境論文中也是有這樣的處理，做的是 CT 建模，將模型的每個頂點，要計算 QEM (最小二次誤差) 的重要性，可以將其表示成一個矩陣，利用 SVD 方式得到，來決策要保留前 k 個重要性的節點，再將其他節點移除，來讓新得到節點盡可能地可以貼近真實模型。</p>
+<p>之所以會這麼做，是要利用內插法來強迫得到邊緣偵測，但這樣會造成很多新頂點，為了要把過多頂點消除，使用 QEM 作為評價方法，利用 SVD 來完成大規模刪除的操作。</p>
+<h2 id="Map-Reduce"><a href="#Map-Reduce" class="headerlink" title="Map-Reduce"></a>Map-Reduce</h2><p>都明白 SVD 是一個很繁複的做法，有一個 <span>$O(N^3)$</span><!-- Has MathJax --> 的算法來求得所有 eigenvalue，若要用一般電腦跑，光是得到一個大矩陣所有 eigenvalue 複雜度相當高，其複雜程度沒有細讀過。有一種迭代的方法，類似馬可夫過程，每一次迭代可以逼近一個 eigenvalue，為了得到 n 個 eigenvalue，想必要迭代非常多次。運用 Map-Reduce 分散到很多台群落電腦加快矩陣乘法，這種方法的複雜度是可以期待的。</p>
+<p>詳細操作 <a href="http://infolab.stanford.edu/~ullman/mmds/ch11.pdf" target="_blank" rel="external">請參考</a></p>
+<p>eigenvalue <span>$\lambda$</span><!-- Has MathJax --> 滿足</p>
+<span>$Av = \lambda v$</span><!-- Has MathJax -->
+<p>現在開始迭代 <span>$v$</span><!-- Has MathJax --> 讓其等式趨近於穩定</p>
+<span>$A x_{i} = \lambda x_{i+1}$</span><!-- Has MathJax -->
+<p>初始化<span>$x_{i} = (1, 1, ..., 1, 1)$</span><!-- Has MathJax --> ，其中<span>$|x_{i}| = 1$</span><!-- Has MathJax --> 藉由長度為 1 的向量，來求得<span>$\lambda$</span><!-- Has MathJax -->，之所以要對 <span>$x$</span><!-- Has MathJax --> 進行正規化，其一就是要求出<span>$\lambda$</span><!-- Has MathJax -->，另一個原因是要看何時穩定，當<span>$|x_{i} - x_{i+1}|$</span><!-- Has MathJax --> 差距夠小時，則表示進入穩定狀態。</p>
+<p>那就可以得到矩陣 <span>$A$</span><!-- Has MathJax --> 的其中一個 eigenvalue，為了求得另外一組解，得到新的<span>$A^* = A - \lambda x x^T$</span><!-- Has MathJax -->，再對<span>$A^*$</span><!-- Has MathJax --> 找到 eigenvalue，不斷地迭代下去。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-security-notes5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/12/security-notes5/" class="article-date">
+  <time datetime="2015-06-11T23:20:54.000Z" itemprop="datePublished">2015-06-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/12/security-notes5/">近代加密 數位簽章 DSA 筆記</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cinmkxttu007z2xxc5uhqizly" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/06/12/security-notes5/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="DSA"><a href="#DSA" class="headerlink" title="DSA"></a>DSA</h2><p>Digital Signature Standard (DSS) 數位憑證標準，而有一個 DSA 演算法來完成憑證。</p>
+<p>每一次憑證傳送三個參數 <span>$(r, s, M)$</span><!-- Has MathJax -->，利用私用金鑰進行加密。讓對方使用公鑰進行驗證。</p>
+<ul>
+<li><span>$r = (g^k \mod p) \mod q$</span><!-- Has MathJax --></li>
+<li><span>$s = k^{-1}(SHA(M) + x \times r) \mod q$</span><!-- Has MathJax -->
+</li>
+</ul>
+<p>give receiver <span>$(r, s, M)$</span><!-- Has MathJax -->, we have random (one-time) <span>$k$</span><!-- Has MathJax --> &amp; private key <span>$x$</span><!-- Has MathJax --></p>
+<p>每一次簽名時，最好使用隨機亂數 <span>$k$</span><!-- Has MathJax --> 作為簽章用途，隨用即棄，若發生重複使用，將會發生被攻擊，被攻擊者拿到私鑰後，攻擊者就能進行偽裝。</p>
+<h3 id="Attack"><a href="#Attack" class="headerlink" title="Attack"></a>Attack</h3><p>if reused <span>$k$</span><!-- Has MathJax --></p>
+<p>如果重複使用隨機變數 <span>$k$</span><!-- Has MathJax -->，可以藉由夾擊的方式得到，雖然不知道加密的隨機亂數 <span>$k$</span><!-- Has MathJax --> 究竟是什麼，藉由夾擊可以把 <span>$k$</span><!-- Has MathJax --> 消除，利用乘法反元素反求 <span>$x$</span><!-- Has MathJax --> 是多少，公式如下所述。</p>
+<ul>
+<li><span>$k = s1^{-1} (SHA(M1) + x \times r) \mod q$</span><!-- Has MathJax --> - (1)</li>
+<li><span>$k = s2^{-1} (SHA(M2) + x \times r) \mod q$</span><!-- Has MathJax --> - (2)</li>
+</ul>
+<p>subtract (1) - (2)</p>
+<ul>
+<li><span>$0 = s1^{-1} SHA(M1) - s2^{-1} SHA(M2) + (s1^{-1} - s2^{-1}) x \times r \mod q$</span><!-- Has MathJax --></li>
+<li><span>$s1^{-1} SHA(M1) - s2^{-1} SHA(M2) = (s2^{-1} - s1^{-1}) x \times r \mod q$</span><!-- Has MathJax --></li>
+<li><span>$x = (s1^{-1} SHA(M1) - s2^{-1} SHA(M2)) \times (s2^{-1} - s1^{-1})^{-1} \times r^{-1} \mod q$</span><!-- Has MathJax -->
+</li>
+</ul>
+<p>get private key. Dangerous !</p>
+<h3 id="Verify"><a href="#Verify" class="headerlink" title="Verify"></a>Verify</h3><p>驗證的正確性與否，接收者需要計算以下四個步驟來完成驗證。</p>
+<ul>
+<li><span>$w = s^{-1} \mod q$</span><!-- Has MathJax --></li>
+<li><span>$u1 = (SHA(M) \times w) \mod q$</span><!-- Has MathJax --></li>
+<li><span>$u2 = r \times w \mod q$</span><!-- Has MathJax --></li>
+<li><span>$v = g^{u1} y^{u2} \mod q$</span><!-- Has MathJax -->
+</li>
+</ul>
+<p>test <span>$v = r$</span><!-- Has MathJax -->, why correct ?</p>
+<p>理論的正確性可以參考以下證明，把公開的 <span>$y = g^x \mod p$</span><!-- Has MathJax --> 拿出來，這個安全性取決於離散對數的算法難度。</p>
+<ul>
+<li>known <span>$y = g^x \mod p$</span><!-- Has MathJax -->, <span>$x$</span><!-- Has MathJax --> is a private key</li>
+<li>because <span>$s = k^{-1}(SHA(M) + x \times r) \mod q$</span><!-- Has MathJax --></li>
+<li>then <span>$k = s^{-1}(SHA(M) + x \times r) \mod q$</span><!-- Has MathJax --></li>
+</ul>
+<p>want <span>$r = (g^k \mod p) \mod q$</span><!-- Has MathJax --></p>
+<ul>
+<li><span>$r = (g^k \mod p) \mod q = g^{s^{-1}(SHA(M) + x \times r)} \mod q$</span><!-- Has MathJax --></li>
+<li><span>$r = g^{s^{-1} SHA(M)} \times g^{x (s^{-1} \times r)} \mod q$</span><!-- Has MathJax --></li>
+<li><span>$r = g^{s^{-1} SHA(M)} \times g^{x^{(s^{-1} \times r)}} \mod q$</span><!-- Has MathJax --></li>
+<li><span>$r = g^{s^{-1} SHA(M)} \times y^{(s^{-1} \times r)} \mod q$</span><!-- Has MathJax -->
+</li>
+</ul>
+<p>而我們事實上就是在處理指數部分，</p>
+<h2 id="離散對數"><a href="#離散對數" class="headerlink" title="離散對數"></a>離散對數</h2><p>解決問題 <span>$y = g^x \mod p$</span><!-- Has MathJax -->，當已知 <span>$y, g, p$</span><!-- Has MathJax -->，要解出 <span>$x$</span><!-- Has MathJax --> 的難度大為提升，不像國高中學的指數計算，可以藉由 <code>log()</code> 運算來完成，離散對數可以的複雜度相當高，當 <span>$p$</span><!-- Has MathJax --> 是一個相當大的整數時，通常會取用到 256 bits 以上，複雜度則會在 <span>$O(2^{100})$</span><!-- Has MathJax --> 以上。</p>
+<p>實際上有一個有趣的算法 body-step, giant-step algorithm，中文翻譯為 <strong> 小步大步算法 </strong>，在 ACM-ICPC 競賽中也可以找到一些題目來玩玩，算法的時間複雜度為 <span>$O(\sqrt{p})$</span><!-- Has MathJax -->，空間複雜度也是 <span>$O(\sqrt{p})$</span><!-- Has MathJax -->。相信除了這個外，還有更好的算法可以完成。</p>
+<p>小步大步算法其實很類似塊狀表的算法，分塊處理，每一塊的大小為 <span>$\sqrt{p}$</span><!-- Has MathJax -->，為了找尋答案計算其中一塊的所有資訊，每一塊就是一小步，接著就是利用數學運算，拉動數線，把這一塊往前推動 (或者反過來把目標搜尋結果相對往塊的地方推動)。因此需要走 <span>$\sqrt{p}$</span><!-- Has MathJax --> 大步完成。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-vr-note3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/06/vr-note3/" class="article-date">
+  <time datetime="2015-06-06T00:53:53.000Z" itemprop="datePublished">2015-06-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/06/vr-note3/">虛擬實境 考古筆記</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cinmkxufs00ru2xxccddmwn62" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/06/06/vr-note3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <p>虛擬實境這一門課可以讓你體驗有如在上另一門課的虛擬實境，前半段講生物結構，來了解軟硬體需要那些特性、效能，後半段在講視覺建模算法，牽涉到計算幾何、線性代數 … 等課程。</p>
+<p>在幾何課程中介紹的 Delaunay triangulation 對於建模算法是相當重要，接著在多重解析度部分牽涉到傳輸跟處理速度，在資料結構的儲存上很有趣。為了加速運算效能、漸進式需求，各種轉換壓縮都會跑出來。</p>
+<h2 id="複習"><a href="#複習" class="headerlink" title="複習"></a>複習</h2><ol>
+<li><p>(15%)[Definition]<br>詳細說明一個虛擬實境 (virtual reality) 系統需要具備那些特性，並說明一個虛擬實境系統要用到哪些軟體技術。</p>
+<p> 提供人們能感知的動態環境，視覺、嗅覺、觸覺，並且能與環境互動中得到反饋，得到逼真感覺。需要以下幾個軟體</p>
+<ol>
+<li>影像處理與繪製</li>
+<li>物理引擎</li>
+<li>擷取資料的整合</li>
+</ol>
+</li>
+<li><p>(15%)[Human perception]<br>說明人類 1. 單眼立體視覺的原理，2. 雙眼立體視覺的原理；並3. 比較其優缺點。</p>
+<ol>
+<li>單眼立體視覺靠單一眼球調整焦距，將數張影像交給大腦來整合，這必須藉由對物體認知來補足。</li>
+<li>雙眼立體視覺的原理主要靠左右兩個眼球不同的相位差，來計算立體影像的距離差距。</li>
+<li>視野範圍以及反應時間，單眼必須藉由調整焦距來補足，雙眼可以同時獲取不同相位差的影像。</li>
+</ol>
+</li>
+<li><p>(15%)[Hardware]<br>說明感應手套 (sensing glove) 與力回饋手套 (force-feedback glove) 的原理，並比較他們在應用上的差別(可舉例說明)。</p>
+<p> 感應手套是由操作者的反應傳輸給感測器，藉由手套上感應器之間的變化數據得到操作者給予的狀態。力回饋手套則是將物理特性反饋給使用者，藉由手套上的機械，施予使用者力反饋。</p>
+<p> 感應手套為使用者操作，力反饋手套則相反由環境操作。</p>
+</li>
+<li><p>(15%)[Modeling]<br> 說明五種 3D 模型的表面表示式 (surface representation)，並比較這些表示式的優缺點。</p>
+<p> 目前共計主要分成五種表示法：</p>
+<ul>
+<li><p>regular square grid meshes (RSG)</p>
+</li>
+<li><p>triangulated regular meshes (TRM)</p>
+</li>
+<li><p>triangulated irregular networks (TINs)</p>
+</li>
+<li><p>polygon meshes</p>
+</li>
+<li><p>parametric patches</p>
+<p>RSG 建造簡單，但會有四點不共平面，影響到貼圖繪製上的問題。TRM 解決四點不共平面問題，但與 RSG 問題無法凸顯邊緣。TINs 解決無法凸顯邊緣問題，但需要經過最佳化算法來得到不規則三角網格，儲存方式必須記錄所有的點座標，由於要經過最佳化算法，處理速度會慢上很多。動態更動座標的效果較差。polygon meshes 建造相對困難，多邊形的最小單位是三角形，頂點儲存量比 TINs 少很多，parametric patches 藉由取樣點套入參數，讓表面接近平滑，針對部分訊息的改造，平滑效果造成的反饋比較逼真。</p>
+</li>
+</ul>
+</li>
+<li><p>(15%)[Multiresolution modeling]<br>說明並比較以小波轉換為基礎的多重解析度模塑 (wavelet-based multiresolution modeling) 技術與 Lindstrom 等人的對稱三角網格 (symmetric triangulated networks) 多重解析度模塑技術的原理及優缺點。</p>
+<ul>
+<li>wavelet-based multiresolution modeling<br>解析度資料量與面積成正比，考慮到與觀察者之間的距離，用另外三張影響轉換到更高解析度，每一次解析度增加兩倍。</li>
+<li><p>symmetric triangulated networks<br>考慮到地形高地、平坦性對於觀察者的影響，投影到使用者的平面，判斷是否差異過大需要提供更高解析，解析度資料量所需節點數成正比</p>
+<p>相較之下，小波轉換給予的傳輸資料反應會比較慢，同時也會在使用者感受不到差異的地方提供更高解析度，很容易浪費資源，對稱三角網格在資料鏈結會複雜許多，沒有小波轉換的儲存架構來得容易理解，但對稱三角網格反應速度快，支持快速的解析度變換。</p>
+</li>
+</ul>
+</li>
+<li><p>(15%)[Multiresolution modeling]<br> 說明漸進網格 (progressive mesh) 多重解析度模塑與二次誤差 (quadric-error-metric) 多重解析度模塑的相同與差異處，並比較兩者的優缺點。  </p>
+<p> 漸進網格藉由拔點、縮邊，提供不同解析度，依序拔點，考慮四個因素來決策拔點順序，這四個因素分別為影響到其他點之間的距離、縮邊的長度總和、頂點材質的差異、對邊界影響程度。  </p>
+<p> 考慮的是從精細模型轉換到粗糙模型的差異變化，挑選變成粗糙的影響最小的先拔除，這樣的計算量會比較大，拔除一點後，鄰近的點的誤差值計算也要跟著重新計算。  </p>
+<p> 二次誤差類似漸進網格的方式進行拔點縮點，但縮邊完的的結果不會只有三種可能，縮到兩端點的其中一個、或者是中點，提供一個數學計算來找到縮到哪一個地方更好。  </p>
+<p> 二次誤差考慮的是從端點誤差值得相加，並且產生一個新的頂點，有點霍夫曼編碼的意味在。計算從粗糙模型上的點到精細模型平面的距離平方，與之前的模型 (Progressive mesh - Hoppe) 恰恰相反，並不是考慮精細模型上的點到粗糙模型平面的距離平方。因此對於 QEM 的誤差可以累加。問題是粗糙模型上的頂點是無法得知，屬於未知數，用內插法。QEM 誤差精確度只是約略，速度快但品質沒有 Progressive mesh 來得好。</p>
+</li>
+</ol>
+<ol>
+<li><p>(15%)[Multiresolution modeling]<br> 說明 (a) 動態載入 (dynamic loading) 的意義。(b) 動態載入與多重解析度模塑技術整合會產生什麼問題。(c)解決上述問題的三種方法。</p>
+<p> 動態載入為在記憶體不足時，將部分資料存放在磁碟中，當程式運行到需要那些資料進行運算時再從磁碟中讀取，這樣的過程稱為動態載入。</p>
+<p> 動態載入對於多重解析度塑模來說，主要是記憶體問題以及所需要的解析度跟數據大小關係，解析度度越高，所需要的資料量越多。但是畫面呈現的解析度不一下，要怎麼進行資料讀取，動態載入的數據結構定義則需要特別設計，例如是要 response time 最小、計算複雜度最低，讀取數量最小 … 等。</p>
+<p> 假設需要不同解析度可以靠 Discrete layered multiresolution models，每一種解析度彼此獨立儲存，這樣的方法可以提供基礎的不同解析度，但讀取時間相對長，儲存在磁碟的空間需求大，效果呈現是最快的，但是離散結果會有不連續的解析度變化。</p>
+<p> 為了解決解析度連續變化問題，可以使用 progressive mesh 來達到，提供以點、線與解析度呈現線性變化。</p>
+<p> 若需要不同解析度，可以利用 hierarchical models 來完成畫面中每一處的解析度不同，這是一種資料結構，當需要更高解析度時，則走訪更深的樹節點來印出所需要的畫面。</p>
+<p> 評價效果好壞利用 Delaunay triangulation 計算平滑程度。</p>
+</li>
+<li><p>(15%)[Rendering]<br> 說明shading的意義，敘述 Gouraud shading 與 Phong shading 的作法，最後比較他們的優缺點。</p>
+</li>
+</ol>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cognitive-style-note3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/06/02/cognitive-style-note3/" class="article-date">
+  <time datetime="2015-06-01T23:55:31.000Z" itemprop="datePublished">2015-06-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/06/02/cognitive-style-note3/">遊戲介面設計及效果 Game UI &amp; Effect</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cinmkxtl4001d2xxc3zry7b69" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/06/02/cognitive-style-note3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上次沒有好好地將遊戲內容進行擷取說明，單純對介面設計原則做說明，介面設計會根據裝置操作有所不同吧，那遊戲介面是否又能如此？</p>
+<p>要把法則呈現在遊戲中又是另一回事，畢竟遊戲跟網頁又有點差別，當然也有人認為認知風格跟遊戲性不相干，倒不如說會跟遊戲內容有關，遊戲內容決定介面設計方向，若要根據認知風格設計，想必會是一道難題。</p>
+<p>遊戲內容的多寡將決定運行的流程、架構，遊戲介面越簡潔越好，最後的演化就是什麼 <strong> 都沒有最好 </strong>，除非有人喜歡儀表板，那就另當別論。隨著遊戲必要才出現的介面，會導致程式撰寫相當麻煩，要用排除法來防止奇葩的流程走向。</p>
+<p>不僅介面擺設需要考量，還要有觸發時間、方法，以及浮現效果，這些會影響到使用者是否知道可以使用，大部分的介面以文字為主，那串接效果影響不大。為了提升使用者體驗，最好是使用圖示為主，但這會造成跟背景融合的一體感，可能會造成無法被使用者察覺可觸發，必須在圖示效果加點功夫。</p>
+<p>就像虛擬實境課程內容所提及的漸進式效果會比較好，對於使用者有如虛擬實境，也就是說介面出現的時間跟方法不能太過迅速。關於上虛擬實境課程的那些小事，有如在上影像處理課程的虛擬實境呢。</p>
+<blockquote>
+<p>以上內容，僅本人觀察。</p>
+</blockquote>
+<h2 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h2><p>如果圖片看不到，請至 Github 中的 doc 目錄下查閱本篇附圖。</p>
+<script type="text/javascript" src="http://morris821028.github.io/hexo-tag-oj/jquery.githubRepoWidget.js"></script><div class="github-widget" data-repo="morris821028/hw-GameMaker"></div>
+<p>遊戲執行檔和開源代碼都在其中，當然還有遊戲的編輯器。更多的遊戲截圖在裡頭，只支持 windows 平台。</p>
+<h2 id="Animate"><a href="#Animate" class="headerlink" title="Animate"></a>Animate</h2><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Menu Enter/Select</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/menu.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Button Enter</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/button.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Popup Menu</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/popup.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Menu Focus</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/focus.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Lighting</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/lighting.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Fog</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/fog.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Use Props</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/props.gif" alt="Menu"></td>
+</tr>
+<tr>
+<td>Caption</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/caption.gif" alt="Menu"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="Screenshot"><a href="#Screenshot" class="headerlink" title="Screenshot"></a>Screenshot</h2><h3 id="Menu-Design"><a href="#Menu-Design" class="headerlink" title="Menu Design"></a>Menu Design</h3><p>選單使用方向鍵和滑鼠點擊操控，同時提供大綱說明。</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How to Play</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot102.png" alt="Menu1"></td>
+</tr>
+<tr>
+<td>Story</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot103.png" alt="Menu2"></td>
+</tr>
+<tr>
+<td>Test Room</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot104.png" alt="Menu3"></td>
+</tr>
+<tr>
+<td>Achievement</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot105.png" alt="Menu4"></td>
+</tr>
+<tr>
+<td>Options</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot106.png" alt="Menu4"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Tutorial-Design"><a href="#Tutorial-Design" class="headerlink" title="Tutorial Design"></a>Tutorial Design</h3><p>使用教學關卡，步入遊戲元素與操作。</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tutorial</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot101.png" alt="Tutorial"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Game-UI-Design"><a href="#Game-UI-Design" class="headerlink" title="Game UI Design"></a>Game UI Design</h3><p>遊戲介面細節設計</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tip</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot107.png" alt="Tip"></td>
+</tr>
+<tr>
+<td>Control Information</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot108.png" alt="Information"></td>
+</tr>
+<tr>
+<td>Exit Warning</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot109.png" alt="Information"></td>
+</tr>
+<tr>
+<td>Props View 1 (Scroll up)</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot110.png" alt="Letter"></td>
+</tr>
+<tr>
+<td>Props View 2 (Scroll down)</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot111.png" alt="Letter"></td>
+</tr>
+<tr>
+<td>Level Complete</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot114.png" alt="Clear"></td>
+</tr>
+<tr>
+<td>Level Fail</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot115.png" alt="Fail"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Game-Element"><a href="#Game-Element" class="headerlink" title="Game Element"></a>Game Element</h3><p>遊戲元素效果</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hide</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot112.png" alt="Hide"></td>
+</tr>
+<tr>
+<td>Use</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot119.png" alt="Use"></td>
+</tr>
+<tr>
+<td>Test Room</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot113.png" alt="Test"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Option-Design"><a href="#Option-Design" class="headerlink" title="Option Design"></a>Option Design</h3><p>遊戲配置設計</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sound</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot116.png" alt="Sound"></td>
+</tr>
+<tr>
+<td>Difficult</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot117.png" alt="Difficult"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Story-Design"><a href="#Story-Design" class="headerlink" title="Story Design"></a>Story Design</h3><p>過場 (eyecatch) 劇情的介面設計</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Story</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot118.png" alt="Story"></td>
+</tr>
+<tr>
+<td>Story branch 1</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot120.png" alt="Story"></td>
+</tr>
+<tr>
+<td>Story branch 2</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot124.png" alt="Story branch"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Other-Mode"><a href="#Other-Mode" class="headerlink" title="Other Mode"></a>Other Mode</h3><p>遊戲模式設計</p>
+<table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time Mode 1 (Time Count)</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot121.png" alt="Time"></td>
+</tr>
+<tr>
+<td>Time Mode 2 (Time Up)</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot122.png" alt="Time"></td>
+</tr>
+<tr>
+<td>Time Mode 3 (Time Over)</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot123.png" alt="Time"></td>
+</tr>
+</tbody>
+</table>
+<h2 id="Feature"><a href="#Feature" class="headerlink" title="Feature"></a>Feature</h2><p>考量的設計並沒全部去實作，提供設計參考。</p>
+<h3 id="Menu-Layout"><a href="#Menu-Layout" class="headerlink" title="Menu Layout"></a>Menu Layout</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Old 1</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page1.jpg" alt="Old 1"></td>
+</tr>
+<tr>
+<td>Old 2</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page7.jpg" alt="Old 2"></td>
+</tr>
+<tr>
+<td>X-Box</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page2.jpg" alt="X-Box"></td>
+</tr>
+<tr>
+<td>Andriod</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page3.jpg" alt="Android"></td>
+</tr>
+<tr>
+<td>Hexagon</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page4.jpg" alt="Hexagon"></td>
+</tr>
+<tr>
+<td>Overview 1</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page5.jpg" alt="Overview 1"></td>
+</tr>
+<tr>
+<td>Overview 2</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page6.jpg" alt="Overview 2"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Game-Layout"><a href="#Game-Layout" class="headerlink" title="Game Layout"></a>Game Layout</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Origin</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page8.jpg" alt="Origin"></td>
+</tr>
+<tr>
+<td>Clear</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page9.jpg" alt="Clear"></td>
+</tr>
+<tr>
+<td>Icon With props 1</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page10.jpg" alt="Icon"></td>
+</tr>
+<tr>
+<td>Icon With props 2</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page11.jpg" alt="Icon"></td>
+</tr>
+<tr>
+<td>Exit Menu</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page13.jpg" alt="Exit Menu"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Option-Setting"><a href="#Option-Setting" class="headerlink" title="Option Setting"></a>Option Setting</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Keyboard 1</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page14.jpg" alt="Keyboard 1"></td>
+</tr>
+<tr>
+<td>Keyboard 2</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page15.jpg" alt="Keyboard 2"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Over-Layout"><a href="#Over-Layout" class="headerlink" title="Over Layout"></a>Over Layout</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Popup</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page16.jpg" alt="popup"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Game-Flow"><a href="#Game-Flow" class="headerlink" title="Game Flow"></a>Game Flow</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>With Over</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page17.jpg" alt="over"></td>
+</tr>
+<tr>
+<td>With Eyecatch</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page18.jpg" alt="eyecatch"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="Game-Caption"><a href="#Game-Caption" class="headerlink" title="Game Caption"></a>Game Caption</h3><table>
+<thead>
+<tr>
+<th>Info</th>
+<th>Demo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Balloon</td>
+<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page19.jpg" alt="balloon"></td>
+</tr>
+</tbody>
+</table>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-security-notes4" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2015/05/29/security-notes4/" class="article-date">
@@ -114,7 +823,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cin8umu2f007iqoxc7r7ofbro" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cinmkxttp007w2xxcdzd1mc6l" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/29/security-notes4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -246,7 +955,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note2/" data-id="cin8umtvq001bqoxcfzwnz5re" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note2/" data-id="cinmkxtlb001f2xxc1sigmprb" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/17/cognitive-style-note2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -345,7 +1054,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/F9AGdNi.jpg" rel="gallery_cin8umtvz001iqoxcao44tlnp">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/F9AGdNi.jpg" rel="gallery_cinmkxtky00192xxc77f84vn9">
         <img src="http://i.imgur.com/F9AGdNi.jpg" itemprop="image">
       </a>
     
@@ -364,7 +1073,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note/" data-id="cin8umtvz001iqoxcao44tlnp" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note/" data-id="cinmkxtky00192xxc77f84vn9" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/17/cognitive-style-note/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -465,7 +1174,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/16/vr-note2/" data-id="cin8umulj00r2qoxc4d98srzn" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/16/vr-note2/" data-id="cinmkxufp00rq2xxc2vidyq6d" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/16/vr-note2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -551,7 +1260,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/16/security-notes3/" data-id="cin8umu2c007fqoxcg50h5bd8" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/16/security-notes3/" data-id="cinmkxttl007t2xxck2c8dfve" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/16/security-notes3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -663,7 +1372,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/16/security-notes2/" data-id="cin8umu2a007cqoxcw5jdnnmo" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/05/16/security-notes2/" data-id="cinmkxtth007q2xxck5eco1ab" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/05/16/security-notes2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -792,453 +1501,6 @@ q \equiv 3 (\text{mod } 4)$$</span><!-- Has MathJax -->
 
 
   
-    <article id="post-vr-note" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/27/vr-note/" class="article-date">
-  <time datetime="2015-04-27T01:55:00.000Z" itemprop="datePublished">2015-04-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/27/vr-note/">虛擬實境 論文研讀 Part 1</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/04/27/vr-note/" data-id="cin8umulm00r7qoxcj74y9mc8" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/04/27/vr-note/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>期末上繳報告啊，不知道要寫多少才對得起自己。理解正確性不敢保證，相當可怕。</p>
-</blockquote>
-<h2 id="單詞概要"><a href="#單詞概要" class="headerlink" title="單詞概要"></a>單詞概要</h2><ul>
-<li>Computed Tomography - 電腦斷層掃描 (X 光)，簡稱 CT</li>
-<li>Shepp-Logan filter - 影像去噪中，一種運算操作</li>
-<li>Delaunay - 計算幾何中 Delaunay Triangulation</li>
-<li>ODT - optimal Delaunay Triangulation</li>
-<li>Tetrahedron - 四面體</li>
-<li>Isosufrface - 等價曲面</li>
-<li>Truncate - 切去頭端</li>
-<li>Hausdorff distance - 空間中，集合之間的距離描述 <a href="http://en.wikipedia.org/wiki/Hausdorff_distance" target="_blank" rel="external">wiki</a></li>
-<li>Marching cubes - 用於 CT 模型，重建時的建構 3D 時，根據取樣點得到的最小構造單位。</li>
-<li>QEM - Quadric Error Mactrics</li>
-</ul>
-<h2 id="本文"><a href="#本文" class="headerlink" title="本文"></a>本文</h2><p><strong><em> The Sinogram Polygonizer for Reconstructing 3D Shapes </em></strong> 這篇論文主要拿 Grid-base 掃描重建方法以及根據取樣點重建 3D 模型的算法探討。</p>
-<p>首先從離散取樣中重建，最基礎的做法是根據 z-index 作切割，得到 xy 平面，在其上作 Grid-base 網格狀的取樣，得到座標 (x, y, z) 是否在該物體內部。</p>
-<p>當取樣數量越多時，密集程度越高，能造就的邊緣就越明顯。藉由 Grid-base 取樣的缺點在於邊緣的凸顯仍然不夠明確於三角化，取樣點的數量必須非常多，才能表示非平行三軸的邊緣。</p>
-<p>從 CT 圖中，掃描資料為數張正弦圖 (sinogram)，將一個物體放置於轉盤上，轉動轉盤將 X 光照射上去，根據物體的阻射程度得到正弦圖，相當於是光線投影到平面的強度 (CT value)。當一個物體只由一種材質構成時，其阻礙程度與阻礙光線的長度成線性關係，如此一來 CT value 就能有效地反應在物體表面的距離。</p>
-<p>這裡補充一點，通常物體不會只由一個材質構成，因此在某些重建工作時會特別弱，如人體掃描重建，則會在眼睛材質上難以得到好的效果。阻礙能力會擴散到其他的正弦圖上，在複合材料的重建工作則會相對地困難。</p>
-<p>CT 圖存在些許的干擾，受到鄰近材質的阻射影響。看到網路上文章寫到，即便現代的降噪算法相當厲害，對於醫院普遍使用的成像仍然使用幾十年前的算法，其最重要的原因是擔憂降噪算法捨棄掉的部分到底是不是正確的，去掉資訊若是重要的反而會造成判斷失誤，因此學術界使用 CT 圖的降噪算法仍然不普及於醫學界。</p>
-<h3 id="CT"><a href="#CT" class="headerlink" title="CT"></a>CT</h3><p>目前 Shepp-Logan filter 相當好用，在 CT 去噪效果受到肯定！公式如下：</p>
-<span>$$f(p) = \frac{1}{2} \int_{0}^{2 \pi} \alpha(R_\theta p)^{2} S_{\theta}(P(R_{\theta} p)) d \theta \\
-S_{\theta}(q) \leftarrow \int_{-\infty }^{\infty} {\beta(\tilde{q}(x)) S_{\theta}(\tilde{q} (x)) h(x - (q)_{x})} dx \\
-h(t) = 2 / (\pi^{2} \delta^{2}  - 4 t^{2}) \\$$</span><!-- Has MathJax -->
-<span>$S_{\theta}(q)$</span><!-- Has MathJax --> 表示在轉盤角度為<span>$\theta$</span><!-- Has MathJax --> 時成像於 q 點的數值<span>$\beta(q) = cos(\angle qso)$</span><!-- Has MathJax -->，點 q 連線到光源 s、再連線到圓盤圓心點 o。並且<span>$\tilde{q}$</span><!-- Has MathJax --> 限定為與點 q 具有相同的 y 值，就是說對水平方向上鄰近點數值去噪<span>$\delta$</span><!-- Has MathJax --> 為取樣的像素大小於成像畫面。<br><br>從數學公式中看出，受到鄰近點<span>$\tilde{q}$</span><!-- Has MathJax --> 影響與光源的偏角差異、與點 q 的距離呈現的關係。<br><br>#### 補充 CT 重建 ####<br><br><a href="http://blog.csdn.net/shuangyue/article/details/5810789" target="_blank" rel="external">CT 重建方法</a> 中，存在三種常見的方式<br><br><em> 迭代法
-</em> 反投影法 backprojection<br><em> 濾波反投影法 filtered backprojection<br><br>在掃瞄資料中，根據不同角度進行掃描投影，會得到數張 2D 影像，對於實際物體離散取樣，把每一個樣本都當作一個變數 <span>$x_{i}$</span><!-- Has MathJax -->，根據模擬的方式，可以得到好幾條方程式，解出方程式後，就能知道每個位置上是否有實體 (在物體內部)。但是這樣的效能並不好，會有成千上萬的變數和方程式，甚至有可能發生多組解。<br><br><br>##### 迭代法 #####<br><br>迭代法提供一個逼近方法，類似模擬退火法的那種梯度迭代，每一次迭代逐漸將變數數值增加，增加後與實際投影比較，不斷地逼近投影實際值，捨棄掉不合法的數值，每迭代一次讓解更加地接近，當誤差小於某個定值後即可停止。這種作法通常會很慢，但迭代過程中可以加入很多彈性的參數變化，彈性較高。<br><br>##### 反投影法 #####<br><br>反投影法則是將投影值結果反投影回去，投影的 2D 影像上的某一個點的數值，會反投影到射線上的每一個點，多次反投影後。若該位置存在於物體中，則貢獻於投影像的次數會很多，因此反投影的累加的值也會比較高。接著給定閥值、誤差修正來判斷，效果會更為顯著。反投影法概念上非常簡單，但在邊緣的結果會很模糊。<br><br>##### 濾波反投影法 #####<br><br>濾波反投影法這部分不是很理解，看起來是先利用 <strong> 卷積 </strong> (Convolution) 操作，再利用傅立葉卷積的反變換，變換過程中需要一個濾波器協助，反變換回來後，再進行反投影法。在傅立葉反變換中需要濾波器，因此選擇濾波器變得相當重要，本篇論文選的是 Shepp-Logan filter 來完成。濾波反投影法的優點是在於輪廓清楚，但會發生 <strong> 吉布斯現象 </strong> (Gibbs phenomenon)，逼近原圖時，不連續的函數截面附近會發生震盪。<br><br>## 接續 ##<br><br>在濾波後，反投影後得到 CT value <span>$f(p)$</span><!-- Has MathJax -->。當然 <span>$f(p)$</span><!-- Has MathJax --> 是一個連續函數的積分，事實上處理時離散的 (因為機器再怎麼精密，齒輪轉角也不會是連續，就看齒數多寡來決定)。<br><br>論文中用了 <strong> 迭代法 </strong> 和 <strong> 濾波反投影法 </strong> 重建比較，可以得到非常相似的結果。來確認使用的儀器是相當可靠的精準度。<br><br>接下來要進行建模，簡單會具有以下幾個步驟。<br><br>1. 可以決定要用幾個四面體構成。<br>2. 三角網格藉由二值化 (CT value 來判定是在物體中還是外部) 抓取，並且加入四面體中。<br>3. 三角網格到等值曲面的 QEM (Quadric Error Mactrics) 要最小化。<br>4. 三角網格上的點座標，移動距離購小的時候，算法停止迭代。否則返回第二步，繼續鬆弛新的節點。<br><br>第一步進行四面體構成時，通常會採用 <em>* Delaunay Tetrahedralization </em></em> (相對於 2D 平面的 Delaunay Trianglution，Delaunay Trianglution 是由 2D Voronoi Diagram，那麼 Delaunay Tetrahedralization 就是由 3D Voronoi Diagram 搭建完成)，事實上還有數種建模的方法 (如 Marching cubes 之類的)，稍後有機會會提及到。但不管一開始選定的四面體採用哪種策略，經由往後的迭代，將會修整到差不多 QEM。<br><br>### 邊緣擷取 ###<br><br>對於每一個四面體，找到四面體的重心<span>$g_{i}$</span><!-- Has MathJax --> 並且計算 CT value <span>$f(g_{i})$</span><!-- Has MathJax -->
-<p>對於相鄰的四面體，計算 <span>$Tiso= (f(gi)+f(gj))/2$</span><!-- Has MathJax --> 接下來要找等值曲面 <span>$Tiso$</span><!-- Has MathJax -->，找到一個點 p 位於等值曲面上，並且 p 在 gi, gj 的連線上。對於 p 所在的等值曲面上計算法向量 <span>$n_{k}$</span><!-- Has MathJax -->，等下要用來計算 QEM 用的。</p>
-<h3 id="QEM"><a href="#QEM" class="headerlink" title="QEM"></a>QEM</h3><p>下篇待續</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-security-galois-field" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/25/security-galois-field/" class="article-date">
-  <time datetime="2015-04-25T11:16:42.000Z" itemprop="datePublished">2015-04-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/25/security-galois-field/">資訊安全 Galois Fields C++ 軟體實作體驗</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/04/25/security-galois-field/" data-id="cin8umu240076qoxcbdghixdp" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/04/25/security-galois-field/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>在 AES 中，利用 Galois fields<span>$GF(2^{8})$</span><!-- Has MathJax --> 為運算單位，有效地在 8-bits CPU 上高效地實作。</p>
-<p>Galois Fields<span>$GF(p^{n})$</span><!-- Has MathJax --> 限定在質數 p 的 n 次方，便可存在有限的元素集合，支持加減乘除，同時可以利用 <strong> 擴充歐幾里算法 </strong> 得得到乘法反元素。從最簡單的 p = 2 開始看起，將 f(x) 視為一個元素。則</p>
-<span>$$f(x) = a_{n-1}x^{n-1} + a_{n-2}x^{n-2} + ... + a_{1}x + a_{0} \\
-a_{i} \in [0, p)$$</span><!-- Has MathJax -->
-<p>當 p = 2 時，f(x) 就跟一般的二進制數字儲存相同。當選定在 p 的 n 次方時，必須找一個 degree = n 的多項式，不被集合內的任何元素整除，來約束所有的運算保持在一個大小內。特別的是當 p = 2 時，加法和減法是等價運算 (在 p = 2 下，1 乘法反元素是自己本身)。</p>
-<p>AES 取 8-bits 作為運算單位的用意很多，其一反元素可以在極小空間內儲存，可以用查表的方式得到。之所以選定 p = 2 的好處在於計算機的儲存架構，若在某些特殊硬體可以支持三進位的情況下，p = 3 則會比較有效率的使用，不然取用 p = 3 在二進制的電腦架構，需要轉換的儲存單位是很沒效率，並且覆蓋的集合大小也沒辦法全部使用。</p>
-<p>GF 有什麼好處呢？其一的道理在於加解密設計要 <strong> 防止線性關係 </strong> (線性代數太邪惡，很多種攻擊可以繞過線性關係的運算，拋開未知數也能求解)，對於 AES 的設計概念來說 GF 恰好符合這個條件。</p>
-<h3 id="AES"><a href="#AES" class="headerlink" title="AES"></a>AES</h3><p>AES 選用<span>$GF(2^{8})$</span><!-- Has MathJax -->，並且取<span>$m(x) = x^8 + x^4 + x^3 + x + 1$</span><!-- Has MathJax --> 作為模數，然後再設計一個以 GF 作為常數類型的多項式 Polynominal</p>
-<span>$f(x) = s_{3}x^{3} + s_{2}x^{2} + s_{1}x + s_{0}$</span><!-- Has MathJax -->
-<p>每一個<span>$s_{i}$</span><!-- Has MathJax --> 都是一個 8-bits 的儲存單位，也就是說這個多項式是 32-bits 儲存。並且取用<span>$m(x) = x^4 + 1$</span><!-- Has MathJax --> 作為多項式的模數。AES 藉由 <strong> 多項式相乘 </strong>，將 4 個 8-bits 的資料交互影響產生出新的 4 個 8-bits，這在密碼學裡面造成 <strong> 雪崩效應 </strong>。</p>
-<p>跟之前講的一樣，GF 一定存在反操作，也就是乘法反元素，因此取用<span>$03 x^{3} + 01 x^{2} + 01 x^{1} + 02$</span><!-- Has MathJax --> 其乘法反元素為<span>$0B x^{3} + 0D x^{2} + 09 x^{1} + 0E$</span><!-- Has MathJax -->。</p>
-<p>接著，寫一個程式驗證反元素的計算吧！</p>
-<blockquote>
-<p>備註：GF 裡面套用 GF 相當有趣，感覺可以無限擴充大小，當然任意質數也可以找反元素，但也只有 <strong> 梅森質數 </strong> 比較適合在電腦二進制系統中吧？</p>
-</blockquote>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">no input</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">00 01 8D F6 CB 52 7B D1 E8 4F 29 C0 B0 E1 E5 C7</span><br><span class="line">74 B4 AA 4B 99 2B 60 5F 58 3F FD CC FF 40 EE B2</span><br><span class="line">3A 6E 5A F1 55 4D A8 C9 C1 0A 98 15 30 44 A2 C2</span><br><span class="line">2C 45 92 6C F3 39 66 42 F2 35 20 6F 77 BB 59 19</span><br><span class="line">1D FE 37 67 2D 31 F5 69 A7 64 AB 13 54 25 E9 09</span><br><span class="line">ED 5C 05 CA 4C 24 87 BF 18 3E 22 F0 51 EC 61 17</span><br><span class="line">16 5E AF D3 49 A6 36 43 F4 47 91 DF 33 93 21 3B</span><br><span class="line">79 B7 97 85 10 B5 BA 3C B6 70 D0 06 A1 FA 81 82</span><br><span class="line">83 7E 7F 80 96 73 BE 56 9B 9E 95 D9 F7 02 B9 A4</span><br><span class="line">DE 6A 32 6D D8 8A 84 72 2A 14 9F 88 F9 DC 89 9A</span><br><span class="line">FB 7C 2E C3 8F B8 65 48 26 C8 12 4A CE E7 D2 62</span><br><span class="line">0C E0 1F EF 11 75 78 71 A5 8E 76 3D BD BC 86 57</span><br><span class="line">0B 28 2F A3 DA D4 E4 0F A9 27 53 04 1B FC AC E6</span><br><span class="line">7A 07 AE 63 C5 DB E2 EA 94 8B C4 D5 9D F8 90 6B</span><br><span class="line">B1 0D D6 EB C6 0E CF AD 08 4E D7 E3 5D 50 1E B3</span><br><span class="line">5B 23 38 34 68 46 03 8C DD 9C 7D A0 CD 1A 41 1C</span><br><span class="line">03 x^3 + 01 x^2 + 01 x^1 + 02 x^0</span><br><span class="line">0B x^3 + 0D x^2 + 09 x^1 + 0E x^0</span><br><span class="line">00 x^3 + 00 x^2 + 00 x^1 + 01 x^0</span><br><span class="line">0B x^3 + 0D x^2 + 09 x^1 + 0E x^0</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>暴力實作，模擬運算，不考慮電路架構，用最樸素的方式儲存每一個欄位。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">// in AES, GF(2^8), m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">class GaloisField &#123;</span><br><span class="line">public:</span><br><span class="line">    unsigned char v[32];</span><br><span class="line">    int n;</span><br><span class="line">    GaloisField() &#123;</span><br><span class="line">        n = 8;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField(int val) &#123;</span><br><span class="line">        n = 8;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">        for (int i = 0; i &lt; 8; i++)</span><br><span class="line">            v[i] = (val&gt;&gt;i)&amp;1;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField(const int a[], int an) &#123;</span><br><span class="line">        memset(v, 0, sizeof(v));</span><br><span class="line">        n = 8;</span><br><span class="line">        for (int i = 0; i &lt;= an; i++)</span><br><span class="line">            v[i] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator+(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt;= r.n; i++)</span><br><span class="line">            r.v[i] = v[i] xor a.v[i];</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator-(const GaloisField &amp;a) const &#123;</span><br><span class="line">        return (*this) + a;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator*(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt;= n; i++)</span><br><span class="line">            for (int j = 0; j &lt;= a.n; j++) </span><br><span class="line">                r.v[i+j] = r.v[i+j] xor (v[i] and a.v[j]);</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField shift(int sn) const &#123;</span><br><span class="line">        GaloisField r;</span><br><span class="line">        for (int i = 0; i &lt; n; i++)</span><br><span class="line">            r.v[i + sn] = v[i];</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    bool operator&lt;(const GaloisField &amp;a) const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (v[i] == 1 &amp;&amp; a.v[i] == 1)</span><br><span class="line">                return true;</span><br><span class="line">            if (v[i] == 1 &amp;&amp; a.v[i] == 0)</span><br><span class="line">                return false;</span><br><span class="line">            if (v[i] == 0 &amp;&amp; a.v[i] == 1)</span><br><span class="line">                return false;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator/(const GaloisField &amp;a) const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (a.v[i] == 1 &amp;&amp; v[i] == 0)</span><br><span class="line">                return GaloisField();</span><br><span class="line">            if (a.v[i] == 0 &amp;&amp; v[i] == 1)</span><br><span class="line">                break;</span><br><span class="line">        &#125;</span><br><span class="line">        GaloisField r, b = (*this), c;</span><br><span class="line">        </span><br><span class="line">        for (int i = n; i &gt;= 0; i--) &#123;</span><br><span class="line">            c = a.shift(i);</span><br><span class="line">            if (c &lt; b) &#123;</span><br><span class="line">                r.v[i] = 1;</span><br><span class="line">                for (int j = 16; j &gt;= 0; j--)</span><br><span class="line">                    b.v[j] = b.v[j] xor c.v[j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField operator%(const GaloisField &amp;a) const &#123;</span><br><span class="line">        GaloisField ret = (*this) - (*this) / a * a;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">    bool isZero() const &#123;</span><br><span class="line">        for (int i = 16; i &gt;= 0; i--)</span><br><span class="line">            if (v[i])	return 0;</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    GaloisField inverse() &#123;</span><br><span class="line">        const int m[] = &#123;1, 1, 0, 1, 1, 0, 0, 0, 1&#125;, mn = 8; // m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">        GaloisField y(m, mn);</span><br><span class="line">        GaloisField g, a, b;</span><br><span class="line">        </span><br><span class="line">        exgcd((*this), y, g, a, b); // a x + b y = g</span><br><span class="line">        return a;</span><br><span class="line">    &#125;</span><br><span class="line">    void exgcd(GaloisField x, GaloisField y, GaloisField &amp;g, GaloisField &amp;a, GaloisField &amp;b) &#123;</span><br><span class="line">        if (y.isZero()) &#123;</span><br><span class="line">            g = x, a = GaloisField(1), b = GaloisField(0);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            exgcd(y, x%y, g, b, a), b = b - (x / y) * a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void normal() &#123;</span><br><span class="line">        const int m[] = &#123;1, 1, 0, 1, 1, 0, 0, 0, 1&#125;, mn = 8; // m(x) = x^8 + x^4 + x^3 + x + 1</span><br><span class="line">        for (int i = 16; i - mn &gt;= 0; i--) &#123;</span><br><span class="line">            if (v[i] == 1) &#123;</span><br><span class="line">                for (int j = mn, k = i; j &gt;= 0; j--, k--)</span><br><span class="line">                    v[k] = v[k] xor (m[j]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void print() const &#123;</span><br><span class="line">        for (int i = 7; i &gt;= 0; i--) &#123;</span><br><span class="line">            printf("%d", v[i]);</span><br><span class="line">            if (i%4 == 0)	printf(" ");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("");</span><br><span class="line">    &#125;</span><br><span class="line">    int getHbits() const &#123;</span><br><span class="line">        return v[7]&lt;&lt;3 | v[6]&lt;&lt;2 | v[5]&lt;&lt;1 | v[4];</span><br><span class="line">    &#125;</span><br><span class="line">    int getLbits() const &#123;</span><br><span class="line">        return v[3]&lt;&lt;3 | v[2]&lt;&lt;2 | v[1]&lt;&lt;1 | v[0];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">void testGF() &#123;</span><br><span class="line">    int va[] = &#123;1, 1, 1, 0, 1, 1, 0, 0&#125;;</span><br><span class="line">    int vb[] = &#123;0, 1, 0, 0, 0, 0, 1, 0&#125;;</span><br><span class="line">    for (int i = 0; i &lt; 256; i++) &#123;</span><br><span class="line">        GaloisField a(i);</span><br><span class="line">        GaloisField b = a.inverse();</span><br><span class="line">        printf("%X%X ", b.getHbits(), b.getLbits());</span><br><span class="line">        if (i%16 == 15) puts("");</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">class GF_Polynominal &#123;</span><br><span class="line">public:</span><br><span class="line">    GaloisField v[32];</span><br><span class="line">    int n;</span><br><span class="line">    GF_Polynominal() &#123;</span><br><span class="line">        n = 4;</span><br><span class="line">        for (int i = 0; i &lt; 16; i++)</span><br><span class="line">            v[i] = GaloisField();</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal(const GaloisField a[], int an) &#123;</span><br><span class="line">        n = 4;</span><br><span class="line">        for (int i = 0; i &lt;= an; i++)</span><br><span class="line">            v[i] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator+(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt;= r.n; i++)</span><br><span class="line">            r.v[i] = v[i] + a.v[i];</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator-(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        return (*this) + a;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator*(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt;= n; i++)</span><br><span class="line">            for (int j = 0; j &lt;= a.n; j++) </span><br><span class="line">                r.v[i+j] = r.v[i+j] + (v[i] * a.v[j]);</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal shift(int sn) const &#123;</span><br><span class="line">        GF_Polynominal r;</span><br><span class="line">        for (int i = 0; i &lt; n; i++)</span><br><span class="line">            r.v[i + sn] = v[i];</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    bool operator&lt;(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (!v[i].isZero() &amp;&amp; !a.v[i].isZero())</span><br><span class="line">                return true;</span><br><span class="line">            if (v[i].isZero() != a.v[i].isZero())</span><br><span class="line">                return false;</span><br><span class="line">        &#125;</span><br><span class="line">        return false;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator/(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (!a.v[i].isZero() &amp;&amp; v[i].isZero())</span><br><span class="line">                return GF_Polynominal();</span><br><span class="line">            if (a.v[i].isZero() &amp;&amp; !v[i].isZero())</span><br><span class="line">                break;</span><br><span class="line">        &#125;</span><br><span class="line">        GF_Polynominal r, b = (*this), c;</span><br><span class="line">        </span><br><span class="line">        for (int i = n; i &gt;= 0; i--) &#123;</span><br><span class="line">            c = a.shift(i);</span><br><span class="line">            if (c &lt; b) &#123;</span><br><span class="line">                GaloisField t, x, y;</span><br><span class="line">                for (int j = 16; j &gt;= 0; j--) &#123;</span><br><span class="line">                    if (!c.v[j].isZero()) &#123;</span><br><span class="line">                        y = c.v[j], x = b.v[j];</span><br><span class="line">                        break;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                t = y.inverse() * x;</span><br><span class="line">//				b.print();</span><br><span class="line">//				c.print();</span><br><span class="line">//				printf("gg %d\n", i);</span><br><span class="line">//				y.print();</span><br><span class="line">//				x.print();</span><br><span class="line">//				y.inverse().print();</span><br><span class="line">//				t.print();</span><br><span class="line">                r.v[i] = t;</span><br><span class="line">                for (int j = 8; j &gt;= 0; j--)</span><br><span class="line">                    b.v[j] = b.v[j] - c.v[j] * t;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">//		printf("---&gt; mod "); b.print();</span><br><span class="line">//		puts("");</span><br><span class="line">//		puts("div begin");</span><br><span class="line">//		print();</span><br><span class="line">//		a.print();</span><br><span class="line">//		r.print();</span><br><span class="line">//		(r * a).print();</span><br><span class="line">//		(r * a + b).print();</span><br><span class="line">//		puts("div end\n");</span><br><span class="line">        r.normal();</span><br><span class="line">        return r;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal operator%(const GF_Polynominal &amp;a) const &#123;</span><br><span class="line">        GF_Polynominal ret = (*this) - (*this) / a * a;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">    bool isZero() &#123;</span><br><span class="line">        for (int i = 8; i &gt;= 0; i--)</span><br><span class="line">            if (!v[i].isZero())	return 0;</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    GF_Polynominal inverse() &#123;</span><br><span class="line">        const GaloisField m[] = &#123;GaloisField(1), GaloisField(0), GaloisField(0), GaloisField(0), GaloisField(1)&#125;;</span><br><span class="line">        const int mn = 4; // m(x) = x^4 + 1</span><br><span class="line">        GF_Polynominal y(m, mn);</span><br><span class="line">        GF_Polynominal g, a, b;</span><br><span class="line">        </span><br><span class="line">        exgcd((*this), y, g, a, b); // a x + b y = g</span><br><span class="line">        </span><br><span class="line">        return a / g;</span><br><span class="line">    &#125;</span><br><span class="line">    void exgcd(GF_Polynominal x, GF_Polynominal y, GF_Polynominal &amp;g, GF_Polynominal &amp;a, GF_Polynominal &amp;b) &#123;</span><br><span class="line">//		puts("exgcd -----------------");</span><br><span class="line">//		x.print();</span><br><span class="line">//		y.print();</span><br><span class="line">//		getchar();</span><br><span class="line">        if (y.isZero()) &#123;</span><br><span class="line">            const GaloisField m1[] = &#123;GaloisField(1)&#125;;</span><br><span class="line">            const GaloisField m0[] = &#123;GaloisField(0)&#125;;</span><br><span class="line">            g = x, a = GF_Polynominal(m1, 1), b = GF_Polynominal(m0, 1);</span><br><span class="line">            // a = g.inverse();</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            exgcd(y, x%y, g, b, a), b = b - (x / y) * a;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void normal() &#123;</span><br><span class="line">        const GaloisField m[] = &#123;GaloisField(1), GaloisField(0), GaloisField(0), GaloisField(0), GaloisField(1)&#125;;</span><br><span class="line">        const int mn = 4; // m(x) = x^4 + 1</span><br><span class="line">        for (int i = 16; i - mn &gt;= 0; i--) &#123;</span><br><span class="line">            if (!v[i].isZero()) &#123;</span><br><span class="line">                GaloisField t = v[i];</span><br><span class="line">                for (int j = mn, k = i; j &gt;= 0; j--, k--)</span><br><span class="line">                    v[k] = v[k] - (m[j] * t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    void print() const &#123;</span><br><span class="line">        for (int i = 3; i &gt;= 0; i--) &#123;</span><br><span class="line">            printf("%X%X ", v[i].getHbits(), v[i].getLbits());</span><br><span class="line">            printf("x^%d", i);</span><br><span class="line">            if (i)	printf(" + ");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("");</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">void testPoly() &#123;</span><br><span class="line">    const GaloisField m[] = &#123;GaloisField(2), GaloisField(1), GaloisField(1), GaloisField(3)&#125;;</span><br><span class="line">    const GaloisField m2[] = &#123;GaloisField(14), GaloisField(9), GaloisField(13), GaloisField(11)&#125;;</span><br><span class="line">    const int mn = 3, mn2 = 3;</span><br><span class="line">    GF_Polynominal a(m, mn), b(m2, mn2);</span><br><span class="line">    </span><br><span class="line">    a.print();</span><br><span class="line">    b.print();</span><br><span class="line">    </span><br><span class="line">    GF_Polynominal c = a * b;</span><br><span class="line">    c.print();</span><br><span class="line">    </span><br><span class="line">    GF_Polynominal d = a.inverse();</span><br><span class="line">    d.print();</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    testGF();</span><br><span class="line">    testPoly();</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-security-notes" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/24/security-notes/" class="article-date">
-  <time datetime="2015-04-24T02:37:28.000Z" itemprop="datePublished">2015-04-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/24/security-notes/">資訊安全 小考筆記</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/04/24/security-notes/" data-id="cin8umu270079qoxcrwyjytfa" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/04/24/security-notes/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><ol>
-<li><p>Follow</p>
-<ol>
-<li>What is a monoalphabetic cipher ?</li>
-<li>How large is the key space of the monoalphabetic cipher applied to English (just consider lower case letters) ?</li>
-<li>What is the main security weakness of a monoalphabetic cipher ?</li>
-<li>Please provide at least 4 approaches to prevent the above weakness.</li>
-</ol>
-</li>
-<li><p>Block ciphers process messages in blocks like an extremely large substitution, but this is very difficult to implement for a very big block size. What is Shannon’s idea to realize a block cipher with big block size ?</p>
-</li>
-<li><p>The S-box of DES round operation is not invertable, but why DES can decrypt ?</p>
-</li>
-<li><p>Follow</p>
-<ol>
-<li>Please explain the OFB mode.</li>
-<li>In the OFB mode, we never reuse the same sequence (key+IV). If we reuse the key, then the attacker can recover message. Please describe very precisely (mathematiclly with symbols) how the attack works.</li>
-</ol>
-</li>
-<li><p>Please compare the CFB mode the OFB mode by providing a table indicating at least 5 of their advantage and corresponding disadvantage.</p>
-</li>
-<li><p>This question is about issues of random access of encryption and decryption. Define notations or symbols you need before providing your answer. Please describe how to use CFB mode and CTR mode to randomly encrypt and decrypt a file Why OFB mode is inappropriate to randomly encrypt and decrypt a file?</p>
-</li>
-<li><p>Describe the details (as much as you remember) of AES operation and describe how efficiently implement AES on an 8-bit CPU ?</p>
-</li>
-<li><p>How avalanche happens in AES within the first tow rounds ?</p>
-</li>
-</ol>
-<h2 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h2><h3 id="Part-1"><a href="#Part-1" class="headerlink" title="Part 1"></a>Part 1</h3><p>monoalphabetic cipher 簡單來說比凱薩加密難一點，從每個字母都 shift 固定的數量來說，變成變動式的。換句話說就是單純的英文字母替換 (substitute)。由於要維持可逆的解密，替換必須符合一對一，所以方法數為 <code>26! = 403291461126605635584000000</code>。</p>
-<p>但這種替換方式容易受到語言統計的攻擊，也就是說在英文的特性中，不是每個字母都出現相同的頻率，因為很多冗詞的使用，導致有些字母會特別多。也因此在找對應時，可以藉由這一個觀點，反向查找可能的替換，大幅度地降低搜索可能，讓解密變得相當容易。</p>
-<p>為了解決這一語言統計的攻擊，可以藉由</p>
-<ul>
-<li>壓縮明文，破壞語言特性，但是壓縮算法有儲存的字典部分，仍可能發生字典結構被攻擊，進而進行解壓縮。</li>
-<li>增加垃圾字，撥點冗詞穿插在其中，把頻率不均的問題消彌。</li>
-<li>多個字符一起加密，相對於單一字母的替換，可以同時替換兩個以上，如 <code>AA -&gt; WT</code> 之類的。</li>
-<li>使用多種替換，在不同時刻使用不同的替換表，同樣地可以把頻率問題解決。</li>
-<li>參照後續區段加密的一些技巧，如 CFB、OFB … 等，讓替換表進行變動。</li>
-</ul>
-<h3 id="Part-2"><a href="#Part-2" class="headerlink" title="Part 2"></a>Part 2</h3><p>區段加密具有相當大的強度，當一次加密 64 bits 時，可以達到的對應種類高達 <code>(2^64)!</code>，沒有辦法將這種表格存放在記憶體，因為也要消耗 <code>2^64</code> bits。</p>
-<p>因此有 Shannon’s idea，利用 substitution (S-box)、permutation (P-box) 來完成對應，藉由 S-P 的組合，提供 混淆(confusion) 和 差異 (diffusion)。組合的效應遠比想像中的還大，儘管組合的方法數遠小於 <code>(2^64)!</code>，連兆分之一都不到，但簡單的概念可以在 <code>64KB</code> 記憶體大小內完成，效應上算相當划算。</p>
-<h3 id="Part-3"><a href="#Part-3" class="headerlink" title="Part 3"></a>Part 3</h3><p>DES 的 S-box 屬於不可逆的操作 (8-bits to 6-bits)，然而 DES 在解密時，不需要將 S-box 往回推導，也就是不需要逆向操作，因為加密的 key 來自於 master key 和另一段的訊息 L(i) ，最後用 key 加密 R(i) 得到 L(i+1)。解密時，只需要將 R(i+1) (L(i) 會變成 S(i+1))帶入 S-box，就能重新產生出 key。</p>
-<p>至於 DES 為什麼可以正確加解密，定義對於所有的任意明文 A, B，產生的密文 E(A) != E(B)。若明文差異在 L(i)，則在 R(i+1) 一定會不同。若明文差異在 R(i)，則在 key 相同，做 L(i+1) = R(i) XOR key 時，L(i+1) 也必定會不同。</p>
-<h3 id="Part-4"><a href="#Part-4" class="headerlink" title="Part 4"></a>Part 4</h3><span>$$O_{i} = E_{k}(O_{i-1}); O_{-1} = IV \\
-C_{i} = P_{i} \text{ XOR } O_{i}$$</span><!-- Has MathJax -->
-<p>為什麼 OFB 不能重新使用 key + IV 呢？原因是因為 <strong> 已知明文攻擊 (Known plaintext attack) </strong> 。假設每一天都重新啟動，那麼攻擊者可以在事後得到密文對應的明文 (可能隔天才知道，儘管對應仍然是很難的)，那麼可以藉由數學概念來完成解密，無須考慮 key 是什麼內容。</p>
-<span>$$C_{i} = P_{i} \text{ XOR } O_{i} \\
-C_{j} = P_{j} \text{ XOR } O_{i} \\
-C_{i} \text{ XOR } C_{j} = P_{i} \text{ XOR } P_{j}$$</span><!-- Has MathJax -->
-<p>假設 i 和 j 重複使用 key，那麼會發生已知密文<span>$C_{i}, C_{j}$</span><!-- Has MathJax --> (傳輸上一定會被發現) 和已知明文<span>$P_{i}$</span><!-- Has MathJax -->，只要夾擊做 XOR，就可以直接得到<span>$P_{j}$</span><!-- Has MathJax -->，當已知明文相當長時，竊取的效果就越好。</p>
-<h3 id="Part-5"><a href="#Part-5" class="headerlink" title="Part 5"></a>Part 5</h3><p>比較 CFB 和 OFB。</p>
-<table>
-<thead>
-<tr>
-<th>特性\模式</th>
-<th>CFB</th>
-<th>OFB</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>自同步 (self-synchronization)</td>
-<td>可</td>
-<td>不可</td>
-</tr>
-<tr>
-<td>錯誤擴散 (error propagation)</td>
-<td>有</td>
-<td>無</td>
-</tr>
-<tr>
-<td>預先計算 (preprocess key)</td>
-<td>不可</td>
-<td>可</td>
-</tr>
-<tr>
-<td>隨機存取 (random access)</td>
-<td>可</td>
-<td>不可</td>
-</tr>
-<tr>
-<td>資訊安全性 (message security)</td>
-<td>高</td>
-<td>低</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li><strong> 自同步 (self-synchronization) </strong>，不用告知對方加密狀態，可以藉由數次的傳輸訊息，自動地將兩邊的狀態一致，在此之前會造成一段雜訊。斷線時，不必重複使用 IV 讓兩邊同步 (狀態相同時，才能正確解密)。</li>
-<li><strong> 錯誤擴散 (error propagation) </strong> ，也因為自同步的設計，導致在同步前都會有雜訊，或者在訊息被攻擊者竄改時，會影響該週期的狀態 (<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax --> )。</li>
-<li><strong> 預先計算 (preprocess key) </strong> ，預先計算 key 可以加快加解密速度，同時便可支持平行運算，這原因是因為 message-independent/dependent 之間的差異，狀態不依靠正在傳遞的訊息時，就可以預先處理。</li>
-<li><strong> 隨機存取 (random access) </strong> ，當要解析某個密文時，CFB 可以往前查找密文<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax -->，得到當前的解密器所需要的狀態，放上 master key 就能進行解密。OFB 辦不到這一點，狀態不依賴訊息，那就要知道當前是哪個回合，從 IV 開始推導狀態，若密文在第 n 個位置，需要 O(n) 的時間來得到狀態，相對於 CFB 的 O(k) = O(1)來說相當耗時。</li>
-<li><strong> 資訊安全性 (message security) </strong> ，由於狀態與訊息獨立，會導致被攻擊者竄改內容時不易發現。在 CFB 中，由於依賴傳遞的訊息，當攻擊者竄改某個密文時會造成錯誤擴散，影響的解密時的明文不只一個，這也讓安全性提高。可以說是一體兩面的特性。</li>
-</ul>
-<h3 id="Part-6"><a href="#Part-6" class="headerlink" title="Part 6"></a>Part 6</h3><ul>
-<li>CFB 狀態為 master key +<span>$C_{i-k}, C_{i-k+1}, ..., C_{i-1}$</span><!-- Has MathJax --></li>
-<li>CTR 狀態為 master key + counter</li>
-</ul>
-<p>CFB 解密某個密文時，往前查找密文即可解密。CTR 知道密文 offset 便可得到 counter。在獲得資訊上都是 O(k) 常數，因此支持隨機存取。</p>
-<blockquote>
-<p>OFB 辦不到這一點，狀態不依賴訊息，那就要知道當前是哪個回合，從 IV 開始推導狀態，若密文在第 n 個位置，需要 O(n) 的時間來得到狀態，相對於 CFB 的 O(k) = O(1)來說相當耗時。</p>
-</blockquote>
-<p>CFB 和 CTR 到底誰的隨機存取能力好呢？若檔案儲存會切割成數個，那 CFB 的隨機存取能力就更高一點。CTR 必須計算 offset，相較於 CFB 的紀錄架構會稍微地麻煩。</p>
-<h3 id="Part-7"><a href="#Part-7" class="headerlink" title="Part 7"></a>Part 7</h3><p>AES 的計算結構都落在 GF(2^8)，一個 cell 的內容都是 GF(2^8)</p>
-<ul>
-<li>substitue 需要 8-bits to 8-bits</li>
-<li>shift rows 對於 8-bit 關聯不大 (移動記憶體的位置)</li>
-<li>mixColume 上是 8-bits x 8-bits</li>
-<li>add round key 對於每一個 cell XOR 8-bit keys</li>
-</ul>
-<p>因此 AES 可以在 8-bits CPU 上有更好的實作效能，所需要的 clock cycle 會比較短。</p>
-<h3 id="Part-8"><a href="#Part-8" class="headerlink" title="Part 8"></a>Part 8</h3><p>假設有兩個明文的 <strong> 漢明距離 (Hamming distance) </strong> 為 1，在 128 bits 中有一個 1 bits 不同，意即<span>$H(P, Q) = 1$</span><!-- Has MathJax -->。</p>
-<table>
-<thead>
-<tr>
-<th>Step\Round</th>
-<th>Round 1</th>
-<th>Round 2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Substitue bytes</td>
-<td>4 bits</td>
-<td>16 bits</td>
-</tr>
-<tr>
-<td>Shift rows</td>
-<td>4 bits</td>
-<td>16 bits</td>
-</tr>
-<tr>
-<td>Mix Columes</td>
-<td>16 bits</td>
-<td>64 bits</td>
-</tr>
-<tr>
-<td>Add Round key</td>
-<td>16 bits</td>
-<td>64 bits</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>在 Substitue bytes 步驟時，S-box 會設計成期望當有一個 1-bits 不同，則替換出來的結果會有 4-bits 不同 (一個 cell 具有 8-bits。替換 8-bits 時，差異最少 0 bits、最多 8-bits，期望值是 4-bits)。</li>
-<li>在 Shift rows 步驟時，單純移動 cell 不影響差異。</li>
-<li>在 Mix Columes 步驟時，每一個 colume 會根據上一個 colume 的 4 個元素相互影響，因此會增加 4 倍。</li>
-<li>在 Add Round key 步驟時，由於 XOR 相同的 key，因此差異並不會改變。</li>
-</ul>
-<p>最後，在 Round 2 時，能得到平均 64 bits 的差異。加密的明文一次 128 bits，差異期望值也就是一半的情況 64 bits，因此很快地就能達到期望的差異性。在隨後的 Round X 中，差異會在 64-bits 上下浮動都是有可能的。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-game-maker-design" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/04/22/game-maker-design/" class="article-date">
-  <time datetime="2015-04-21T23:15:21.000Z" itemprop="datePublished">2015-04-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/04/22/game-maker-design/">Game Maker 遊戲介面設計</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/04/22/game-maker-design/" data-id="cin8umtx4002lqoxc89eg7tta" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/04/22/game-maker-design/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/game/">game</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>學校課程番外篇，有興趣者可以查閱 <a href="https://github.com/morris821028/hw-GameMaker" target="_blank" rel="external">Github</a>。</p>
-<h2 id="本文"><a href="#本文" class="headerlink" title="本文"></a>本文</h2><p>本課程一開始著重 <strong> 尼爾森法則 </strong> 的介面設計，不只是在網頁操作等介面設計，雖然遊戲沒有複雜的狀態跟操作流程，但在設計上的操作反應、都應該要符合尼爾森法則。</p>
-<p>Game Maker 這套軟體只是製作 UI 方便，遊戲性跟高難度設計不是很著重，<strong> 不看你的代碼或實作複雜度 </strong>。這也是本課程最弔詭的地方。Game Maker 有一個缺點，製作時的分工無法按照軟體分工的方式，實作部分代碼來完成，除非組員們都會寫 script 並且了解語法的變數存取方式。</p>
-<h2 id="從設計開始講起"><a href="#從設計開始講起" class="headerlink" title="從設計開始講起"></a>從設計開始講起</h2><p>可以從課程問卷中看到 <a href="https://github.com/morris821028/hw-GameMaker/blob/master/project/doc/game_questionnaire.md" target="_blank" rel="external">link</a> 幾個遵循的法則。</p>
-<h3 id="Visibility-of-system-status"><a href="#Visibility-of-system-status" class="headerlink" title="Visibility of system status"></a>Visibility of system status</h3><p>狀態可視有幾格要點，玩家方便知道當前狀態，例如所在關卡、遊戲模式的狀態、角色資訊的狀態、完成關卡的結算畫面 … 等。</p>
-<p><img src="http://i.imgur.com/RKM583h.png" alt="紅框位置處表示狀態"></p>
-<p>同時在需要連續操作的完成流程，如銀行手續的設計，會顯示當前步驟進行到幾分之幾，來提示使用者其實還沒有完成所有步驟。然而在遊戲上，完成比例通常不是著重的一環，而是有哪關卡可以玩、有哪些關卡還沒去探訪過。</p>
-<h3 id="Match-between-system-and-the-real-world"><a href="#Match-between-system-and-the-real-world" class="headerlink" title="Match between system and the real world"></a>Match between system and the real world</h3><p>主要為圖示運用，<a href="http://www.flaticon.com/packs/" target="_blank" rel="external">icon</a> 對應的操作符合普遍性，通常會遇到的第一個錯誤設計是將原本用在某個地方的圖示拿來放在不應擺放的位置。例如音樂撥放器的撥放、暫停、停止、前轉、循環、 … 等，很容易在選擇上誤用箭頭的格式。</p>
-<p>接著是在文字對應，選項的文字也要具有普遍性，符合直觀的反應文字，詞性也應選擇恰當 (當心誤用形容詞當選項文字)，問題描述的正面詢問與反面詢問，反應在選擇選項時應足夠明確 (反問內容是否合理，不常見的反面詢問應該捨棄，防止使用者用既有概念進行操作)。</p>
-<p>遊戲規則設計符合合理，當要貼切真實世界時，如物理反應與遊戲元素之間的關聯應該符合，如遊戲中運用到水和火，兩物體若發生碰撞，反應結果應符合消滅對方的關係。</p>
-<h3 id="User-control-and-freedom"><a href="#User-control-and-freedom" class="headerlink" title="User control and freedom"></a>User control and freedom</h3><p>所謂的自由度，玩家不會被困在一本道的遊戲設計，但是在抖 M 類型的遊戲中，只要一失敗就必須從頭打起。玩家不會一直被系統帶著跑，而無法中斷、暫停遊戲，同時也表明重新步入遊戲時，可以選擇自己進行的模式。</p>
-<p>自由度的操控有很多，客製化玩家的操作、給予玩家改變遊戲的部分設計，如鍵盤控制的改變、允許玩家更動角色的樣貌、樣式，可以更動關卡模式，例如 L4D2 可以選擇專家模式 … 等。</p>
-<h3 id="Consistency-and-standards"><a href="#Consistency-and-standards" class="headerlink" title="Consistency and standards"></a>Consistency and standards</h3><p>一致性設計，相當於風格設計。</p>
-<ul>
-<li>按鈕的圖示在不同狀態若具有相同功能，使用圖示相同。</li>
-<li>UI 擺放位置，不常因不同模式而更動 (突然放左、突然放右。)</li>
-<li>文字字型的使用統一使用，並且區分遊戲劇情與系統介面，相同類型的文字說明應符合一致。</li>
-</ul>
-<h3 id="Error-prevention"><a href="#Error-prevention" class="headerlink" title="Error prevention"></a>Error prevention</h3><p>防止錯誤操作，當玩家已經在別款遊戲中擅長使用快捷鍵時，那很有可能在遊戲中使用快捷鍵操作，這可能會造成不預期的反應，如快速關閉遊戲、啟動某個遊戲的系統功能。</p>
-<p>因此在防止錯誤，通常會用 <strong> 第二次詢問 </strong> 來防止。在快捷操作上，二次詢問要利用不同的快捷鍵觸發，防止連按的快速操作，如連按兩次 <code>ESC</code> 突然跳出遊戲的蠢事。</p>
-<p>提示操作的後果也是相當重要，必須在文字說明上明確描述，盡可能使用簡短的句子和例子來說明操作後果。說明時著重使用者觀點，而非功能性介紹 (介紹對於使用者的感受可能會變成怎麼樣，而不去說明電腦架構的效能 … 等專業知識)。</p>
-<p>當遊戲需要高度複雜的邏輯，導致道具使用上的 <strong> 順序性會影響流程 </strong>。當玩家處於無法通關的狀態時，提示哪個步驟錯誤，同時也告知玩家應該重新挑戰。這一類型就是引導提示。</p>
-<h3 id="Recognition-rather-than-recall"><a href="#Recognition-rather-than-recall" class="headerlink" title="Recognition rather than recall"></a>Recognition rather than recall</h3><p>在遊戲功能分類上，遊戲道具的使用類型應該設計主動操作與被動操作，在欄位劃分上是其中一種設計。當空間不足與進行欄位劃分，在道具的背景、顏色上的區分是一個解決方案，例如用三角形的外框表示消耗型道具、六角形表示永久的增益型道具。<strong> 用圖示背景與位置來區分操作類型 </strong>，防範使用者如猴子般地等待道具效果。</p>
-<h3 id="Flexibility-and-efficiency-of-use"><a href="#Flexibility-and-efficiency-of-use" class="headerlink" title="Flexibility and efficiency of use"></a>Flexibility and efficiency of use</h3><p>操作相當具有彈性跟有效地使用！</p>
-<p>有些遊戲需要高度複雜的組合鍵來完成一個動作，同時也要求組合鍵的有效時間。先不論組合鍵的設計，若存在組合鍵，是否符合效率使用，是否可縮減成另一個指令，當分化深度歧異過大時，考量壓縮組合鍵的長度。例如有 5 個技能是由 3 個鍵組合觸發，4 個技能是由 5 個鍵組合觸發，壓縮到 4 個鍵以內 … 等。</p>
-<p>正常情況下，有多少使用者會直觀這麼做，組合鍵設計是否合理，是否可以藉由 <strong> 系統輔助來簡化操作流程 </strong> ？這些考量將成為易上手，入門玩家最需要的部分。就如 vim 編輯器的使用，直接面向高端使用者，入門就會相當地困難。</p>
-<h3 id="Aesthetic-and-minimalist-design"><a href="#Aesthetic-and-minimalist-design" class="headerlink" title="Aesthetic and minimalist design"></a>Aesthetic and minimalist design</h3><p>提示、排版設計，在 Apple 軟體看得很明顯，操作相當簡單，不會一次把很多功能塞在同一個頁面。在功能性很強的軟體，常常會把很多參數調校放在同一個頁面，而沒有做好區別與預設，即使功能性很強、軟體很好用，但很多功能反而會被忽略，由於沒有好的簡化設計，第一手想要嘗試的使用者，會跳過好幾個功能設定進行反饋。 <strong> 開發者開發的功能就白費了！ </strong></p>
-<p>盡可能讓畫面簡潔，縮減不必要的進階資訊，用額外的方式體現，設計不同的介面模式。</p>
-<h3 id="Help-users-recognize-diagnose-and-recover-from-errors"><a href="#Help-users-recognize-diagnose-and-recover-from-errors" class="headerlink" title="Help users recognize, diagnose, and recover from errors"></a>Help users recognize, diagnose, and recover from errors</h3><p>系統發生錯誤時，是否有足夠的資訊讓使用者查覺到 <strong> 不是遊戲正常設定 </strong>，來讓使用者回報這些程式設計 Bug。在系統設計的魯棒性，不應一個 Bug 產生而造成系統崩潰，遊戲也是一樣，讓使用者返回上一個正常的狀態，不會造成卡關、或者卡關之後遊戲損毀。</p>
-<p>復原狀態對於小遊戲設計上相當困難啊！</p>
-<h3 id="Game"><a href="#Game" class="headerlink" title="Game"></a>Game</h3><ul>
-<li>故事劇情 (Storyline)</li>
-<li>遊戲性 (GamePlay)</li>
-<li>美學圖形 (Artistic/Graphics)</li>
-<li>音效特效 (Sound/Special effects)</li>
-<li>人工智慧 (AI)</li>
-</ul>
-<p>故事劇情可以結合真實部分，在真假交織下發展。</p>
-<p>可以參考 <strong> 《额外加分 Extra Credits》 </strong> 、 <strong> 《TUN高品位低调宅》 </strong> 系列影片，這將會告訴你遊戲如何設計才具有特色。</p>
-<p>下面列了兩個影片，更多可以直接去觀看 youtube 上的頻道。</p>
-<ul>
-<li><a href="https://www.youtube.com/watch?v=UjclHHR2hMk" target="_blank" rel="external">额外加分 Extra Credits：关联学习法</a></li>
-<li><a href="https://www.youtube.com/watch?v=__BHBWhSw4g" target="_blank" rel="external">TUN高品位低调宅之黑暗之魂好在哪？</a></li>
-</ul>
-<p>其他的列點就是一種個人價值觀體現，還沒有詳細學習。</p>
-<h2 id="Demo"><a href="#Demo" class="headerlink" title="Demo"></a>Demo</h2><div class="video-container"><iframe src="//www.youtube.com/embed/In0U3oQJ1LI" frameborder="0" allowfullscreen></iframe></div>
-<p>影片加速展示內容。</p>
-<h2 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h2><script type="text/javascript" src="http://morris821028.github.io/hexo-tag-oj/jquery.githubRepoWidget.js"></script><div class="github-widget" data-repo="morris821028/hw-GameMaker"></div>
-<p>遊戲執行檔和開源代碼都在其中，當然還有遊戲的編輯器。更多的遊戲截圖在裡頭，只支持 windows 平台。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/2/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><a class="page-number" href="/categories/學校課程/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/categories/學校課程/page/4/">4</a><a class="page-number" href="/categories/學校課程/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="extend next" rel="next" href="/categories/學校課程/page/4/">Next &raquo;</a>
@@ -1253,7 +1515,7 @@ C_{i} \text{ XOR } C_{j} = P_{i} \text{ XOR } P_{j}$$</span><!-- Has MathJax -->
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">76</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">80</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1263,6 +1525,38 @@ C_{i} \text{ XOR } C_{j} = P_{i} \text{ XOR } P_{j}$$</span><!-- Has MathJax -->
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10082/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10082. Fast Find Prime Number (OpenMP)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10081/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10081. Fast Game of Life</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10026/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10026. Fast N-Queen</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/jg-10025/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10025. Fast Image Match (OpenMP)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/20/jg-10022/">
@@ -1310,38 +1604,6 @@ C_{i} \text{ XOR } C_{j} = P_{i} \text{ XOR } P_{j}$$</span><!-- Has MathJax -->
                 <i class="icon-file-o"></i> 
               
             數據分割 區間分塊小技巧</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/03/16/jg-10085/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10085. Parallel Count (debug)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/03/16/jg-10084/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10084. Prefix Sum (pthread)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13006/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13006 - Cake cut</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/02/29/uva-13010/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13010 - Galactic taxes</a>
           </li>
         
       </ul>
