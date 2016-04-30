@@ -89,6 +89,156 @@
         
           <section id="main">
   
+    <article id="post-oj/uva/uva-11291-with-yacc" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/12/oj/uva/uva-11291-with-yacc/" class="article-date">
+  <time datetime="2014-05-12T10:54:49.000Z" itemprop="datePublished">2014-05-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/12/oj/uva/uva-11291-with-yacc/">Yacc 與 Lex 練習 - UVa 11291</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-11291-with-yacc/" data-id="cinmm0g8n026lalxcp1hbe1k3" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-11291-with-yacc/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Lex/">Lex</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Yacc/">Yacc</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h1><p>詳細題目請參考 <a href="http://uva.onlinejudge.org/index.php?option=com_onlinejudge&amp;Itemid=8&amp;category=24&amp;page=show_problem&amp;problem=2266" target="_blank" rel="external">UVa 11291 - Smeech</a></p>
+<p>語法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;E[x]&gt; -&gt; &lt;Integer&gt; | (p &lt;E[x]&gt; &lt;E[x]&gt;)</span><br><span class="line">&lt;Integer&gt; -&gt; #number</span><br></pre></td></tr></table></figure></p>
+<p>目標計算出 <code>E[X] = p * (e1 + e2) + (1 - p) * (e1 - e2)</code></p>
+<h1 id="Yacc"><a href="#Yacc" class="headerlink" title="Yacc"></a>Yacc</h1><p>Yacc 主要是根據 CFG 進行解析。</p>
+<p>其中，要對於 Yacc 語法的回傳值明白操作情況。</p>
+<p>對於語法回傳值，我們來個最簡單的範例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">expression -&gt; LEFT_P NUMBER expression expression RIGHT_P</span><br><span class="line">    $$          $1     $2       $3         $4       $5</span><br></pre></td></tr></table></figure></p>
+<p>其中 <code>$$</code> 是回傳值，其中的 <code>$1</code>、<code>$2</code> … 等，都是得到的回傳值。</p>
+<p>對於 <code>yylval</code> 形態處理：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">%union &#123;</span><br><span class="line">    float 	floatVal;</span><br><span class="line">    int 	intVal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通常使用 <code>union</code> 的方式來共用記憶體，在 lex 那邊就可以根據 <code>yylval.floatVal</code> 進行操作。</p>
+<p>當然，我們也要對於每一個 <code>nonterminal</code> 定義回傳的型態</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">%type &lt;floatVal&gt; NUMBER</span><br><span class="line">%type &lt;floatVal&gt; expression</span><br><span class="line">%type &lt;floatVal&gt; startsymbol</span><br></pre></td></tr></table></figure>
+<p>基本上就大功告成了。</p>
+<p>接著要考慮如何去完成多組測資組的問題，在這裡可以利用 kleene star 來完成。</p>
+<p>但是對於輸出順序，使用 <code>input -&gt; input startsymbol</code> 跟 <code>input -&gt; startsymbol input</code> 輸出順序是不同的，如果要順著輸出，請選擇前者。</p>
+<figure class="highlight cpp"><figcaption><span>file: a.y</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">%&#123;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">yylex</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">double</span> ans = <span class="number">0</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">yyerror</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* message)</span> </span>&#123;</span><br><span class="line">    ans = <span class="number">-2147483647</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Invaild format\n"</span>);</span><br><span class="line">&#125;;</span><br><span class="line">%&#125;</span><br><span class="line"></span><br><span class="line">%<span class="keyword">union</span> &#123;</span><br><span class="line">    <span class="keyword">float</span> 	floatVal;</span><br><span class="line">    <span class="keyword">int</span> 	intVal;</span><br><span class="line">&#125;</span><br><span class="line">%type &lt;floatVal&gt; NUMBER</span><br><span class="line">%type &lt;floatVal&gt; expression</span><br><span class="line">%type &lt;floatVal&gt; startsymbol</span><br><span class="line"></span><br><span class="line">%token LEFT_P RIGHT_P NUMBER</span><br><span class="line"></span><br><span class="line">%%</span><br><span class="line">input</span><br><span class="line">    : input startsymbol &#123;</span><br><span class="line">        ans = $<span class="number">2</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%.2f\n"</span>, ans);</span><br><span class="line">    &#125;</span><br><span class="line">    | &#123;</span><br><span class="line">    &#125;</span><br><span class="line">startsymbol</span><br><span class="line">    : expression &#123;</span><br><span class="line">        $$ = $<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ;</span><br><span class="line">expression</span><br><span class="line">    : NUMBER &#123;</span><br><span class="line">        $$ = $<span class="number">1</span>;</span><br><span class="line">    &#125; </span><br><span class="line">    | LEFT_P NUMBER expression expression RIGHT_P &#123;</span><br><span class="line">        $$ = $<span class="number">2</span> * ($<span class="number">3</span> + $<span class="number">4</span>) + (<span class="number">1.0f</span> - $<span class="number">2</span>) * ($<span class="number">3</span> - $<span class="number">4</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ;</span><br><span class="line">%%</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    yyparse();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h1 id="Lex"><a href="#Lex" class="headerlink" title="Lex"></a>Lex</h1><p>Lex 主要是扮演切出所有的 token 的角色，相當於 Scanner。同時要將值紀錄再 <code>yylval</code> 中，在 Yacc 那邊則會在 <code>$NUMBER</code> 中得到變數值。</p>
+<p>在 Lex 語法上要特別小心，如果兩條的前綴 (prefix) 相同時 (解析上會產生相同的 token)，則會選擇長的那一條為優先。如果長度仍相同的話，請自行測試，這裡無法給予解答。而為什麼要這麼設計？為了保證後綴不會塞入奇怪的字符，因此可以先檢查隨後接的字符情況。</p>
+<figure class="highlight cpp"><figcaption><span>file: a.l</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">%&#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"a.tab.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line">%&#125;</span><br><span class="line"></span><br><span class="line">%%</span><br><span class="line">([-]?)[<span class="number">0</span><span class="number">-9</span>]*\.[<span class="number">0</span><span class="number">-9</span>]*		&#123;<span class="built_in">sscanf</span>(yytext, <span class="string">"%f"</span>, &amp;yylval.floatVal); <span class="keyword">return</span> NUMBER;&#125;</span><br><span class="line">([-]?)[<span class="number">0</span><span class="number">-9</span>]+				&#123;<span class="built_in">sscanf</span>(yytext, <span class="string">"%f"</span>, &amp;yylval.floatVal); <span class="keyword">return</span> NUMBER;&#125;</span><br><span class="line"><span class="string">"("</span>					&#123;<span class="keyword">return</span> LEFT_P;&#125;</span><br><span class="line"><span class="string">")"</span>					&#123;<span class="keyword">return</span> RIGHT_P;&#125;</span><br><span class="line">\n					&#123;&#125;</span><br><span class="line">.					&#123;&#125;</span><br><span class="line">%%</span><br></pre></td></tr></table></figure>
+<h1 id="make-file"><a href="#make-file" class="headerlink" title="make file"></a>make file</h1><p>請用以下方法建造</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">morris $ sh make.sh</span><br></pre></td></tr></table></figure>
+<p>代碼如下<br><figure class="highlight plain"><figcaption><span>file: make.sh</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bison -d a.y</span><br><span class="line">flex a.l</span><br><span class="line">gcc -c a.tab.c</span><br><span class="line">gcc -c lex.yy.c</span><br><span class="line">gcc lex.yy.o a.tab.o -lfl</span><br></pre></td></tr></table></figure></p>
+<p>產生的結果如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ tree </span><br><span class="line">. ├── a.l</span><br><span class="line">  ├── a.out </span><br><span class="line">  ├── a.tab.c </span><br><span class="line">  ├── a.tab.h </span><br><span class="line">  ├── a.tab.o </span><br><span class="line">  ├── a.y </span><br><span class="line">  ├── input~ </span><br><span class="line">  ├── lex.yy.c </span><br><span class="line">  ├── lex.yy.o </span><br><span class="line">  ├── make.sh </span><br><span class="line">  ├── make.sh~ </span><br><span class="line">  ├── testdata </span><br><span class="line">  │   ├── ac_output </span><br><span class="line">  │   └── input</span><br></pre></td></tr></table></figure>
+<h1 id="執行"><a href="#執行" class="headerlink" title="執行"></a>執行</h1><p>執行的時候就跟標準輸入串流一樣。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">morris $ ./a.out &lt;input</span><br></pre></td></tr></table></figure></p>
+<h2 id="參考範例輸入"><a href="#參考範例輸入" class="headerlink" title="參考範例輸入"></a>參考範例輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">7</span><br><span class="line">(.5 3 9)</span><br><span class="line">(0.3 2 (1 1 -10))</span><br><span class="line">(1.0 (1.0 (1.0 -1 -2) (1.0 -1 -2)) (1.0 (1.0 1 2) 2))</span><br><span class="line">(0.99 82 (0.76 50 (0.85 (0.07 (0.88 28 (0.98 79 (0.09 77 51))) (0.30 (0.29 36 (0.36 (0.51 27 (0.68 (0.47 87 35) (0.25 85 59))) 31)) 64)) (0.14 (0.84 (0.77 29 71) (0.50 (0.99 (0.81 (0.78 (0.87 50 7) 71) 72) 14) (0.30 (0.50 9 37) (0.67 21 (0.73 86 (0.08 31 14)))))) (0.94 (0.96 (0.50 27 (0.94 (0.54 62 (0.63 89 29)) (0.81 24 (0.94 20 72)))) 4) (0.44 9 (0.59 (0.70 48 40) (0.64 (0.27 97 71) 43))))))))</span><br><span class="line">(0.15 12 60)</span><br><span class="line">(0.55 18 (0.95 (0.79 95 (0.97 (0.11 (0.96 (0.70 (0.38 73 66) (0.38 (0.06 (0.02 88 66) (0.39 35 37)) 69)) (0.81 3 (0.45 5 61))) (0.44 (0.67 (0.23 82 7) 38) (0.24 49 74))) 76)) (0.46 19 44)))</span><br><span class="line">(0.56 62 77)</span><br><span class="line">(0.03 (0.90 19 35) (0.17 50 (0.13 (0.96 74 (0.07 (0.51 78 (0.77 (0.78 (0.84 64 (0.41 7 59)) 21) (0.73 (0.95 (0.13 2 85) (0.08 29 50)) (0.24 (0.12 43 99) 71)))) 84)) (0.31 69 (0.82 31 24)))))</span><br><span class="line">(0.78 73 44)</span><br><span class="line">(0.09 (0.80 14 62) (0.57 (0.57 95 (0.33 94 31)) (0.70 (0.92 32 (0.13 20 (0.44 87 (0.45 83 26)))) (0.43 40 (0.51 (0.57 29 (0.65 13 (0.40 74 56))) 56)))))</span><br><span class="line">(0.96 (0.96 (0.65 (0.01 (0.98 (0.34 86 (0.68 87 21)) 27) (0.26 68 68)) (0.42 28 29)) 9) 99)</span><br><span class="line">(0.99 (0.60 53 27) (0.35 23 (0.15 (0.50 85 (0.73 56 (0.34 (0.44 (0.10 (0.62 (0.20 58 15) 56) (0.57 74 (0.23 20 78))) 62) (0.92 (0.72 (0.82 75 (0.08 35 93)) 43) (0.55 10 (0.45 (0.25 52 91) 71)))))) (0.61 39 (0.49 (0.92 87 (0.13 52 (0.69 (0.46 (0.82 27 72) 96) (0.27 51 99)))) (0.36 99 (0.60 68 (0.49 (0.25 (0.92 54 7) (0.48 47 32)) (0.08 (0.69 97 11) 34)))))))))</span><br><span class="line">(0.87 (0.32 (0.42 (0.66 69 (0.98 0 (0.46 94 (0.25 (0.57 (0.72 25 59) (0.35 91 (0.42 29 28))) 3)))) 19) 81) (0.72 (0.06 (0.66 (0.07 22 87) 44) (0.18 33 14)) 49))</span><br><span class="line">(0.72 (0.01 67 (0.13 (0.22 (0.88 11 86) (0.04 40 (0.41 (0.86 (0.81 (0.08 84 95) (0.88 19 67)) 8) 96))) 13)) (0.13 45 (0.19 (0.83 85 (0.77 (0.37 78 (0.44 44 59)) 37)) 56)))</span><br><span class="line">(0.51 (0.36 2 72) 25)</span><br><span class="line">(0.32 51 87)</span><br><span class="line">(0.06 (0.23 (0.70 93 47) (0.22 20 (0.90 (0.03 (0.48 (0.84 18 (0.29 (0.02 (0.06 52 49) 67) (0.49 (0.69 60 74) (0.59 92 0)))) 32) 80) (0.76 78 (0.66 8 94))))) 31)</span><br><span class="line">(0.29 (0.54 70 (0.64 (0.48 (0.50 25 (0.38 (0.07 (0.14 (0.44 (0.76 44 45) 67) 41) (0.15 (0.86 (0.89 87 42) (0.43 85 58)) (0.98 44 (0.48 34 28)))) (0.84 81 60))) 28) 16)) (0.84 (0.21 34 (0.78 (0.76 (0.51 82 (0.07 (0.78 (0.52 (0.65 51 58) 12) (0.05 52 (0.98 0 30))) (0.01 27 3))) (1.00 15 (0.53 (0.91 (0.38 62 (0.75 92 69)) (0.85 53 (0.84 92 83))) (0.70 (0.12 (0.24 23 83) 58) (0.62 56 38))))) 36)) (0.66 41 13)))</span><br><span class="line">(0.94 (0.47 30 56) (0.78 6 (0.45 (0.45 15 94) (0.77 (0.57 25 (0.33 66 12)) (0.66 74 (0.82 (0.14 75 50) (0.22 45 43)))))))</span><br><span class="line">(0.66 (0.58 (0.85 75 26) 45) (0.04 (0.94 82 (0.59 34 (0.02 (0.09 11 (0.31 (0.05 (0.92 (0.14 51 45) (0.47 25 46)) 6) 5)) 33))) (0.81 (0.09 15 (0.91 (0.77 (0.59 44 (0.57 (0.39 (0.81 18 75) (0.37 41 67)) 18)) (0.77 (0.68 (0.71 (0.31 87 94) 85) (0.00 35 (0.55 81 22))) 56)) 3)) (0.43 7 (0.98 94 3)))))</span><br><span class="line">(0.13 22 80)</span><br><span class="line">(0.77 45 81)</span><br><span class="line">(0.61 (0.21 (0.32 (0.32 (0.81 8 60) 78) (0.19 (0.92 68 (0.56 (0.22 79 32) (0.32 72 63))) 41)) (0.30 94 31)) (0.80 59 33))</span><br></pre></td></tr></table></figure>
+<h2 id="參考範例輸出"><a href="#參考範例輸出" class="headerlink" title="參考範例輸出"></a>參考範例輸出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">7.00</span><br><span class="line">3.00</span><br><span class="line">5.60</span><br><span class="line">-1.00</span><br><span class="line">241.55</span><br><span class="line">-30.00</span><br><span class="line">32.05</span><br><span class="line">71.24</span><br><span class="line">25.80</span><br><span class="line">97.64</span><br><span class="line">-37.98</span><br><span class="line">153.38</span><br><span class="line">67.92</span><br><span class="line">35.81</span><br><span class="line">-10.21</span><br><span class="line">-17.66</span><br><span class="line">19.68</span><br><span class="line">60.84</span><br><span class="line">92.20</span><br><span class="line">30.61</span><br><span class="line">157.62</span><br><span class="line">-37.20</span><br><span class="line">88.74</span><br><span class="line">-48.46</span><br></pre></td></tr></table></figure>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h1><p><a href="http://www.ibm.com/developerworks/cn/linux/sdk/lex/" target="_blank" rel="external">Yacc 与 Lex 快速入门</a></p>
+<h1 id="指導"><a href="#指導" class="headerlink" title="指導"></a>指導</h1><p><a href="http://en.wikipedia.org/wiki/God" target="_blank" rel="external">Inker</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-oj/uva/uva-1636" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/12/oj/uva/uva-1636/" class="article-date">
+  <time datetime="2014-05-12T01:15:24.000Z" itemprop="datePublished">2014-05-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/12/oj/uva/uva-1636/">UVa 1636 - Headshot</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-1636/" data-id="cinmm0h9p02ohalxcxjkwundl" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-1636/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/概率/">概率</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>You have a revolver gun with a cylinder that has n chambers. Chambers are located in a circle on a cylinder. Each chamber can be empty or can contain a round. One chamber is aligned with the gun’s barrel. When trigger of the gun is pulled, the gun’s cylinder rotates, aligning the next chamber with the barrel, hammer strikes the round, making a shot by firing a bullet through the barrel. If the chamber is empty when the hammer strikes it, then there is no shot but just a <code>click</code>.</p>
+<p>You have found a use for this gun. You are playing Russian Roulette with your friend. Your friend loads rounds into some chambers, randomly rotates the cylinder, aligning a random chamber with a gun’s barrel, puts the gun to his head and pulls the trigger. You hear <code>click</code> and nothing else – the chamber was empty and the gun did not shoot.</p>
+<p>Now it is your turn to put the gun to your head and pull the trigger. You have a choice. You can either pull the trigger right away or you can randomly rotate the gun’s cylinder and then pull the trigger. What should you choose to maximize the chances of your survival? </p>
+<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input file contains several datasets. A dataset contains a single line with a string of n digits <code>0</code> and <code>1</code> ( 2 &lt;= n &lt;= 100). This line of digits represents the pattern of rounds that were loaded into the gun’s chambers. <code>0</code> represent an empty chamber, <code>1</code> represent a loaded one. In this representation, when cylinder rotates before a shot, the next chamber to the right gets aligned with the barrel for a shot. Since the chambers are actually located on a circle, the first chamber in this string follows the last one. There is at least one <code>0</code> in this string.</p>
+<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each dataset, write to the output file one of the following words (without quotes):</p>
+<ul>
+<li><code>SHOOT</code> – if pulling the trigger right away makes you less likely to be actually shot in the head with the bullet (more likely that the chamber will be empty).</li>
+<li><code>ROTATE</code> – if randomly rotating the cylinder before pulling the trigger makes you less likely to be actually shot in the head with the bullet (more likely that the chamber will be empty).</li>
+<li><code>EQUAL</code> – if both of the above choices are equal in terms of probability of being shot.</li>
+</ul>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0011</span><br><span class="line">0111</span><br><span class="line">000111</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EQUAL</span><br><span class="line">ROTATE</span><br><span class="line">SHOOT</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
+<p>俄羅斯輪盤，現在與一位朋友一起玩這場遊戲，然而我們已經知道左輪手槍中的填彈資訊，剛聽到朋友按下扣板，但是沒有死。現在輪到你，請問要直接按？還是隨機轉一圈再按？</p>
+<p><strong> 題目解法：</strong></p>
+<p>不外乎地，我們要找到哪個機率高。</p>
+<p>由於朋友按下沒死，也就是要考慮連續 2 個 <code>0</code> 的情況，下一個是 <code>0</code> 的機率為 <code>czero / zero</code></p>
+<p>// 在前提為 0 的情況下，下一個為 0 的機率為何，也就是考慮 <code>00</code> 和 <code>01</code> 的情況下，<code>00</code> 的機率為何。<br>// czero 是連續為 0 的個數，zero 是 0 的個數 (同時也是 <code>00</code> <code>01</code> 的個數。)，n 是全部個數。</p>
+<p>隨機轉一圈得到 <code>0</code> 的概率為 <code>zero / n</code>。</p>
+<p>不小心把題目想太難，事實上這問題很簡單的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    char s[1024];</span><br><span class="line">    while(scanf(&quot;%s&quot;, s) == 1)&#123;</span><br><span class="line">        int n = strlen(s);</span><br><span class="line">        int zero = 0, one = 0, czero = 0;</span><br><span class="line">        for(int i = 0 ; i &lt; n ; i++ )&#123;</span><br><span class="line">            if(s[i] == &apos;1&apos;) </span><br><span class="line">                continue;</span><br><span class="line">            zero++;</span><br><span class="line">            if(s[(i+1)%n] == &apos;0&apos;) czero++;</span><br><span class="line">        &#125;</span><br><span class="line">        // czero - zero * (zero / n)</span><br><span class="line">        if(czero * n == zero * zero) </span><br><span class="line">            puts(&quot;EQUAL&quot;);</span><br><span class="line">        else if(czero * n &gt; zero * zero)</span><br><span class="line">            puts(&quot;SHOOT&quot;);</span><br><span class="line">        else </span><br><span class="line">            puts(&quot;ROTATE&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-oj/uva/uva-1644" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/05/12/oj/uva/uva-1644/" class="article-date">
@@ -114,7 +264,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-1644/" data-id="cinmkxxog02tt2xxcogtboo39" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-1644/" data-id="cinmm0h9j02oealxcf4k7y9el" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-1644/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -176,7 +326,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/10/oj/uva/uva-10378/" data-id="cinmkxw6e02862xxcnhacpx5h" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/10/oj/uva/uva-10378/" data-id="cinmm0g230230alxc4b4u99ug" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/10/oj/uva/uva-10378/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -243,7 +393,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/07/oj/uva/uva-1572/" data-id="cinmkxxlc02sk2xxcmn7aa44s" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/07/oj/uva/uva-1572/" data-id="cinmm0h6l02nbalxc6vjgtemb" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/07/oj/uva/uva-1572/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -314,7 +464,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/06/oj/uva/uva-10040/" data-id="cinmkxw2g026k2xxcwx4siuc5" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/06/oj/uva/uva-10040/" data-id="cinmm0fza021ealxchcbgonyy" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/06/oj/uva/uva-10040/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -375,7 +525,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/1399189276434.jpg" rel="gallery_cinmkxw3b026u2xxcc3vf239j">
+      <a class="article-gallery-img fancybox" href="/img/1399189276434.jpg" rel="gallery_cinmm0fzl021lalxcma723bw0">
         <img src="/img/1399189276434.jpg" itemprop="image">
       </a>
     
@@ -394,7 +544,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-10089/" data-id="cinmkxw3b026u2xxcc3vf239j" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-10089/" data-id="cinmm0fzl021lalxcma723bw0" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/05/oj/uva/uva-10089/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -468,7 +618,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-12544/" data-id="cinmkxx1m02ln2xxctg50qlgd" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-12544/" data-id="cinmm0gsi02glalxc4ofr86r7" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/05/oj/uva/uva-12544/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -534,7 +684,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-10603/" data-id="cinmkxw80028u2xxcx0f37z8j" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/05/oj/uva/uva-10603/" data-id="cinmm0g38023oalxcsqlii6vk" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/05/oj/uva/uva-10603/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -597,7 +747,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/03/oj/uva/uva-12670/" data-id="cinmkxx5b02my2xxc1ely96gq" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/03/oj/uva/uva-12670/" data-id="cinmm0gv002htalxcwn8z43nu" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/03/oj/uva/uva-12670/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -633,143 +783,6 @@
 
 
   
-    <article id="post-oj/uva/uva-1449" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/02/oj/uva/uva-1449/" class="article-date">
-  <time datetime="2014-05-02T13:07:27.000Z" itemprop="datePublished">2014-05-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/02/oj/uva/uva-1449/">UVa 1449 - Dominating Patterns</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/02/oj/uva/uva-1449/" data-id="cinmkxxk302s22xxckyviwa9b" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/02/oj/uva/uva-1449/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AC自動機/">AC自動機</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p> The archaeologists are going to decipher a very mysterious ``language”. Now, they know many language patterns; each pattern can be treated as a string on English letters (only lower case). As a sub string, these patterns may appear more than one times in a large text string (also only lower case English letters).</p>
-<p>What matters most is that which patterns are the dominating patterns. Dominating pattern is the pattern whose appearing times is not less than other patterns.</p>
-<p>It is your job to find the dominating pattern(s) and their appearing times.</p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The entire input contains multi cases. The first line of each case is an integer, which is the number of patterns N, 1<span>$\le$</span><!-- Has MathJax -->N<span>$\le$</span><!-- Has MathJax -->150. Each of the following N lines contains one pattern, whose length is in range [1, 70]. The rest of the case is one line contains a large string as the text to lookup, whose length is up to 106.</p>
-<p>At the end of the input file, number `0’ indicates the end of input file.</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each of the input cases, output the appearing times of the dominating pattern(s). If there are more than one dominating pattern, output them in separate lines; and keep their input order to the output.</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">2 </span><br><span class="line">aba </span><br><span class="line">bab </span><br><span class="line">ababababac </span><br><span class="line">6 </span><br><span class="line">beta </span><br><span class="line">alpha </span><br><span class="line">haha </span><br><span class="line">delta </span><br><span class="line">dede </span><br><span class="line">tata </span><br><span class="line">dedeltalphahahahototatalpha </span><br><span class="line">0</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">4 </span><br><span class="line">aba </span><br><span class="line">2 </span><br><span class="line">alpha </span><br><span class="line">haha</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
-<p>給 N 個字串，問在 S 字串中哪些字串出現最多次。</p>
-<p><strong> 題目解法：</strong></p>
-<p>對 N 個字串建造 AC 自動機，將 S 丟入自動機去計算給一個單詞出現次數。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> maxKind 26</span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> Node&#123;</span><br><span class="line">    Node *fail;</span><br><span class="line">    Node *next[maxKind];</span><br><span class="line">    <span class="keyword">int</span> cnt;</span><br><span class="line">    <span class="keyword">int</span> who;</span><br><span class="line">    Node() &#123;</span><br><span class="line">        fail = <span class="literal">NULL</span>;</span><br><span class="line">        cnt = <span class="number">0</span>;</span><br><span class="line">        who = <span class="number">0</span>;</span><br><span class="line">        <span class="built_in">memset</span>(next, <span class="number">0</span>, <span class="keyword">sizeof</span>(next));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">build_Trie</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str, Node *root, <span class="keyword">int</span> who)</span> </span>&#123;</span><br><span class="line">    Node *p = root;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>, idx;</span><br><span class="line">    <span class="keyword">while</span>(str[i]) &#123;</span><br><span class="line">        <span class="keyword">if</span>(str[i] &gt;= <span class="string">'a'</span> &amp;&amp; str[i] &lt;= <span class="string">'z'</span>)</span><br><span class="line">            idx = str[i] - <span class="string">'a'</span>;</span><br><span class="line">        <span class="keyword">if</span>(p-&gt;next[idx] == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            p-&gt;next[idx] = <span class="keyword">new</span> Node();</span><br><span class="line">        &#125;</span><br><span class="line">        p = p-&gt;next[idx];</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">    p-&gt;cnt++;</span><br><span class="line">    p-&gt;who = who;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">build_AC_automation</span><span class="params">(Node *root)</span> </span>&#123;</span><br><span class="line">    root-&gt;fail = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="built_in">queue</span>&lt;Node*&gt; Q;</span><br><span class="line">    Q.push(root);</span><br><span class="line">    Node *tn, *p;</span><br><span class="line">    <span class="keyword">while</span>(!Q.empty()) &#123;</span><br><span class="line">        tn = Q.front();</span><br><span class="line">        Q.pop();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxKind; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(tn-&gt;next[i] == <span class="literal">NULL</span>)</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            Q.push(tn-&gt;next[i]);</span><br><span class="line">            p = tn-&gt;fail;</span><br><span class="line">            <span class="keyword">while</span>(p != <span class="literal">NULL</span> &amp;&amp; p-&gt;next[i] == <span class="literal">NULL</span>)</span><br><span class="line">                p = p-&gt;fail;</span><br><span class="line">            <span class="keyword">if</span>(p == <span class="literal">NULL</span>)</span><br><span class="line">                tn-&gt;next[i]-&gt;fail = root;</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                tn-&gt;next[i]-&gt;fail = p-&gt;next[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free_AC_automation</span><span class="params">(Node *root)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">queue</span>&lt;Node*&gt; Q;</span><br><span class="line">    Q.push(root);</span><br><span class="line">    Node *tn, *p;</span><br><span class="line">    <span class="keyword">while</span>(!Q.empty()) &#123;</span><br><span class="line">        tn = Q.front();</span><br><span class="line">        Q.pop();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; maxKind; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(tn-&gt;next[i] != <span class="literal">NULL</span>) &#123;</span><br><span class="line">                Q.push(tn-&gt;next[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">free</span>(tn);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">query</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str, Node *root, <span class="keyword">int</span> cnt[])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>, idx;</span><br><span class="line">    Node *tn, *p;</span><br><span class="line">    tn = root;</span><br><span class="line">    <span class="keyword">while</span>(str[i]) &#123;</span><br><span class="line">        <span class="keyword">if</span>(str[i] &gt;= <span class="string">'a'</span> &amp;&amp; str[i] &lt;= <span class="string">'z'</span>)</span><br><span class="line">            idx = str[i] - <span class="string">'a'</span>;</span><br><span class="line">        <span class="keyword">while</span>(tn-&gt;next[idx] == <span class="literal">NULL</span> &amp;&amp; tn != root)</span><br><span class="line">            tn = tn-&gt;fail;</span><br><span class="line">        tn = tn-&gt;next[idx];</span><br><span class="line">        tn = (tn == <span class="literal">NULL</span>) ? root : tn;</span><br><span class="line">        p = tn;</span><br><span class="line">        <span class="keyword">while</span>(p != root) &#123;</span><br><span class="line">        	<span class="keyword">if</span>(p-&gt;cnt &gt; <span class="number">0</span>)</span><br><span class="line">            	cnt[p-&gt;who]++;</span><br><span class="line">            p = p-&gt;fail;</span><br><span class="line">        &#125;</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">char</span> buf[<span class="number">1048576</span>], pattern[<span class="number">256</span>][<span class="number">256</span>];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n) == <span class="number">1</span> &amp;&amp; n) &#123;</span><br><span class="line">        Node *root = <span class="keyword">new</span> Node();</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        	<span class="built_in">scanf</span>(<span class="string">"%s"</span>, pattern[i]);</span><br><span class="line">            build_Trie(pattern[i], root, i+<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        build_AC_automation(root);</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%s"</span>, buf);</span><br><span class="line">        <span class="keyword">int</span> cnt[<span class="number">256</span>] = &#123;&#125;;</span><br><span class="line">        query(buf, root, cnt);</span><br><span class="line">        free_AC_automation(root);</span><br><span class="line">        <span class="keyword">int</span> maxMatch = cnt[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        	maxMatch = max(maxMatch, cnt[i+<span class="number">1</span>]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, maxMatch);</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        	<span class="keyword">if</span>(cnt[i+<span class="number">1</span>] == maxMatch)</span><br><span class="line">        		<span class="built_in">printf</span>(<span class="string">"%s\n"</span>, pattern[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-oj/uva/uva-1494" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/02/oj/uva/uva-1494/" class="article-date">
-  <time datetime="2014-05-01T23:37:27.000Z" itemprop="datePublished">2014-05-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/02/oj/uva/uva-1494/">UVa 1494 - Qin Shi Huang&#39;s National Road System</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/02/oj/uva/uva-1494/" data-id="cinmkxxkz02se2xxcvsydi4et" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/02/oj/uva/uva-1494/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MST/">MST</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p> During the Warring States Period of ancient China(476 BC to 221 BC), there were seven kingdoms in China – they were Qi, Chu, Yan, Han, Zhao, Wei and Qin. Ying Zheng was the king of the kingdom Qin. Through 9 years of wars, he finally conquered all six other kingdoms and became the first emperor of a unified China in 221 BC. That was Qin dynasty – the first imperial dynasty of China(not to be confused with the Qing Dynasty, the last dynasty of China). So Ying Zheng named himself “Qin Shi Huang” because “Shi Huang” means “the first emperor “ in Chinese.</p>
-<p>\epsfbox{p5713.eps}</p>
-<p>Qin Shi Huang undertook gigantic projects, including the first version of the Great Wall of China, the now famous city-sized mausoleum guarded by a life-sized Terracotta Army, and a massive national road system. There is a story about the road system:</p>
-<p>There were n cities in China and Qin Shi Huang wanted them all be connected by n - 1 roads, in order that he could go to every city from the capital city Xianyang. Although Qin Shi Huang was a tyrant, he wanted the total length of all roads to be minimum,so that the road system may not cost too many people’s life. A daoshi (some kind of monk) named Xu Fu told Qin Shi Huang that he could build a road by magic and that magic road would cost no money and no labor. But Xu Fu could only build ONE magic road for Qin Shi Huang. So Qin Shi Huang had to decide where to build the magic road. Qin Shi Huang wanted the total length of all none magic roads to be as small as possible, but Xu Fu wanted the magic road to benefit as many people as possible – So Qin Shi Huang decided that the value of A/B (the ratio of A to B) must be the maximum, which A is the total population of the two cites connected by the magic road, and B is the total length of none magic roads.</p>
-<p>Would you help Qin Shi Huang?</p>
-<p>A city can be considered as a point, and a road can be considered as a line segment connecting two points.</p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The first line contains an integer t meaning that there are t test cases (t &lt; 10).</p>
-<p>For each test case:</p>
-<p>The first line is an integer n meaning that there are n cities (2 &lt; n &lt;= 1000).</p>
-<p>Then n lines follow. Each line contains three integers X, Y and P (0 &lt; X, Y &lt;= 1000, 0 &lt; P &lt; 100000). (X, Y) is the coordinate of a city and P is the population of that city.</p>
-<p>It is guaranteed that each city has a distinct location.</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each test case, print a line indicating the above mentioned maximum ratio A/B. The result should be rounded to 2 digits after decimal point.</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">4</span><br><span class="line">1 1 20</span><br><span class="line">1 2 30</span><br><span class="line">200 2 80</span><br><span class="line">200 1 100</span><br><span class="line">3</span><br><span class="line">1 1 20</span><br><span class="line">1 2 30</span><br><span class="line">2 2 40</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">65.00</span><br><span class="line">70.00</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
-<p>有 n 個城市，在中國秦始皇希望他們都用連接 n - 1 道路，以便他可以去到每一個城市從首都咸陽。儘管秦始皇是個暴君，他希望所有的道路是最低的總長度，從而使道路系統可能不會花費太多勞力。倒是一個（一些和尚）命名徐福告訴秦始皇，他可以通過魔法修路和魔法的道路將花費沒用錢，沒用勞動力。但徐福只能建一個神奇的道路秦始皇。所以，秦始皇不得不決定在哪裡建造魔法的道路。秦始皇想所有無魔法的道路是盡可能小的總長度，但徐福希望魔法道路可以效益為盡可能多的人。所以秦始皇決定 A / B 必須是最大的，其中 A 是魔法路兩端的總人口，而 B 是沒有魔法的道路的總長度。</p>
-<p><strong> 題目解法：</strong></p>
-<p>找出 MST，窮舉所有所有魔法路的可能。</p>
-<p>對於一個 MST 修改一條邊，可在 <code>O(n)</code> 時間內找到環，之後將環上最重的邊去除即可。<br>但是這題中，MST 會保留住，因此對 MST 任兩點路徑上的最重邊進行在 <code>O(n^2)</code> 內完成計算。</p>
-<ul>
-<li>MST 加入新點，可以在 O(n) 時間內完成 ?</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;algorithm&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;math.h&gt;</span><br><span class="line">#include &lt;vector&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">struct E &#123;</span><br><span class="line">    int x, y, v;</span><br><span class="line">    E(int a=0, int b=0, int c=0):</span><br><span class="line">        x(a), y(b), v(c) &#123;&#125;</span><br><span class="line">    bool operator&lt;(const E &amp;a) const &#123;</span><br><span class="line">        return  v &lt; a.v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">E D[1000005];</span><br><span class="line">vector&lt;E&gt; tree[1005];</span><br><span class="line">int p[1005], rank[1005];</span><br><span class="line">int findp(int x) &#123;</span><br><span class="line">    return p[x] == x ? x : (p[x] = findp(p[x]));</span><br><span class="line">&#125;</span><br><span class="line">int joint(int x, int y) &#123;</span><br><span class="line">    x = findp(x), y = findp(y);</span><br><span class="line">    if(x == y)</span><br><span class="line">        return 0;</span><br><span class="line">    if(rank[x] &gt; rank[y])</span><br><span class="line">        rank[x] += rank[y], p[y] = x;</span><br><span class="line">    else</span><br><span class="line">        rank[y] += rank[x], p[x] = y;</span><br><span class="line">    return 1;</span><br><span class="line">&#125;</span><br><span class="line">double kruscal(int n, int m) &#123;</span><br><span class="line">    double sum = 0;</span><br><span class="line">    </span><br><span class="line">    sort(D, D+m);</span><br><span class="line">    for(int i = 0; i &lt; n; i++) &#123;</span><br><span class="line">        p[i] = i, rank[i] = 1;</span><br><span class="line">        tree[i].clear();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    for(int i = 0; i &lt; m; i++) &#123;</span><br><span class="line">        if(joint(D[i].x, D[i].y)) &#123;</span><br><span class="line">        	sum += sqrt(D[i].v);</span><br><span class="line">        	tree[D[i].x].push_back(E(D[i].x, D[i].y, D[i].v));</span><br><span class="line">        	tree[D[i].y].push_back(E(D[i].y, D[i].x, D[i].v));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return sum;</span><br><span class="line">&#125;</span><br><span class="line">int visited[1005];</span><br><span class="line">double maxEdge[1005][1005];</span><br><span class="line">void dfs(int u, int n) &#123;</span><br><span class="line">    visited[u] = 1;</span><br><span class="line">    for(int i = 0; i &lt; tree[u].size(); i++) &#123;</span><br><span class="line">        int v = tree[u][i].y;</span><br><span class="line">        if(visited[v])	continue;</span><br><span class="line">        double cost = sqrt(tree[u][i].v);</span><br><span class="line">        maxEdge[u][v] = maxEdge[v][u] = cost;</span><br><span class="line">        for(int j = 0; j &lt; n; j++) &#123;</span><br><span class="line">            if(visited[j]) &#123;</span><br><span class="line">                maxEdge[j][v] = maxEdge[v][j] = max(maxEdge[j][u], cost);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        dfs(v, n);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    int testcase;</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;testcase);</span><br><span class="line">    while(testcase--) &#123;</span><br><span class="line">        int n, e;</span><br><span class="line">        int X[1005], Y[1005], P[1005];</span><br><span class="line">        scanf(&quot;%d&quot;, &amp;n);</span><br><span class="line">        for(int i = 0; i &lt; n; i++)</span><br><span class="line">        	scanf(&quot;%d %d %d&quot;, &amp;X[i], &amp;Y[i], &amp;P[i]);</span><br><span class="line">        e = 0;</span><br><span class="line">        for(int i = 0; i &lt; n; i++) &#123;</span><br><span class="line">            for(int j = i + 1; j &lt; n; j++) &#123;</span><br><span class="line">                D[e++] = E(i, j, (X[i] - X[j])*(X[i] - X[j]) </span><br><span class="line">                                    + (Y[i] - Y[j])*(Y[i] - Y[j]));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        double mstcost = kruscal(n, e);</span><br><span class="line">        double ret = 0;</span><br><span class="line">        </span><br><span class="line">        for(int i = 0; i &lt; n; i++)</span><br><span class="line">            visited[i] = 0;</span><br><span class="line">        dfs(0, n);</span><br><span class="line">        </span><br><span class="line">        for(int i = 0; i &lt; n; i++) &#123;</span><br><span class="line">            for(int j = i + 1; j &lt; n; j++) &#123;</span><br><span class="line">                ret = max(ret, (P[i] + P[j])/(mstcost - maxEdge[i][j]));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        printf(&quot;%.2lf\n&quot;, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/解題區/解題區-UVa/page/45/">&laquo; Prev</a><a class="page-number" href="/categories/解題區/解題區-UVa/">1</a><span class="space">&hellip;</span><a class="page-number" href="/categories/解題區/解題區-UVa/page/44/">44</a><a class="page-number" href="/categories/解題區/解題區-UVa/page/45/">45</a><span class="page-number current">46</span><a class="page-number" href="/categories/解題區/解題區-UVa/page/47/">47</a><a class="extend next" rel="next" href="/categories/解題區/解題區-UVa/page/47/">Next &raquo;</a>
@@ -784,7 +797,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">80</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">600</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">463</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">80</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">602</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">465</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -794,6 +807,22 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/04/30/uva-1718/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 1718 - Tile Cutting</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/04/30/uva-801/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 801 - Flight Planning</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/04/30/jg-10082/">
@@ -857,22 +886,6 @@
                 <i class="icon-file-o"></i> 
               
             2016 Google Code Jam Round 1A</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/10/2016-google-code-jam-qr/">
-              
-                <i class="icon-file-o"></i> 
-              
-            2016 Google Code Jam Round QR</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/03/23/parallel-skill-interval-partitioning/">
-              
-                <i class="icon-file-o"></i> 
-              
-            數據分割 區間分塊小技巧</a>
           </li>
         
       </ul>
