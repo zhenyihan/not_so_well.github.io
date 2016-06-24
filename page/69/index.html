@@ -89,6 +89,395 @@
         
           <section id="main">
   
+    <article id="post-oj/uva/uva-132" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/26/oj/uva/uva-132/" class="article-date">
+  <time datetime="2014-05-25T22:59:01.000Z" itemprop="datePublished">2014-05-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/26/oj/uva/uva-132/">UVa 132 - Bumpy Objects</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/26/oj/uva/uva-132/" data-id="ciptgx1g702uohaxcvqcujb54" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/26/oj/uva/uva-132/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/凸包/">凸包</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/幾何/">幾何</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p><img src="/img/132img1.gif" alt="132img1"></p>
+<p>Consider objects such as these. They are polygons, specified by the coordinates of a centre of mass and their vertices. In the figure, centres of mass are shown as black squares. The vertices will be numbered consecutively anti-clockwise as shown.</p>
+<p>An object can be rotated to stand stably if two vertices can be found that can be joined by a straight line that does not intersect the object, and, when this line is horizontal, the centre of mass lies above the line and strictly between its endpoints. There are typically many stable positions and each is defined by one of these lines known as its base line. A base line, and its associated stable position, is identified by the highest numbered vertex touched by that line.</p>
+<p>Write a program that will determine the stable position that has the lowest numbered base line. Thus for the above objects, the desired base lines would be 6 for object 1, 6 for object 2 and 2 for the square. You may assume that the objects are possible, that is they will be represented as non self-intersecting polygons, although they may well be concave.</p>
+<h2 id="Input-and-Output"><a href="#Input-and-Output" class="headerlink" title="Input and Output"></a>Input and Output</h2><p>Successive lines of a data set will contain: a string of less than 20 characters identifying the object; the coordinates of the centre of mass; and the coordinates of successive points terminated by two zeroes (0 0), on one or more lines as necessary. There may be successive data sets (objects). The end of data will be defined by the string ‘#’.</p>
+<p>Output will consist of the identification string followed by the number of the relevant base line.</p>
+<h2 id="Sample-input"><a href="#Sample-input" class="headerlink" title="Sample input"></a>Sample input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Object2</span><br><span class="line">4 3</span><br><span class="line">3 2  5 2  6 1  7 1  6 3  4 7  1 1  2 1  0 0</span><br><span class="line">Square </span><br><span class="line">2 2</span><br><span class="line">1 1  3 1  3 3  1 3  0 0</span><br><span class="line">#</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-output"><a href="#Sample-output" class="headerlink" title="Sample output"></a>Sample output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Object2             6</span><br><span class="line">Square              2</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述： </strong></p>
+<p>給定一個多邊形，將會給予這個多邊形的質心和頂點。在圖中，質心表示成黑色正方形的小點，而頂點將會使用連續編號逆時針給點。</p>
+<p>多邊形可以藉由旋轉放置於水平，並且穩定立起。這時可以發現，會有兩個頂點拉起的水平線，並且質心會位於水平線上的兩個端點之間。</p>
+<p>通常一個多邊形具有多個這種水平放置方法，對於一個水平放置方式，可以用在水平線上最大編號的頂點描述。</p>
+<p>請輸出最小水平放置的編號。</p>
+<p><strong> 題目解法： </strong></p>
+<p>對多邊形著手凸包計算，這裡使用單調鍊去完成凸包。接著利用內積找到質心是否在兩個水平線端點 (segment 的上方) 之間。</p>
+<p>可以利用外積判斷是否在線 (line) 上。</p>
+<p>好好利用數學運算，將可以在簡短的代碼完成。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;math.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;algorithm&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">#define eps 1e-6</span><br><span class="line">struct Pt &#123;</span><br><span class="line">    double x, y;</span><br><span class="line">    Pt(double a = 0, double b = 0):</span><br><span class="line">    	x(a), y(b) &#123;&#125;</span><br><span class="line">    bool operator&lt;(const Pt &amp;a) const &#123;</span><br><span class="line">        if(fabs(x-a.x) &gt; eps)</span><br><span class="line">            return x &lt; a.x;</span><br><span class="line">        return y &lt; a.y;</span><br><span class="line">    &#125;</span><br><span class="line">    Pt operator-(const Pt &amp;a) const &#123;</span><br><span class="line">        Pt ret;</span><br><span class="line">        ret.x = x - a.x;</span><br><span class="line">        ret.y = y - a.y;</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">double dot(Pt a, Pt b) &#123;</span><br><span class="line">    return a.x * b.x + a.y * b.y;</span><br><span class="line">&#125;</span><br><span class="line">double cross2(Pt a, Pt b) &#123;</span><br><span class="line">    return a.x * b.y - a.y * b.x;</span><br><span class="line">&#125;</span><br><span class="line">double cross(Pt o, Pt a, Pt b) &#123;</span><br><span class="line">    return (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);</span><br><span class="line">&#125;</span><br><span class="line">int between(Pt a, Pt b, Pt c) &#123;</span><br><span class="line">    return dot(c - a, b - a) &gt;= 0 &amp;&amp; dot(c - b, a - b) &gt;= 0;</span><br><span class="line">&#125;</span><br><span class="line">int onSeg(Pt a, Pt b, Pt c) &#123;</span><br><span class="line">    return between(a, b, c) &amp;&amp; fabs(cross(a, b, c)) &lt; eps;</span><br><span class="line">&#125;</span><br><span class="line">int monotone(int n, Pt p[], Pt ch[]) &#123;</span><br><span class="line">    sort(p, p+n);</span><br><span class="line">    int i, m = 0, t;</span><br><span class="line">    for(i = 0; i &lt; n; i++) &#123;</span><br><span class="line">        while(m &gt;= 2 &amp;&amp; cross(ch[m-2], ch[m-1], p[i]) &lt;= 0)</span><br><span class="line">            m--;</span><br><span class="line">        ch[m++] = p[i];</span><br><span class="line">    &#125;</span><br><span class="line">    for(i = n-1, t = m+1; i &gt;= 0; i--) &#123;</span><br><span class="line">        while(m &gt;= t &amp;&amp; cross(ch[m-2], ch[m-1], p[i]) &lt;= 0)</span><br><span class="line">            m--;</span><br><span class="line">        ch[m++] = p[i];</span><br><span class="line">    &#125;</span><br><span class="line">    return m - 1;</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    char testcase[105];</span><br><span class="line">    Pt P[1024], CH[1024], IN[1024];</span><br><span class="line">    while(scanf("%s", testcase) == 1) &#123;</span><br><span class="line">        if(!strcmp(testcase, "#"))</span><br><span class="line">            break;</span><br><span class="line">        double 	x, y;</span><br><span class="line">        int 	n = 0, m;</span><br><span class="line">        Pt mc;</span><br><span class="line">        scanf("%lf %lf", &amp;mc.x, &amp;mc.y);</span><br><span class="line">        while(scanf("%lf %lf", &amp;x, &amp;y) == 2) &#123;</span><br><span class="line">            if(x == 0 &amp;&amp; y == 0)</span><br><span class="line">                break;</span><br><span class="line">            IN[n] = P[n] = Pt(x, y);</span><br><span class="line">            n++;</span><br><span class="line">        &#125;</span><br><span class="line">        m = monotone(n, P, CH);</span><br><span class="line">        int ret = 0x3f3f3f3f;</span><br><span class="line">        for(int i = 0, j = m - 1; i &lt; m; j = i++) &#123;</span><br><span class="line">            if(between(CH[i], CH[j], mc)) &#123;</span><br><span class="line">                int mn = 0;</span><br><span class="line">                for(int k = 0; k &lt; n; k++)</span><br><span class="line">                    if(onSeg(CH[i], CH[j], IN[k]))</span><br><span class="line">                        mn = max(mn, k);</span><br><span class="line">                ret = min(ret, mn);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        printf("%-20s%d\n", testcase, ret + 1);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/hw-multiprocess-and-multithread" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/25/lesson/hw-multiprocess-and-multithread/" class="article-date">
+  <time datetime="2014-05-25T12:15:47.000Z" itemprop="datePublished">2014-05-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/作業系統/">作業系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/25/lesson/hw-multiprocess-and-multithread/">作業系統 multiprocess &amp; multithread 作業</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/25/lesson/hw-multiprocess-and-multithread/" data-id="ciptgwzt80222haxcxxurjo3u" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/25/lesson/hw-multiprocess-and-multithread/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/multiprocess/">multiprocess</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/multithread/">multithread</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="A-班程式要求"><a href="#A-班程式要求" class="headerlink" title="A 班程式要求"></a>A 班程式要求</h1><p>請使用所熟悉的程式開發環境設計單一行程產生子行程 ( Child Process ) 與 多執行緒 ( Multi-Thread) 的程式，意即完成下列傳統 for loop 之列印工作，將其改寫成多行程與多執行緒，由不同的行程與執行緒列印不同 i 值。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"output i = %d\n"</span>, i);</span><br></pre></td></tr></table></figure>
+<h1 id="注意事項"><a href="#注意事項" class="headerlink" title="注意事項"></a>注意事項</h1><ul>
+<li><strong> 嚴禁從網路抄襲作業 </strong>。每份程式作業將被程式比對軟體檢查，一旦發現抄襲，該份作業以零分計，並且這學期作業系統作業成績以零分計。</li>
+<li>後略</li>
+</ul>
+<blockquote>
+<p>這種作業不抄來抄去也難。但是作業格式不清楚，所以也有不同理解方式就是了。</p>
+</blockquote>
+<h1 id="開始動手"><a href="#開始動手" class="headerlink" title="開始動手"></a>開始動手</h1><p>對於將 for 迴圈改寫，我們必須認知到幾項</p>
+<ul>
+<li>是否要按照順序輸出？</li>
+<li>平台 M$, Linux, or Max OS？</li>
+</ul>
+<blockquote>
+<p>此篇假設目標是一模一樣的輸出</p>
+</blockquote>
+<h2 id="multiprocess"><a href="#multiprocess" class="headerlink" title="multiprocess"></a>multiprocess</h2><p><code>child process</code> 屬於 multiprocess 中的一種方式。為什麼這麼說呢？multiprocess 只是要求一個 CPU 中有多個工作同時在進行，藉由排程器去進行工作分配。</p>
+<p>先不管這些，要實作 <code>child process</code> 看起來只有走向 <code>fork()</code> 一途。而之前 inker 大神則是走非 child process 使用類似 <code>./nachos -e ../test/test1 -e ../test/test1</code> 的方式去運行。</p>
+<p>為了實作按照順序輸出，我們需要 process 共同擁有的 shared memory，這個 shared memory 將要紀錄原本 for 裡面的 <code>i</code> 值和一個 <code>sem_t</code>，來保證 process 和 process 之間不會同時搶先動作，<code>sem_t</code> 也許是不需要的，這裡留給實驗者去測試。</p>
+<p>為了使輸出一致，在 <code>fork()</code> 完之後，使用 <code>wait()</code> 來等待所有子程序結束。這樣會造成當 for loop 需要跑 n 次，就會總共 n 個 process，也就是一整條鏈下去。</p>
+<ul>
+<li>思考 <code>wait()</code> 和 <code>sem_t</code> 都不是這麼必要？// 這個要看寫法</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/mman.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;semaphore.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span>  MAP_ANONYMOUS</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span>  MAP_ANON</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAP_ANONYMOUS MAP_ANON</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> *glob_var;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">32</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    glob_var = (<span class="keyword">int</span> *)mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span> *glob_var, PROT_READ | PROT_WRITE,</span><br><span class="line">                    MAP_SHARED | MAP_ANONYMOUS, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">sem_t</span> *sema = (<span class="keyword">sem_t</span> *)mmap(<span class="literal">NULL</span>, <span class="keyword">sizeof</span>(sema),</span><br><span class="line">                       PROT_READ |PROT_WRITE,MAP_SHARED|MAP_ANONYMOUS,</span><br><span class="line">                       <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">    sem_init(sema, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">    *glob_var = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (*glob_var &lt; n) &#123;</span><br><span class="line">        sem_wait(sema);</span><br><span class="line">        <span class="keyword">int</span> pid = fork();</span><br><span class="line">        <span class="keyword">int</span> output = (*glob_var)++;</span><br><span class="line">        <span class="keyword">if</span> (output &lt; n)</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">"%d, pid = %d\n"</span>, output, pid);</span><br><span class="line">        sem_post(sema);</span><br><span class="line">        <span class="keyword">int</span> wpid, status = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> ((wpid = wait(&amp;status)) &gt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">//printf("Exit status of %d was %d (%s)\n", (int)wpid, status, (status &gt; 0) ? "accept" : "reject");</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    munmap(glob_var, <span class="keyword">sizeof</span> *glob_var);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="multithread"><a href="#multithread" class="headerlink" title="multithread"></a>multithread</h2><p>Thread 就相當簡單，因為它們是共用同一個記憶體區段，因此沒有 share memory 的問題。<br>雖然使用 <code>sem_wait(&amp;sem)</code> 和 <code>sem_post(&amp;sem)</code> 來保證區域內的代碼不會同時有多個 thread 在運行，但仍遇到 <code>i = 0</code> 同時在多個 Thread 噴出的情況，這一點百思不得其解，為了解決這一切問題，使用課本提到的 <code>Producer–consumer problem</code> 寫法。</p>
+<p>希望能從代碼中看懂。<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &lt;semaphore.h&gt;</span><br><span class="line">#include &lt;pthread.h&gt;</span><br><span class="line">int i = 0, n = 16;</span><br><span class="line">int count = 0;</span><br><span class="line">sem_t sem;</span><br><span class="line">const int MAX_THREAD = 4;</span><br><span class="line">void *Producer(void *arg) &#123;</span><br><span class="line">    for(int i = 0; i &lt; n;) &#123;</span><br><span class="line">        sem_wait(&amp;sem);</span><br><span class="line">        if(count == 1) &#123;</span><br><span class="line">            sem_post(&amp;sem);</span><br><span class="line">            continue;</span><br><span class="line">        &#125;</span><br><span class="line">        count++;</span><br><span class="line">        // printf("\nProducer is :%d\n", count);</span><br><span class="line">        sem_post(&amp;sem);</span><br><span class="line">        i++;</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_exit(NULL);</span><br><span class="line">&#125;</span><br><span class="line">void *runPrint(void *arg) &#123;</span><br><span class="line">    int id = *((int *) arg);</span><br><span class="line">    for (; i &lt; n ;) &#123;</span><br><span class="line">        sem_wait(&amp;sem);</span><br><span class="line">        if (count == 0) &#123;</span><br><span class="line">            sem_post(&amp;sem);</span><br><span class="line">            continue;</span><br><span class="line">        &#125;</span><br><span class="line">        count--;</span><br><span class="line">        i++;</span><br><span class="line">        printf("loop i = %d, thread id %d\n", i, id);</span><br><span class="line">        sem_post(&amp;sem);</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_exit(NULL);</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    pthread_t *threads;</span><br><span class="line">    sem_init(&amp;sem, 0, 0);</span><br><span class="line">    threads = (pthread_t *) malloc(MAX_THREAD * sizeof(pthread_t));</span><br><span class="line">    for (int i = 0; i &lt; MAX_THREAD; i++) &#123;</span><br><span class="line">        int *p = (int *) malloc(sizeof(int));</span><br><span class="line">        *p = i;</span><br><span class="line">        pthread_create(&amp;threads[i], NULL, runPrint, (void *)(p));</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_t producer;</span><br><span class="line">    int *p = (int *) malloc(sizeof(int));</span><br><span class="line">    *p = -1;</span><br><span class="line">    pthread_create(&amp;producer, NULL, Producer, (void *)(p));</span><br><span class="line">    for (i = 0; i &lt; MAX_THREAD; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], NULL);</span><br><span class="line">    &#125;</span><br><span class="line">    sem_destroy(&amp;sem);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="後記"><a href="#後記" class="headerlink" title="後記"></a>後記</h2><p>代碼沒有寫得很完整，也就是能達到輸出相同且用符合需求，這一點是有很多漏洞的，前人也是鑽漏洞交作業的。相較之下，我們 B 班的作業略顯兇殘，但是網路上資料還真是少呢，雖然還是找地方抄和理解。</p>
+<p>測試的時候，為了保證輸出是穩定的，記得得多測試幾次，並且把數字範圍作變調，當然能不能讓一個 create thread 跑完整個迴圈呢？畢竟加上 main thread 就算是 multithread？haha</p>
+<h1 id="執行"><a href="#執行" class="headerlink" title="執行"></a>執行</h1><h2 id="編譯"><a href="#編譯" class="headerlink" title="編譯"></a>編譯</h2><ul>
+<li><p>Mac OSX</p>
+<pre><code>$ clang -pthread x.cpp -o x
+</code></pre></li>
+<li><p>Linux</p>
+<pre><code>$ gcc -lpthread x.cpp -o x
+</code></pre><h2 id="運行"><a href="#運行" class="headerlink" title="運行"></a>運行</h2></li>
+<li><p>Linux &amp; Max OSX</p>
+<pre><code>$ ./x
+</code></pre></li>
+</ul>
+<h1 id="Mac-運行問題"><a href="#Mac-運行問題" class="headerlink" title="Mac 運行問題"></a>Mac 運行問題</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#ifndef  MAP_ANONYMOUS</span><br><span class="line">#ifdef  MAP_ANON</span><br><span class="line">#define MAP_ANONYMOUS MAP_ANON</span><br><span class="line">#endif</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+<p>不知道為什麼 clang 中沒有定義 <code>MAP_ANONYMOUS</code>，增加上述代碼後正確運行。</p>
+<h1 id="其他作業"><a href="#其他作業" class="headerlink" title="其他作業"></a>其他作業</h1><p><a href="http://morris821028.github.io/2014/05/18/operating-system-hw-thread/">B 班程式作業 1</a><br><a href="http://morris821028.github.io/2014/05/24/hw-nachos4/">B 班程式作業 2</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/consumption-item-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/25/lesson/consumption-item-1/" class="article-date">
+  <time datetime="2014-05-25T06:22:22.000Z" itemprop="datePublished">2014-05-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="/img/sungirl3.jpg" rel="gallery_ciptgwzpx020mhaxcy2kl8215">
+        <img src="/img/sungirl3.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/25/lesson/consumption-item-1/">當代消費文化與社會 (2)</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/25/lesson/consumption-item-1/" data-id="ciptgwzpx020mhaxcy2kl8215" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/25/lesson/consumption-item-1/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="母親節篇"><a href="#母親節篇" class="headerlink" title="母親節篇"></a>母親節篇</h2><ol>
+<li>請簡述母親節與消費文化的關聯性 ?<br>母親節與消費文化原本是扯不上邊的，後來商人們藉由這些推銷的活動，給予不知道母親節要怎麼犒勞養育辛勞的兒女們一項消費選擇，因此提供了相關的優惠活動方便消費者，母親節就逐漸跟情人節送禮一樣的氣氛。</li>
+<li>舉例說明母親節有哪些消費現象 ?<br>相關女性用品優惠，對於餐飲業而言就是雙人、多人套餐，而觀光景點就是帶著母親出遊享優惠 … 等等。</li>
+<li>您決定購買什麼禮物送媽媽及其理由 ?<br>身為一個程序猿，買禮物卻沒有思路，寫卡片卻沒有語言，在這樣的情況下，按照自己最常做的事情下手設計，但最近還有其他程序要趕，大概是趕不上這個母親節專案了。</li>
+</ol>
+<h2 id="血色月灣"><a href="#血色月灣" class="headerlink" title="血色月灣"></a>血色月灣</h2><div class="video-container"><iframe src="//www.youtube.com/embed/ypeW6lSeUFc" frameborder="0" allowfullscreen></iframe></div>
+<p><a href="https://www.youtube.com/watch?v=ypeW6lSeUFc" target="_blank" rel="external">Youtube</a></p>
+<p>在這場被隱藏的殺戮中，繼上次壽司造成的魚類問題，沒想到日本又在海洋造成了更大的傷害，不管是不是海豚，也許有人會因為海豚可愛而在這一次的血色海灣而保護它，在我們不喜歡的動物上，說不定也有類似的問題。</p>
+<p>最令人訝異的是，即使在國際會議中，也有隱瞞事實的大人物在，果然要執行某些事情，不是會議或者是組織所為，而是來自個人的發起。這句話有額外的啟發，為了背後國民的飯碗或支持，這些代表人物不得不說謊的情境，假使一開始錯了，他們便會一直錯下去，這樣的情況令人相當惋惜。</p>
+<p>海豚的確很有靈性，在他們受到如此的遭遇，難免會感受到如新世界中，那些因為外表被看成不同種的情況，而受到摧殘的可能，對於靈性的動物，在受到傷害，我們給予同情，在其他情況下則沒有這麼強烈的反應。</p>
+<h2 id="消費型科技商品"><a href="#消費型科技商品" class="headerlink" title="消費型科技商品"></a>消費型科技商品</h2><p>現在出門一定有 GPS 衛星導航的裝置，才能穿梭於大街小巷，這些裝置給我們相當大的便利，不用攜帶大量的地圖資訊出門，不會迷路、不用煩惱就可以輕鬆出門。</p>
+<p>科技所帶來的便利，使得停下來思考的機會少了，也不會看看四周的景色，追求更快速地抵達目的地，目的地以外的機緣就越來越少了。比起問人，問機器更來得有信任感，這也表示著相信別人給的知識也不是那麼重要。根據新聞的研究報導，也許我們正在改變記憶方式，開始不擅長記繁瑣的事物，而開始擅長去哪裡找資料、如何使用資料。</p>
+<p>因此，也常發生因衛星導航所造成的交通事故，被引導到錯誤地方或者是進入不合適的地點。這也反應使用者即使發現了不合理之處，最後仍相信訊息給的答案。假使衛星給了錯誤訊息，或者被惡意修改成錯誤訊息，很容易造就嚴重事故，我們已經被訓練得無法自己處理這些資訊。</p>
+<p>也許老師會問我「那你認為到底要不要買衛星導航？」這一點還真的是要看需求，身為宅的人們不喜歡出門呢。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/hw-nachos4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/24/lesson/hw-nachos4/" class="article-date">
+  <time datetime="2014-05-24T00:14:43.000Z" itemprop="datePublished">2014-05-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/作業系統/">作業系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/24/lesson/hw-nachos4/">向 NachOS 4.0 作業進發 (1)</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/24/lesson/hw-nachos4/" data-id="ciptgwzte0225haxccfox88ka" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/24/lesson/hw-nachos4/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NachOS/">NachOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/作業系統/">作業系統</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="關於-NachOS-4-0"><a href="#關於-NachOS-4-0" class="headerlink" title="關於 NachOS 4.0"></a>關於 NachOS 4.0</h1><p>作為教學用作業系統，需要實現簡單並且儘量縮小與實際作業系統之間的差距，所以我們採用 Nachos 作為作業系統課程的教學實踐平臺。Nachos 是美國加州大學伯克萊分校在作業系統課程中已多次使用的作業系統課程設計平臺，在美國很多大學中得到了應用，它在作業系統教學方面具有一下幾個突出的優點：</p>
+<ul>
+<li>採用通用虛擬機器</li>
+<li>簡單而易於擴展    </li>
+<li>物件導向性</li>
+<li>… 略</li>
+</ul>
+<blockquote>
+<p>簡單地來說，就是一個模擬作業系統的軟體</p>
+</blockquote>
+<h1 id="安裝"><a href="#安裝" class="headerlink" title="安裝"></a>安裝</h1><p>課程頁面：<a href="http://networklab.csie.ncu.edu.tw/2014_os/osweb.html#download" target="_blank" rel="external">http://networklab.csie.ncu.edu.tw/2014_os/osweb.html#download</a></p>
+<ul>
+<li>Platform: Linux or Linux over VMware <pre><code>RedHat Linux 9.0 
+</code></pre>  在 Ubuntu 上面運行無法</li>
+<li>Install steps<ul>
+<li>Get NachOS-4.0<pre><code>wget ../nachos-4.0.tar.gz
+</code></pre></li>
+<li>Get Cross Compiler<pre><code>wget ../mips-decstation.linux-xgcc.tgz
+</code></pre></li>
+<li>Move Cross Compiler to /<pre><code>mv ./mips-decstation.linux-xgcc.tgz /
+</code></pre></li>
+<li>Untar Cross Compiler<pre><code>tar zxvf ./mips-decstation.linux-xgcc.tgz
+</code></pre></li>
+<li>Untar NachOS-4.0<pre><code>tar zxvf ./nachos-4.0.tar.gz
+</code></pre></li>
+<li>Make NachOS-4.0<pre><code>cd ./nachos-4.0/code
+make
+</code></pre></li>
+<li>Test if installation is succeeded<pre><code>cd ./userprog
+./nachos -e ../test/test1
+./nachos -e ../test/test2
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<p>預期運行結果<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">Total threads number is 1</span><br><span class="line">Thread ../test/test1 is executing.</span><br><span class="line">Print integer:9</span><br><span class="line">Print integer:8</span><br><span class="line">Print integer:7</span><br><span class="line">Print integer:6</span><br><span class="line">return value:0</span><br><span class="line">No threads ready or runnable, and no pending interrupts.</span><br><span class="line">Assuming the program completed.</span><br><span class="line">Machine halting!</span><br><span class="line">                                                                                </span><br><span class="line">Ticks: total 200, idle 66, system 40, user 94</span><br><span class="line">Disk I/O: reads 0, writes 0</span><br><span class="line">Console I/O: reads 0, writes 0</span><br><span class="line">Paging: faults 0</span><br><span class="line">Network I/O: packets received 0, sent 0</span><br><span class="line"></span><br><span class="line">Total threads number is 1</span><br><span class="line">Thread ../test/test2 is executing.</span><br><span class="line">Print integer:20</span><br><span class="line">Print integer:21</span><br><span class="line">Print integer:22</span><br><span class="line">Print integer:23</span><br><span class="line">Print integer:24</span><br><span class="line">Print integer:25</span><br><span class="line">return value:0</span><br><span class="line">No threads ready or runnable, and no pending interrupts.</span><br><span class="line">Assuming the program completed.</span><br><span class="line">Machine halting!</span><br><span class="line"></span><br><span class="line">Ticks: total 200, idle 32, system 40, user 128</span><br><span class="line">Disk I/O: reads 0, writes 0</span><br><span class="line">Console I/O: reads 0, writes 0</span><br><span class="line">Paging: faults 0</span><br><span class="line">Network I/O: packets received 0, sent 0</span><br></pre></td></tr></table></figure></p>
+<h1 id="作業階段"><a href="#作業階段" class="headerlink" title="作業階段"></a>作業階段</h1><h2 id="Multiprogramming"><a href="#Multiprogramming" class="headerlink" title="Multiprogramming"></a>Multiprogramming</h2><p>執行下述指令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./nachos –e ../test/test1 –e ../test/test2</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight cpp"><figcaption><span>test1.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"syscall.h"</span></span></span><br><span class="line">main() &#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">for</span> (n=<span class="number">9</span>;n&gt;<span class="number">5</span>;n--)</span><br><span class="line">        PrintInt(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><figcaption><span>test2.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"syscall.h"</span></span></span><br><span class="line"></span><br><span class="line">main() &#123;</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="keyword">for</span> (n=<span class="number">20</span>;n&lt;=<span class="number">25</span>;n++)</span><br><span class="line">        PrintInt(n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在開始動工前，發現在 Multithread 操作會有錯誤，test1 程序會遞減輸出，而 test2 程序會遞增輸出，但是根據運行結果，兩個程式都會遞增輸出。</p>
+<p>目標運行結果如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Total threads number is 2</span><br><span class="line">Thread ../test/test1 is executing.</span><br><span class="line">Thread ../test/test2 is executing.</span><br><span class="line">Print integer:9</span><br><span class="line">Print integer:8</span><br><span class="line">Print integer:7</span><br><span class="line">Print integer:20</span><br><span class="line">Print integer:21</span><br><span class="line">Print integer:22</span><br><span class="line">Print integer:23</span><br><span class="line">Print integer:24</span><br><span class="line">Print integer:6</span><br><span class="line">return value:0</span><br><span class="line">Print integer:25</span><br><span class="line">return value:0</span><br><span class="line">No threads ready or runnable, and no pending interrupts.</span><br><span class="line">Assuming the program completed.</span><br><span class="line">Machine halting!</span><br><span class="line"> </span><br><span class="line">Ticks: total 300, idle 8, system 70, user 222</span><br><span class="line">Disk I/O: reads 0, writes 0</span><br><span class="line">Console I/O: reads 0, writes 0</span><br><span class="line">Paging: faults 0</span><br><span class="line">Network I/O: packets received 0, sent 0</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li>為什麼兩個程式都會遞增輸出？<br>明顯地是兩個程式匯入時，操作到相同區域的 code segment。如果發現各別遞增和遞減，但是輸出 <code>n</code> 的結果錯誤，則可以想到是 <code>context-switch</code> 上發生問題。</li>
+</ul>
+<h3 id="解決"><a href="#解決" class="headerlink" title="解決"></a>解決</h3><p>需要為 physical address 做標記，這個 physical address 就是在 main memory 裡面的位置。而每一個 process 都會有一個 AddrSpace，然後紀錄 logical address 所對應在 physical address，也就是 <code>pageTable</code> 對應到 <code>pageTable[i].physicalPage</code>。</p>
+<p>也就是說，當要執行 process 某一頁的程序，則將會去找 pageTable 所對應的 physicalPage，然後去運行。在作業一開始給的代碼中，會發現所有程序的 physicalPage 都共用，如此一來當然會執行到同一份 code。</p>
+<p>首先，我們需要一個全局的標記，來記錄 main memory page 的情況。<br><figure class="highlight cpp"><figcaption><span>usrprog/addrspace.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> AddrSpace &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">bool</span> usedPhyPage[NumPhysPages];</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>接著，在 addrspace.cc 宣告實體，並且初始化是 <code>0</code>，表示全部都還沒有用過。</p>
+<figure class="highlight cpp"><figcaption><span>usrprog/addrspace.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"copyright.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"main.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"addrspace.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"machine.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"noff.h"</span></span></span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">bool</span> AddrSpace::usedPhyPage[NumPhysPages] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>當 process 執行成功後，將會釋放資源。此時將要把標記使用的 page 設回未使用。<br><figure class="highlight cpp"><figcaption><span>usrprog/addrspace.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AddrSpace::~AddrSpace()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; numPages; i++)</span><br><span class="line">        AddrSpace::usedPhyPage[pageTable[i].physicalPage] = <span class="literal">false</span>;</span><br><span class="line">   <span class="keyword">delete</span> pageTable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最後，就是稍微麻煩的地方，當將程序載入記憶體時，要去填入 <code>pageTable[]</code> 對應的 <code>physicalPage</code>，這裡使用線性時間去搜索第一個未使用的 page 進行填入。</p>
+<p>載入確定後，便要開始執行，執行的時候要去算程序進入點，進入點的位置即是 main memory address。</p>
+<p><code>mainMemory[pageTable[noffH.code.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]</code></p>
+<p>首先算出第幾頁，然後乘上 <code>PageSize</code> 就是 page base，而 page offset 則是 <code>code.address mod PageSize</code>。</p>
+<p>最後，<code>page base + page offset</code> 就是我們所需要的程序進入點。</p>
+<figure class="highlight cpp"><figcaption><span>usrprog/addrspace.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> AddrSpace::Load(<span class="keyword">char</span> *fileName) &#123;</span><br><span class="line">    OpenFile *executable = kernel-&gt;fileSystem-&gt;Open(fileName);</span><br><span class="line">    NoffHeader noffH;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> size;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (executable == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="built_in">cerr</span> &lt;&lt; <span class="string">"Unable to open file "</span> &lt;&lt; fileName &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    <span class="keyword">return</span> FALSE;</span><br><span class="line">    &#125;</span><br><span class="line">    executable-&gt;ReadAt((<span class="keyword">char</span> *)&amp;noffH, <span class="keyword">sizeof</span>(noffH), <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> ((noffH.noffMagic != NOFFMAGIC) &amp;&amp; </span><br><span class="line">        (WordToHost(noffH.noffMagic) == NOFFMAGIC))</span><br><span class="line">    	SwapHeader(&amp;noffH);</span><br><span class="line">    ASSERT(noffH.noffMagic == NOFFMAGIC);</span><br><span class="line"></span><br><span class="line"><span class="comment">// how big is address space?</span></span><br><span class="line">    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size </span><br><span class="line">            + UserStackSize;	<span class="comment">// we need to increase the size</span></span><br><span class="line">                        <span class="comment">// to leave room for the stack</span></span><br><span class="line">    numPages = divRoundUp(size, PageSize);</span><br><span class="line"><span class="comment">//	cout &lt;&lt; "number of pages of " &lt;&lt; fileName&lt;&lt; " is "&lt;&lt; numPages &lt;&lt; endl;</span></span><br><span class="line"><span class="comment">// morris add</span></span><br><span class="line">    pageTable = <span class="keyword">new</span> TranslationEntry[numPages];</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>, j = <span class="number">0</span>; i &lt; numPages; i++) &#123;</span><br><span class="line">        pageTable[i].virtualPage = i;</span><br><span class="line">        <span class="keyword">while</span>(j &lt; NumPhysPages &amp;&amp; AddrSpace::usedPhyPage[j] == <span class="literal">true</span>)</span><br><span class="line">            j++;</span><br><span class="line">        AddrSpace::usedPhyPage[j] = <span class="literal">true</span>;</span><br><span class="line">        pageTable[i].physicalPage = j;</span><br><span class="line">        pageTable[i].valid = <span class="literal">true</span>;</span><br><span class="line">        pageTable[i].use = <span class="literal">false</span>;</span><br><span class="line">        pageTable[i].dirty = <span class="literal">false</span>;</span><br><span class="line">        pageTable[i].readOnly = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">// end morris add</span></span><br><span class="line">    size = numPages * PageSize;</span><br><span class="line"></span><br><span class="line">    ASSERT(numPages &lt;= NumPhysPages);		<span class="comment">// check we're not trying</span></span><br><span class="line">                        <span class="comment">// to run anything too big --</span></span><br><span class="line">                        <span class="comment">// at least until we have</span></span><br><span class="line">                        <span class="comment">// virtual memory</span></span><br><span class="line"></span><br><span class="line">    DEBUG(dbgAddr, <span class="string">"Initializing address space: "</span> &lt;&lt; numPages &lt;&lt; <span class="string">", "</span> &lt;&lt; size);</span><br><span class="line"></span><br><span class="line"><span class="comment">// then, copy in the code and data segments into memory</span></span><br><span class="line">    <span class="keyword">if</span> (noffH.code.size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        DEBUG(dbgAddr, <span class="string">"Initializing code segment."</span>);</span><br><span class="line">    DEBUG(dbgAddr, noffH.code.virtualAddr &lt;&lt; <span class="string">", "</span> &lt;&lt; noffH.code.size);</span><br><span class="line"><span class="comment">// morris add</span></span><br><span class="line">        	executable-&gt;ReadAt(</span><br><span class="line">        &amp;(kernel-&gt;machine-&gt;mainMemory[pageTable[noffH.code.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]), </span><br><span class="line">            noffH.code.size, noffH.code.inFileAddr);</span><br><span class="line"><span class="comment">// end morris add</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (noffH.initData.size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        DEBUG(dbgAddr, <span class="string">"Initializing data segment."</span>);</span><br><span class="line">    DEBUG(dbgAddr, noffH.initData.virtualAddr &lt;&lt; <span class="string">", "</span> &lt;&lt; noffH.initData.size);</span><br><span class="line"><span class="comment">// morris add</span></span><br><span class="line">        executable-&gt;ReadAt(</span><br><span class="line">        &amp;(kernel-&gt;machine-&gt;mainMemory[pageTable[noffH.initData.virtualAddr/PageSize].physicalPage * PageSize + (noffH.code.virtualAddr%PageSize)]),</span><br><span class="line">            noffH.initData.size, noffH.initData.inFileAddr);</span><br><span class="line"><span class="comment">// end morris add</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">delete</span> executable;			<span class="comment">// close file</span></span><br><span class="line">    <span class="keyword">return</span> TRUE;			<span class="comment">// success</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="Sleep-System-call"><a href="#Sleep-System-call" class="headerlink" title="Sleep() System call"></a>Sleep() System call</h2><p>撰寫自己的 Sleep function，將該 Thread 進入休眠。</p>
+<h3 id="測試檔案"><a href="#測試檔案" class="headerlink" title="測試檔案"></a>測試檔案</h3><p>與一開始的 <code>test1.c</code> 很像，這裡先做個簡單測試。<br><figure class="highlight cpp"><figcaption><span>/code/test/sleep.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"syscall.h"</span></span></span><br><span class="line">main() &#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        Sleep(<span class="number">10000000</span>);</span><br><span class="line">        PrintInt(<span class="number">50</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>因為整個測試檔案是要能在 nachOS 上面跑，所以不能使用一般的編譯方式？所以把這些訊息寫入 <code>Makefile</code> 中，之後下 <code>$ make</code> 產出 <code>sleep</code> 即可。<br><figure class="highlight"><figcaption><span>/code/test/Makefile</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">all: halt shell matmult sort test1 test2 sleep</span><br><span class="line">...</span><br><span class="line">sleep: sleep.o start.o</span><br><span class="line">    &lt;span&gt;$(LD)$&lt;/span&gt;&lt;!-- Has MathJax --&gt;(LDFLAGS) start.o sleep.o -o sleep.coff</span><br><span class="line">    ../bin/coff2noff sleep.coff sleep</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>如果無法在 <code>/code/test</code> 下 <code>$ make</code> 順利產出，則請參照 <strong> 其他指令 </strong>，將原本下載的 <code>mips-decstation.linux-xgcc.gz</code> 解壓縮產生的 <code>/usr</code> 移動到正確位置。</p>
+</blockquote>
+<h3 id="解決-1"><a href="#解決-1" class="headerlink" title="解決"></a>解決</h3><p>首先，要模仿 <code>PrintInt()</code>，找到切入的宣告位置。努力地尾隨前人。</p>
+<figure class="highlight cpp"><figcaption><span>/code/userprog/syscall.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SC_PrintInt	11</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SC_Sleep	12</span></span><br><span class="line">...</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">PrintInt</span><span class="params">(<span class="keyword">int</span> number)</span></span>;	<span class="comment">//my System Call</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Sleep</span><span class="params">(<span class="keyword">int</span> number)</span></span>;         <span class="comment">// morris add</span></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>接著，找一下 ASM。<br>以下部分就不得而知了，為什麼會出現在 <code>/code/test</code> 目錄下。<br><figure class="highlight"><figcaption><span>/code/test/start.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">    ...</span><br><span class="line">PrintInt:</span><br><span class="line">    addiu   &lt;span&gt;$2,$&lt;/span&gt;&lt;!-- Has MathJax --&gt;0,SC_PrintInt</span><br><span class="line">    syscall</span><br><span class="line">    j       $31</span><br><span class="line">    .end    PrintInt</span><br><span class="line"></span><br><span class="line">    .globl  Sleep</span><br><span class="line">    .ent	Sleep</span><br><span class="line">Sleep:</span><br><span class="line">    addiu   &lt;span&gt;$2,$&lt;/span&gt;&lt;!-- Has MathJax --&gt;0,SC_Sleep</span><br><span class="line">    syscall</span><br><span class="line">    j	$31</span><br><span class="line">    .end	Sleep</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure></p>
+<p>最後，確定 nachOS 會處理我們的例外操作。</p>
+<figure class="highlight cpp"><figcaption><span>/code/userprog/exception.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    ...</span><br><span class="line"><span class="keyword">case</span> SC_PrintInt:</span><br><span class="line">    val=kernel-&gt;machine-&gt;ReadRegister(<span class="number">4</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Print integer:"</span> &lt;&lt; val &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line"><span class="keyword">case</span> SC_Sleep:</span><br><span class="line">    val=kernel-&gt;machine-&gt;ReadRegister(<span class="number">4</span>);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Sleep Time "</span> &lt;&lt; val &lt;&lt; <span class="string">"(ms) "</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    kernel-&gt;alarm-&gt;WaitUntil(val);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>到這裡需要喘口氣，剛找了一陣子的代碼。接著才是重頭戲，因為你看到了 <code>kernel-&gt;alarm-&gt;WaitUntil(val);</code> 出現了。沒錯！我們需要撰寫那邊的代碼。</p>
+</blockquote>
+<p>既然 kernel 存有 <code>alarm</code>，也就是說每隔固定一段間，就會呼叫 <code>Alarm::CallBack()</code>，因此，對於這個鬧鐘來個累加器 <code>Bedroom::_current_interrupt</code>，全局去記數，當作毫秒 (ms) 看待就可以，每加一次就相當於過了 1 毫秒 (ms)。</p>
+<p>假設現在某一個 <code>time = _current_interrupt</code> 呼叫 <code>Sleep(x)</code> 後，將 <code>(Thread address, _current_interrupt + x)</code> 丟入 List，則期望在 <code>_current_interrupt + x</code> 的時候甦醒。因此，每當 _current_interrupt++ 就去檢查 List 中，誰的預期時間小於 _current_interrupt，就將其從 List 中清除。</p>
+<blockquote>
+<p>這裡先不考慮 _current_interrupt Overflow 的問題，根據電腦效率，可能在 5 ~ 10 秒內就發生一次，此時會造成所有 Thread 沉眠很久。若察覺 Sleep 太久，則是發生 Overflow。</p>
+</blockquote>
+<ul>
+<li>當有程序呼叫 <code>Sleep()</code> 時，會呼叫 <code>WaitUntil()</code>，然後將其丟入 <code>Bedroom</code> 安眠。</li>
+<li>然後在 <code>CallBlack()</code> 被呼叫時，來去 <code>Bedroom</code> 檢查誰該醒來了。</li>
+</ul>
+<figure class="highlight cpp"><figcaption><span>/code/threads/alarm.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"copyright.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"utility.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"callback.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"timer.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;list&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"thread.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> Bedroom &#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        Bedroom():_current_interrupt(<span class="number">0</span>) &#123;&#125;;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">PutToBed</span><span class="params">(Thread *t, <span class="keyword">int</span> x)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">MorningCall</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">IsEmpty</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        <span class="keyword">class</span> Bed &#123;</span><br><span class="line">            <span class="keyword">public</span>:</span><br><span class="line">                Bed(Thread* t, <span class="keyword">int</span> x):</span><br><span class="line">                    sleeper(t), when(x) &#123;&#125;;</span><br><span class="line">                Thread* sleeper;</span><br><span class="line">                <span class="keyword">int</span> when;</span><br><span class="line">        &#125;;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">int</span> _current_interrupt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">list</span>&lt;Bed&gt; _beds;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// The following class defines a software alarm clock. </span></span><br><span class="line"><span class="keyword">class</span> Alarm : <span class="keyword">public</span> CallBackObj &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    Alarm(<span class="keyword">bool</span> doRandomYield);	<span class="comment">// Initialize the timer, and callback </span></span><br><span class="line">                <span class="comment">// to "toCall" every time slice.</span></span><br><span class="line">    ~Alarm() &#123; <span class="keyword">delete</span> timer; &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">WaitUntil</span><span class="params">(<span class="keyword">int</span> x)</span></span>;	<span class="comment">// suspend execution until time &gt; now + x</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    Timer *timer;		<span class="comment">// the hardware timer device</span></span><br><span class="line">    Bedroom _bedroom;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">CallBack</span><span class="params">()</span></span>;		<span class="comment">// called when the hardware</span></span><br><span class="line">                <span class="comment">// timer generates an interrupt</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>確定有哪些 method 就可以開始實作了。</p>
+<figure class="highlight cpp"><figcaption><span>/code/threads/alarm.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Alarm::CallBack() &#123;</span><br><span class="line">    Interrupt *interrupt = kernel-&gt;interrupt;</span><br><span class="line">    MachineStatus status = interrupt-&gt;getStatus();</span><br><span class="line">    <span class="keyword">bool</span> woken = _bedroom.MorningCall();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (status == IdleMode &amp;&amp; !woken &amp;&amp; _bedroom.IsEmpty()) &#123;<span class="comment">// is it time to quit?</span></span><br><span class="line">        <span class="keyword">if</span> (!interrupt-&gt;AnyFutureInterrupts()) &#123;</span><br><span class="line">        timer-&gt;Disable();	<span class="comment">// turn off the timer</span></span><br><span class="line">    &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;			<span class="comment">// there's someone to preempt</span></span><br><span class="line">    interrupt-&gt;YieldOnReturn();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> Alarm::WaitUntil(<span class="keyword">int</span> x) &#123;</span><br><span class="line">    IntStatus oldLevel = kernel-&gt;interrupt-&gt;SetLevel(IntOff);</span><br><span class="line">    Thread* t = kernel-&gt;currentThread;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Alarm::WaitUntil go sleep"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    _bedroom.PutToBed(t, x);</span><br><span class="line">    kernel-&gt;interrupt-&gt;SetLevel(oldLevel);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> Bedroom::IsEmpty() &#123;</span><br><span class="line">    <span class="keyword">return</span> _beds.size() == <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> Bedroom::PutToBed(Thread*t, <span class="keyword">int</span> x) &#123;</span><br><span class="line">    ASSERT(kernel-&gt;interrupt-&gt;getLevel() == IntOff);</span><br><span class="line">    _beds.push_back(Bed(t, _current_interrupt + x));</span><br><span class="line">    t-&gt;Sleep(<span class="literal">false</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> Bedroom::MorningCall() &#123;</span><br><span class="line">    <span class="keyword">bool</span> woken = <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    _current_interrupt ++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="built_in">std</span>::<span class="built_in">list</span>&lt;Bed&gt;::iterator it = _beds.begin(); </span><br><span class="line">        it != _beds.end(); ) &#123;</span><br><span class="line">        <span class="keyword">if</span>(_current_interrupt &gt;= it-&gt;when) &#123;</span><br><span class="line">            woken = <span class="literal">true</span>;</span><br><span class="line">            <span class="built_in">cout</span> &lt;&lt; <span class="string">"Bedroom::MorningCall Thread woken"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">            kernel-&gt;scheduler-&gt;ReadyToRun(it-&gt;sleeper);</span><br><span class="line">            it = _beds.erase(it);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            it++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> woken;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>到這裡我們就完成 <code>Sleep()</code> 製作。</p>
+<p>在下一階段，將要加入排程的製作。</p>
+<h2 id="Scheduling"><a href="#Scheduling" class="headerlink" title="Scheduling"></a>Scheduling</h2><p>目標完成 SJF, RR, FIFO。<br>請參閱 “向 NachOS 4.0 作業進發 (2)”</p>
+<h1 id="其他指令"><a href="#其他指令" class="headerlink" title="其他指令"></a>其他指令</h1><ul>
+<li><p>打包轉移 // 交作業前，將檔案包出傳送，此指令不是壓縮用途</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tar cvf FileName.tar DirName</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>複製資料夾 // 將 nachos gcc library 搬移至 <code>/usr/local/nachos ...</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cp -a DirName TARGET_PATH</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>轉移至 root 權限 // 如果指令權限不夠，需要下達此指令。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ su</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="備忘"><a href="#備忘" class="headerlink" title="備忘"></a>備忘</h1><ul>
+<li>網路上有幾個 Java 版本的 NachOS，架構稍微不同，如果發現文章說明有點怪怪的，請看一下他是用 JAVA 版本還是 C++ 版本。</li>
+<li>至於怎麼將檔案從 Red Hat，這有點惱人，可以想辦法安裝其他瀏覽器，然後開 e-mail 送出，或者使用 terminal 上的 wget 安裝 … 一堆辦法。最後我自己用 nodejs 寫一個簡單的 upload server 傳出來。</li>
+</ul>
+<h1 id="代碼下載"><a href="#代碼下載" class="headerlink" title="代碼下載"></a>代碼下載</h1><p><a href="https://github.com/morris821028/hw-nachos-4.0" target="_blank" rel="external">Github</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-oj/uva/uva-134-" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/05/23/oj/uva/uva-134-/" class="article-date">
@@ -114,7 +503,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/23/oj/uva/uva-134-/" data-id="ciptbh8fc02uj9pxcd40s02ud" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/23/oj/uva/uva-134-/" data-id="ciptgx1hf02v7haxculdte05g" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/23/oj/uva/uva-134-/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -174,7 +563,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/1400100597593.jpg" rel="gallery_ciptbh6xp023t9pxcwuau883b">
+      <a class="article-gallery-img fancybox" href="/img/1400100597593.jpg" rel="gallery_ciptgwzwb0245haxclk5fs9sh">
         <img src="/img/1400100597593.jpg" itemprop="image">
       </a>
     
@@ -193,7 +582,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/22/note/hardware-interview/" data-id="ciptbh6xp023t9pxcwuau883b" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/22/note/hardware-interview/" data-id="ciptgwzwb0245haxclk5fs9sh" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/22/note/hardware-interview/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -286,7 +675,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/22/oj/uva/icpc-4020/" data-id="ciptbh77w029c9pxch3cmyev1" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/22/oj/uva/icpc-4020/" data-id="ciptgx062029lhaxc00jdnyyy" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/22/oj/uva/icpc-4020/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -353,7 +742,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/21/oj/uva/uva-10320/" data-id="ciptbh7ap02ay9pxczsmzirip" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/21/oj/uva/uva-10320/" data-id="ciptgx0a002bnhaxcellq25do" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/21/oj/uva/uva-10320/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -415,7 +804,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/19/lesson/hw-computational-intelligence/" data-id="ciptbh6uk021j9pxcb3n1qaca" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/19/lesson/hw-computational-intelligence/" data-id="ciptgwzt2021yhaxc9kpglkly" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/19/lesson/hw-computational-intelligence/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -588,7 +977,7 @@ If d1 small, θ = -60
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/" data-id="ciptbh86n02qo9pxcz11fumox" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/" data-id="ciptgx17s02r3haxcsj5wth1d" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -634,402 +1023,9 @@ If d1 small, θ = -60
 
 
   
-    <article id="post-oj/uva/uva-12716" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/19/oj/uva/uva-12716/" class="article-date">
-  <time datetime="2014-05-19T00:58:46.000Z" itemprop="datePublished">2014-05-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/19/oj/uva/uva-12716/">UVa 12716 - GCD XOR</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12716/" data-id="ciptbh86u02qr9pxcre7ta3z2" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/19/oj/uva/uva-12716/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/觀察/">觀察</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>Given an integer N, Find how many pairs (A, B) are there such that <code>gcd(A, B) = A xor B</code> where 1 &lt; B &lt; A &lt;= N. Here gcd(A, B) means the greatest common divisor of the numbers A and B. And A xor B is the value of the bitwise xor operation on the binary representation of A and B.</p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The First line of the input contains an integer T (T &lt; 10000) denoting the number of test cases. The following T lines contain an integer N (1 &lt;= N &lt;= 30000000).</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each test case, print the case number first in the format, <code>Case X:</code> (here, X is the serial of the input) followed by a space and then the answer for that case.<br>There is no new-line between cases.</p>
-<p>Explanation<br>Sample 1:<br>For N = 7, there are four valid pairs: (3, 2), (5, 4), (6, 4) and (7, 6).</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">7</span><br><span class="line">20000000</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Case 1: 4</span><br><span class="line">Case 2: 34866117</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>首先，嘗試把 <code>N &lt;= 1000</code> 的情況列下來，列出 <code>gcd(A, B) = C = A xor B</code></p>
-<p>其中滿足 <code>B &lt; A and A mod C = 0</code>，然後我們又觀察到 <code>A&amp;C == C</code>，也就是說看 bitmask 的話，C 是 A 的 subset。</p>
-<p>經由這一點，我們可以先寫出一個不會過 (TLE) 的做法，對 A 找到所有因子 C，查看是否符合 <code>A&amp;C == C</code>，但是這樣的做法很容易知道時間效率不夠好。</p>
-<p>下面是一個最簡單的版本。</p>
-<figure class="highlight cpp"><figcaption><span>TLE version</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> maxL (30000000&gt;&gt;5)+1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GET(x) (mark[(x)&gt;&gt;5]&gt;&gt;((x)&amp;31)&amp;1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SET(x) (mark[(x)&gt;&gt;5] |= 1&lt;&lt;((x)&amp;31))</span></span><br><span class="line"><span class="keyword">int</span> mark[maxL];</span><br><span class="line"><span class="keyword">int</span> P[<span class="number">5500</span>], Pt = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> F[<span class="number">30000005</span>] = &#123;&#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sieve</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">register</span> <span class="keyword">int</span> i, j, k, l;</span><br><span class="line">    SET(<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">int</span> n = <span class="number">50000</span>;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">2</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span>(!GET(i)) &#123;</span><br><span class="line">            <span class="keyword">for</span>(j = i + i; j &lt;= n; j += i)</span><br><span class="line">                SET(j);</span><br><span class="line">            P[Pt++] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">vector</span>&lt; pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; &gt; factor(<span class="keyword">int</span> n) &#123;</span><br><span class="line">    <span class="keyword">int</span> on = n;</span><br><span class="line">    <span class="built_in">vector</span>&lt; pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; &gt; R;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>, j; i &lt; Pt &amp;&amp; P[i] * P[i] &lt;= n; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span>(n%P[i] == <span class="number">0</span>) &#123;		</span><br><span class="line">            <span class="keyword">for</span>(j = <span class="number">0</span>; n%P[i] == <span class="number">0</span>; n /= P[i], j++);</span><br><span class="line">            R.push_back(make_pair(P[i], j));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(n != <span class="number">1</span>)	R.push_back(make_pair(n, <span class="number">1</span>));</span><br><span class="line">    <span class="keyword">return</span> R;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">make</span><span class="params">(<span class="keyword">int</span> idx, <span class="keyword">int</span> n, <span class="keyword">int</span> m, <span class="built_in">vector</span>&lt; pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; &gt; &amp;v)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(idx == v.size()) &#123;</span><br><span class="line">        <span class="keyword">if</span>((n&amp;m) == m)</span><br><span class="line">            F[n]++;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> a = m, b = v[idx].first;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = v[idx].second; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">        make(idx + <span class="number">1</span>, n, a, v), a *= b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    sieve();</span><br><span class="line">    <span class="built_in">vector</span>&lt; pair&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; &gt; ff;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">30000000</span>; i++) &#123;</span><br><span class="line">        ff = factor(i);</span><br><span class="line">        make(<span class="number">0</span>, i, <span class="number">1</span>, ff);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> testcase, cases = <span class="number">0</span>, n;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span>(testcase--) &#123;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n);</span><br><span class="line">        <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++)</span><br><span class="line">            ret += F[i];</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, ret - n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>接著，使用其他的考慮方式，既然 <code>(n, n + 1)</code> 是已知解，其倍數解 <code>(kn, k(n + 1))</code>也是考量的一部分。</p>
-<p>總歸一句，觀察 orz。</p>
-<figure class="highlight cpp"><figcaption><span>accepted</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> F[<span class="number">30000005</span>] = &#123;&#125;;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">30000000</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = i &lt;&lt; <span class="number">1</span>; i + j &lt;= <span class="number">30000000</span>; j += i) &#123;</span><br><span class="line">            <span class="keyword">if</span>(((i + j)&amp;(j)) == j)</span><br><span class="line">                F[i + j]++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">30000000</span>; i++)</span><br><span class="line">        F[i] += F[i<span class="number">-1</span>];</span><br><span class="line">    <span class="keyword">int</span> testcase, cases = <span class="number">0</span>, n;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span>(testcase--) &#123;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;n);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Case %d: %d\n"</span>, ++cases, F[n]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-web/md-file-format" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/18/web/md-file-format/" class="article-date">
-  <time datetime="2014-05-18T11:26:12.000Z" itemprop="datePublished">2014-05-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/網頁設計/">網頁設計</a>►<a class="article-category-link" href="/categories/網頁設計/Markdown/">Markdown</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://github.com/github.png" rel="gallery_ciptbh6z6024l9pxcxckjbm0t">
-        <img src="http://github.com/github.png" itemprop="image">
-      </a>
-    
-      <a class="article-gallery-img fancybox" href="http://github.com/unicorn.png" rel="gallery_ciptbh6z6024l9pxcxckjbm0t">
-        <img src="http://github.com/unicorn.png" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/18/web/md-file-format/">Markdown 檔格式</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/18/web/md-file-format/" data-id="ciptbh6z6024l9pxcxckjbm0t" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/18/web/md-file-format/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/format/">format</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/markdown/">markdown</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/md/">md</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/md檔/">md檔</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/usage/">usage</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/使用說明/">使用說明</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/格式/">格式</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-        <h1 id="fancybox-js-example"><a href="#fancybox-js-example" class="headerlink" title="fancybox.js example"></a>fancybox.js example</h1><h1 id="中文"><a href="#中文" class="headerlink" title="中文"></a>中文</h1><p>#中文2</p>
-<h1 id="English"><a href="#English" class="headerlink" title="English"></a>English</h1><p>#English2</p>
-        
-          <p class="article-more-link">
-            <a href="/2014/05/18/web/md-file-format/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/operating-system-hw-thread" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/18/lesson/operating-system-hw-thread/" class="article-date">
-  <time datetime="2014-05-18T06:58:10.000Z" itemprop="datePublished">2014-05-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/作業系統/">作業系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/18/lesson/operating-system-hw-thread/">作業系統 Thread 程式作業</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/18/lesson/operating-system-hw-thread/" data-id="ciptbh6v6021y9pxcqyhkfp03" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/18/lesson/operating-system-hw-thread/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C++</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/matrix/">matrix</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/thread/">thread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/作業系統/">作業系統</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="C-Thread-練習"><a href="#C-Thread-練習" class="headerlink" title="C++ Thread 練習"></a>C++ Thread 練習</h1><h2 id="作業要求"><a href="#作業要求" class="headerlink" title="作業要求"></a>作業要求</h2><blockquote>
-<p>作業一:應用 Thread 撰寫任意程式(語言不限)，繳交方式 FTP:140.115.155.192(選擇自己學號的資料夾上傳) 帳:os2014 密碼不知道者請再問助教，檔案名稱: “作業一<em>學號</em>姓名_第幾版” ex:”作業一<em>10252200x</em>林大乖_v1” 繳交內容:壓縮檔(報告word 以及 程式碼,執行檔)，截止日期:2014/05/25(日)23:59</p>
-</blockquote>
-<h2 id="程式功能"><a href="#程式功能" class="headerlink" title="程式功能"></a>程式功能</h2><p>兩個 <code>n*n</code> 矩陣相乘，在最基礎的 <code>O(n^3)</code> 效能上，使用 Thread 等相關技巧使其加速。</p>
-<h2 id="運行"><a href="#運行" class="headerlink" title="運行"></a>運行</h2><ul>
-<li><p>Mac OSX</p>
-<pre><code>$ clang -pthread x.cpp -o x
-</code></pre></li>
-<li><p>Linux</p>
-<pre><code>$ gcc -lpthread x.cpp -o x
-</code></pre></li>
-</ul>
-<h2 id="測試效率"><a href="#測試效率" class="headerlink" title="測試效率"></a>測試效率</h2><ul>
-<li>Mac OSX and Linux<pre><code>$ time ./a.out
-</code></pre></li>
-</ul>
-<h2 id="測試結果"><a href="#測試結果" class="headerlink" title="測試結果"></a>測試結果</h2><p>測試環境為 2013 Mac Air 1.3 GHz Intel Core i5 上對 <code>1024 x 1024</code> 的矩陣進行相乘的統計結果。</p>
-<ul>
-<li><code>matrix.cpp</code><br>最原始的一般寫法，直接使用 <code>O(n^3)</code> 。運行時間約在 20 秒左右完成。</li>
-<li><code>matrix[v2].cpp</code><br>使用轉置矩陣後，在進行運算，這種方式是加快作業系統中的快取層，速度提升至約在 4 秒左右完成。</li>
-<li><code>matrix[v3].cpp</code><br>建立在 <code>matrix[v2].cpp</code> 的基礎上，使用 4 條 thread，分別對處理的 column 進行分割操作，速度約在 2 秒內完成。</li>
-<li>matrix[v4].cpp<br>與 <code>matrix[v3].cpp</code> 類似，調整 thread 的數量，查看效率變化，但是速度沒有更快的趨勢。</li>
-</ul>
-<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>Thread 多不代表會比較快，而是該程式佔有 CPU 的機會比較高，使用的資源就會比較多。在整個作業系統中，Thread 多上下文切換的次數就會上升，對於作業系統整體效率是下降的，但是又不能沒有 Thread，看起來像是所有程式同時在運行，也要防止落入死機無法動彈的情況。</p>
-<p>而在 thread 上面會發現，當數量達到一定程度後，速度就不會上升，有一部分是因為 CPU 超頻運作。</p>
-<blockquote>
-<p>超頻（英語：Overclocking）是把一個電子配件的時脈速度提升至高於廠方所定的速度運作，從而提升性能的方法，但此舉有可能導致該配件穩定性下降。</p>
-</blockquote>
-<p>可能是長時間閒置的 CPU 發現有大規模的工作運行，把時脈速度升起。</p>
-<h1 id="代碼"><a href="#代碼" class="headerlink" title="代碼"></a>代碼</h1><h2 id="matrix-cpp"><a href="#matrix-cpp" class="headerlink" title="matrix.cpp"></a>matrix.cpp</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_N 1024</span></span><br><span class="line"><span class="keyword">double</span> A[MAX_N][MAX_N];</span><br><span class="line"><span class="keyword">double</span> B[MAX_N][MAX_N];</span><br><span class="line"><span class="keyword">double</span> C[MAX_N][MAX_N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">double</span> A[][MAX_N], <span class="keyword">double</span> B[][MAX_N], <span class="keyword">double</span> C[][MAX_N])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            <span class="keyword">double</span> sum = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; MAX_N; k++) &#123;</span><br><span class="line">                sum += A[i][k] * B[k][j];</span><br><span class="line">            &#125;</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//clock_t start, finish;</span></span><br><span class="line">    <span class="comment">//start = clock(); // start time clock</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            A[i][j] = i;</span><br><span class="line">            B[i][j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    multiply(A, B, C);</span><br><span class="line">    <span class="comment">//finish = clock(); // finish time clock</span></span><br><span class="line">    <span class="comment">//printf("Time: %lf\n", (double)(finish - start)/1000);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="matrix-v2-cpp"><a href="#matrix-v2-cpp" class="headerlink" title="matrix[v2].cpp"></a>matrix[v2].cpp</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAX_N 1024</span></span><br><span class="line"><span class="keyword">double</span> A[MAX_N][MAX_N];</span><br><span class="line"><span class="keyword">double</span> B[MAX_N][MAX_N];</span><br><span class="line"><span class="keyword">double</span> C[MAX_N][MAX_N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">trans</span><span class="params">(<span class="keyword">double</span> A[][MAX_N])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = i+<span class="number">1</span>; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            swap(A[i][j], A[j][i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">double</span> A[][MAX_N], <span class="keyword">double</span> B[][MAX_N], <span class="keyword">double</span> C[][MAX_N])</span> </span>&#123;</span><br><span class="line">    trans(B);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            <span class="keyword">double</span> sum = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; MAX_N; k++) &#123;</span><br><span class="line">                sum += A[i][k] * B[j][k];</span><br><span class="line">            &#125;</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//clock_t start, finish;</span></span><br><span class="line">    <span class="comment">//start = clock(); // start time clock</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            A[i][j] = i;</span><br><span class="line">            B[i][j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    multiply(A, B, C);</span><br><span class="line">    <span class="comment">//finish = clock(); // finish time clock</span></span><br><span class="line">    <span class="comment">//printf("Time: %lf\n", (double)(finish - start)/1000);</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="matrix-v3-c"><a href="#matrix-v3-c" class="headerlink" title="matrix[v3].c"></a>matrix[v3].c</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;time.h&gt;</span><br><span class="line">#include &lt;pthread.h&gt;</span><br><span class="line"></span><br><span class="line">#define MAX_N 1024</span><br><span class="line">double A[MAX_N][MAX_N];</span><br><span class="line">double B[MAX_N][MAX_N];</span><br><span class="line">double C[MAX_N][MAX_N];</span><br><span class="line">void trans(double A[][MAX_N]) &#123;</span><br><span class="line">    double x;</span><br><span class="line">    int i, j;</span><br><span class="line">    for (i = 0; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        for (j = i+1; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            x = A[i][j];</span><br><span class="line">            A[i][j] = A[j][i];</span><br><span class="line">            A[j][i] = x;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">#define MAX_THREAD 4</span><br><span class="line">void *multiply(void *arg) &#123;</span><br><span class="line">    int id = *((int *)arg);</span><br><span class="line">    int st = id * MAX_N / MAX_THREAD;</span><br><span class="line">    int ed = (id + 1) * MAX_N / MAX_THREAD - 1;</span><br><span class="line">    int i, j, k;</span><br><span class="line">    for (i = st; i &lt;= ed; i++) &#123;</span><br><span class="line">        for (j = 0; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            double sum = 0;</span><br><span class="line">            for (k = 0; k &lt; MAX_N; k++) &#123;</span><br><span class="line">                sum += A[i][k] * B[j][k];</span><br><span class="line">            &#125;</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br><span class="line">int main(void) &#123;</span><br><span class="line">    puts("Thread version");</span><br><span class="line">    //clock_t start, finish;</span><br><span class="line">    //start = clock(); // start time clock</span><br><span class="line">    int i, j;</span><br><span class="line">    for (i = 0; i &lt; MAX_N; i++) &#123;</span><br><span class="line">        for (j = 0; j &lt; MAX_N; j++) &#123;</span><br><span class="line">            A[i][j] = i;</span><br><span class="line">            B[i][j] = j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    trans(B);</span><br><span class="line">    </span><br><span class="line">    pthread_t *threads;</span><br><span class="line">    threads = (pthread_t *) malloc(MAX_THREAD * sizeof(pthread_t));</span><br><span class="line">    </span><br><span class="line">    for (int i = 0; i &lt; MAX_THREAD; i++) &#123;</span><br><span class="line">        int *p = (int *) malloc(sizeof(int));</span><br><span class="line">        *p = i;</span><br><span class="line">        pthread_create(&amp;threads[i], NULL, multiply, (void *)(p));</span><br><span class="line">    &#125;</span><br><span class="line">    for (i = 0; i &lt; MAX_THREAD; i++) &#123;</span><br><span class="line">        pthread_join(threads[i], NULL);</span><br><span class="line">    &#125;</span><br><span class="line">    //finish = clock(); // finish time clock</span><br><span class="line">    //printf("Time: %lf\n", (double)(finish - start)/1000);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><p>雖然作業可以有其他語言的相關 Thread，在 Java 作品方面可以查看 Github。</p>
-<ul>
-<li><a href="https://github.com/morris821028/hw-ChatRoom" target="_blank" rel="external">聊天室 Chart Room</a></li>
-<li><a href="https://github.com/morris821028/hw-FuzzySystem" target="_blank" rel="external">演化模擬</a></li>
-</ul>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/hw-agile-paper" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/14/lesson/hw-agile-paper/" class="article-date">
-  <time datetime="2014-05-14T13:36:45.000Z" itemprop="datePublished">2014-05-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="/img/1399146778408.gif" rel="gallery_ciptbh6u4021b9pxciix67hek">
-        <img src="/img/1399146778408.gif" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/14/lesson/hw-agile-paper/">論文選讀 Agile Development and User Experience Design ... </a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/14/lesson/hw-agile-paper/" data-id="ciptbh6u4021b9pxciix67hek" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/14/lesson/hw-agile-paper/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/軟體開發/">軟體開發</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="課程論文心得"><a href="#課程論文心得" class="headerlink" title="課程論文心得"></a>課程論文心得</h1><p>首先，所讀這一篇的論文名稱為『Agile Development and User Experience Design Integration as an Ongoing Achievement in Practice』 所以著重點在于用戶體驗設計要怎麼融入敏捷開發的探討。</p>
-<p>什麼是用戶體驗？先說說 UX Designer 做些什麼嗎</p>
-<p><a href="https://www.facebook.com/notes/kit-lin/%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%BD%89ux-designer%E5%B0%B1%E4%B8%8A%E6%89%8B%E4%B8%8A/10152088295236310" target="_blank" rel="external">第一次轉UX Designer就上手（上）</a></p>
-<p><a href="https://www.facebook.com/notes/kit-lin/%E7%AC%AC%E4%B8%80%E6%AC%A1%E8%BD%89ux-designer%E5%B0%B1%E4%B8%8A%E6%89%8B%E4%B8%8B/10152088337196310" target="_blank" rel="external">第一次轉UX Designer就上手（下）</a></p>
-<p>看完內容後，總之 UX Designer 算是一種設計師，與理工背景的開發人員可是天差地遠，</p>
-<p>他們比起宅宅開發者來說，要與用戶產生關係，繪畫、表達、心理學、與現實溝通，開發人員擁有技術並且完成目標，但是行為卻不是一般使用者，最簡單的說法是『為什麼做出來的軟體只有開發者會用？』如果在軟體的需求面向是開發者們的話，這也許還不是問題，但是要做出給一般人使用的軟體，這樣是行不同的。但是開發者的邏輯古怪到自己都不明白的機率是挺高的，因此會有 UX Designer。</p>
-<p>借由 UX design，軟體將會有耐用性、易上手、輕便化 … 等，這讓我突然想到總是會開發出根本用不著的功能，或者是相當難操作的功能。</p>
-<p>但是要把 UX design 完全融入是有困難的，因為邏輯思維不同的人，是很難協調的，又或者會互相侵蝕。</p>
-<h2 id="開始談談論文的內容"><a href="#開始談談論文的內容" class="headerlink" title="開始談談論文的內容"></a>開始談談論文的內容</h2><p>這一篇論文，主要是 <strong> 觀察 </strong>，也沒有觀察到所有目前的運行方式。換句話說，不會存在唯一一個好的開發方式，根據組織的規模和文化背景，所適用的運行方式也會有所不同，在理論上百分之百照抄別人的做法運用在自己的發開方式，但是可以藉由論文中觀察的幾點來學習我們的開發方式大概需要的是哪些面向需求。</p>
-<p>而當開發人員是怎麼樣類型的人，就可能需要運用哪些方式，這些都是需要去探討的。外國也許按照它們的方式走成功，但並不代表按照一樣的作法一樣會成功，這就所謂 <strong> 新方法論 </strong>。新方法論沒有絕對的方法，說來有點玄，也就是沒有固定方法就是方法！</p>
-<p>由於組織規模不同，彼此部門又要互相協調，在設計與開發之間的不同在於時間的週期不同，工作類型的方式不同，如果是大規模組織，『提高內聚力，降低耦合度』因此專業分工的類型將會在 Study 1 中被提及，這麼考量是有它的原因在的。</p>
-<p>而文藝復興時期的全才－達文西類型，則可以在 Study 2 中被提及，每一個人都必須學習一點別人的領域的項目，這樣可以互相考量、共同承擔，來分散思考風險。但這樣對於一般人是相當困難的，如果是菁英組織的運行，大概就是長得這樣。</p>
-<p>在最後的 Study 3 中，雖然使用傳統的瀑布式開發，這種神祕的設計大於開發組合相當異常，但也許是一種新的導向。在往後的時代中，當技術相對成熟穩定時，面對的將會是設計需求大於開發需求。</p>
-<hr>
-<h1 id="RESEARCH-METHOD"><a href="#RESEARCH-METHOD" class="headerlink" title="RESEARCH METHOD"></a>RESEARCH METHOD</h1><p>這裡提供三種 Ethnography (社會學的一種寫作文本，中文翻譯：民族誌) 來探討敏捷開發人員和用戶體驗設計師的配置方式。</p>
-<h2 id="A-In-the-field"><a href="#A-In-the-field" class="headerlink" title="A. In the field"></a>A. In the field</h2><p>(田野調查的區域，民族誌運用田野工作來提供人類社會學的描述研究)</p>
-<p>總共有三個組織中，四個團隊參與本次研究，參與研究的團隊中正在進行 UX 設計，而我們主要的工作是觀察他們的工作運行情況。</p>
-<p>共計在三種情況進行觀察。</p>
-<ul>
-<li>Study 1: 觀察時間為兩個星期</li>
-<li>Study 2: 觀察時間為六天</li>
-<li>Study 3: 觀察時間為兩天</li>
-</ul>
-<p>其中 Study 1, 2 過程中會涵蓋 Sprint 會議，而 Study 3 則只有涵蓋開發人員和設計師共處一室。</p>
-<h2 id="B-Thematic-analysis"><a href="#B-Thematic-analysis" class="headerlink" title="B. Thematic analysis"></a>B. Thematic analysis</h2><p>(專題分析)</p>
-<h2 id="C-Study-participants"><a href="#C-Study-participants" class="headerlink" title="C. Study participants"></a>C. Study participants</h2><p>(研究參與者)</p>
-<h1 id="ACCOUNTS-OF-THE-DAY-TO-DAY-INTEGARTION-WORK"><a href="#ACCOUNTS-OF-THE-DAY-TO-DAY-INTEGARTION-WORK" class="headerlink" title="ACCOUNTS OF  THE DAY-TO-DAY INTEGARTION WORK"></a>ACCOUNTS OF  THE DAY-TO-DAY INTEGARTION WORK</h1><h2 id="Study-1"><a href="#Study-1" class="headerlink" title="Study 1"></a>Study 1</h2><p>這項研究在 14 位 developer 和 2 位 UX designer，這兩位 UX designer 並不屬於 developer team，而是屬於該公司的 UX design team，因此他們並沒有參與 Sprint meeting、Standup、Retrospective，當然開發人員也沒有參與 design meeting，developer team 和 design team 在不同樓層工作。</p>
-<p>開發人員描述道『將 UX design 與 agile develop 分開，是基於管理層面。』這很大的原因在於要將 UX 創造力發揮到極限，不能讓軟體工程的問題阻擋他們思考。</p>
-<p>而在 Sprint meeting 中觀察到，UX designer 會提供一個 UX design 在 sprint meeting 前送達。但在隨後的 UX design 版本則是偶爾送到 developer 手上，直到 sprint 的最後一天仍持續修改，這表示著 developer 無法依靠 UX design 考慮相關的實作項目，所以大多數的關於 UX 工作將會分配在最後幾個小時來完成。</p>
-<p>然而如果詢問 UX designer 是否已經意識到自己時間分配所造成的影響，則他們會回答說『沒有』。但事實上，在發送 UX design 時就已經造成相當多的問題。</p>
-<blockquote>
-<p>[UX designer]: “That was never explicitly said to me … I thinks there was and still is visibility issues to do with what they’re doing and what their timeline are.”<br>這表示 UX designer 從來不知道這些事情，也從來沒有直接地被告知這項問題，也是因為不知道 developer 的運行工作和時程表。</p>
-</blockquote>
-<p>當要澄清或者是修改 UX design 時，develop 會將問題寫下，並且要求 UX designer 在他們的 feedback meeting 中討論。</p>
-<blockquote>
-<p>[senior UX designer]: “The visual designs are pretty much parallel to the wireframes … what kind of feedback do you want to give ?”<br>資深 UX designer 表示道：所有的視覺設計都是在線框 (wireframe) 的基礎上完成的，能有什麼樣的反饋？</p>
-</blockquote>
-<p>developer 並不完全了解 UX design，只能依靠 UX designer 的批准和重構，這 “批准” 主要是對於敏捷開發中的維護和支持的組成用途，但是當 developer 向 designer 發問時，往往是溝通失敗的。</p>
-<blockquote>
-<p>2pm: There is some problem with the visual design from UX [hadn’t arrived yet]. Project manager’s been trying to get in touch with the interaction designer, however can not get in contact - mobile switched off. Project manager has heard that UX are moving desks (not all the visual designs have been delivered since the developer feedback session). </p>
-</blockquote>
-<p>上述內容看得不明白，難道是就是單純 PM 得不到完整的 visual design，因此也就不能向互動工程師聯繫嗎？</p>
-<h2 id="Study-2"><a href="#Study-2" class="headerlink" title="Study 2"></a>Study 2</h2><p>小型手機軟件開發的公司，這一間公司有兩支團隊，每一隊有 5 名 developer 和 1 名 UX designer。其中 UX designer 設計非功能性描述和 screen mock-ups，這幾個項目將可以幫助 developer 參考進行開發。</p>
-<pre><code>mock-ups 相當於一種 prototype 可以支持動作的描述，通常會帶有基礎的 action code，關於 mock-ups 的相關工具有很多，但是通常價格不菲，邊設計還能自動幫忙產生代碼是不容易的工作。網路上找不到相關的解釋，就先這樣頂替了，相較於一般手繪製圖和文件描述，這樣的方式更為容易了解。
-</code></pre><p>在他們會議中，每一個角色(QA, scrum master, product owner, UX designer, developer) 都參與討論會議，創造共同意識和共享決策責任。</p>
-<blockquote>
-<p>9:30 [developer]: How should tabs appear, is ad always right-most tab ? … UX designer tells the developer what whould happen: As new chats come in ad tab moves over to right-most tab.</p>
-</blockquote>
-<p>開發人員: 分頁到底該如何呈現，而廣告要固定在最右側的分頁嗎？ … UX designer 告訴我們應該「當新的聊天訊息進來時，廣告要移動到最右邊的分頁嗎？」</p>
-<blockquote>
-<p>[Product owner]: Still waiting on response for some questions from the client.</p>
-</blockquote>
-<p>Product owner: 這仍然在等待顧客的回報訊息</p>
-<blockquote>
-<p>[QA]: Kind of hard to do QA if we don’t have the answer … wayry of starting stories without behaviours which means we might have to change thins and that wastes time.</p>
-</blockquote>
-<p>QA: 這件事情很難做確認，如果我們沒有接收到回報，做的任何修改也許只是浪費時間，無法確定品質。</p>
-<blockquote>
-<p>[UX designer]: Do them anyway, they might need to go through a number of iterations before they agree this is what they want … it’s better of they see something working as soon as posssible.</p>
-</blockquote>
-<p>UX designer: 先把這問題放一旁，這需要多次迭代才能確定這是他們想要的 … 如果他們需要高效工作，則這個方式可能比較好。</p>
-<blockquote>
-<p>[QA]: What if an ad coes in at exactly the same time as a chat ?</p>
-</blockquote>
-<p>QA: 那如果廣告作為一個新的聊天訊息出場的話呢？</p>
-<blockquote>
-<p>[UX designer]: That’s extreme edge case and probably very hard to test. So leave it. QA agrees.</p>
-</blockquote>
-<p>UX designer: 這是一個相當極端的方式，非常難測試，所以先不要管這個。</p>
-<p>這些對話通常在每一天的工作中進行，詢問另外一個團隊問題，而另外的團隊注意這些問題。</p>
-<blockquote>
-<p>[UX designer]: “… if developers come up with issues, these are discussed on a case-by-case basis as they come up … There are lots of small things which are easily worked out on a day-to-day basis”</p>
-</blockquote>
-<p>UX designer: 如果 developer 在每一個 case 基礎上想出了問題，這些小問題很容易在每日解決。</p>
-<p>從會議過程中，主要，我們可以發現的每一個角色都參與了 UX design，同時也在職權外貢獻了他們的想法 - 例如 UX designer 建議在極端情況忽略 QA testing，而在 QA 沒有指責 UX designer 所做的 QA 決策，他們接受這項意見並沒有發出任何評論。其次，在這個 UX design 討論議題中也一起討論了 non-UX 的問題(如這個 QA testing 問題)。</p>
-<p>這次的會議的下一步行動，包括實現解決方案和傳達問題給客戶。所有的角色參與討論導致決策同時考慮的設計價值和技術考量。</p>
-<p>而在會議中，有 developer 向其他人簡單說明，他在網路空間上有一些之前專案製作時替換視覺設計的文件可以參考，這可以讓 UI designer 可以接受這些更改的項目，增加信服力。</p>
-<blockquote>
-<p>[UX designer]: Sometimes the developers’ decisions are better, as they are much closer to the implementation. 有時候開發者的決策會更好，因為他們更接近實作。</p>
-</blockquote>
-<h2 id="Study-3"><a href="#Study-3" class="headerlink" title="Study 3"></a>Study 3</h2><p>在非常小的公司進行，有 1 名 developer 和 2 名 UX designer，他們擅長瀑布形式的開發，在開發過程中 developer 和 UX designer 在同一間辦公室工作，目標是使得設計和開發更接近。正如 Study 1 的時候，發現 developer 會根據 UX designer 設計的線框 (wireframe) 和 visual design 努力地工作。</p>
-<p>觀察兩天後的結果如下:</p>
-<p>在一般的情況下，UX designer 通常和 developer 在不同樓層工作，developer 也表示他們很少去找 designer 討論遭遇的問題。</p>
-<blockquote>
-<p>[developer]: We often find things that don’t work, but we don’t go back to design. We just do our best. 我們常發現很多事情並不會 work，但是並沒有回去檢討設計，單純盡力而為。</p>
-</blockquote>
-<p>在這種共同工作的情況下，designer 給予了一些回應。</p>
-<blockquote>
-<p>[UX designer]: This style of working means we can collaborate in order to get our points across, rather than dictate because there’s no communication going on. 這種工作方式可以讓我們的觀點交換，而不是因為沒有通通合作的命令。</p>
-<p>[Head of UX]: And when we first met with the client, the first thing they did was to present to us the findings of that initial research. So we can then go and propose what would bee the next step, which is quite different from any other type of work we’ve been invited to get involved in.</p>
-</blockquote>
-<p>在大多數的情況，不確定性，設計師在現場談話的記錄:</p>
-<blockquote>
-<p>[visual designer]: I just feel like I’m not getting any-where.</p>
-<p>[IA]: I also feel that way.</p>
-</blockquote>
-<p>但是對於另一個情況下</p>
-<blockquote>
-<p>[developer]: Just cover the site map.</p>
-</blockquote>
-<p>developer 和 designer 共同工作</p>
-<ul>
-<li>可以相互討論跟顧客對談時的內容 (當時在場的感受不同)</li>
-<li>目標計劃做些什麼，訊息可以提前知道。(想要做第二個版本)</li>
-<li>「這個設計會不會很難實作？」這些問題將會很快被反應出來。</li>
-</ul>
-<blockquote>
-<p>[developer]: It would probably be just as easy.</p>
-</blockquote>
-<hr>
-<h1 id="THEME-FOR-ACHIEVING-INTEGRATION"><a href="#THEME-FOR-ACHIEVING-INTEGRATION" class="headerlink" title="THEME FOR ACHIEVING INTEGRATION"></a>THEME FOR ACHIEVING INTEGRATION</h1><h2 id="A-Integration-as-expectations-about-acceptable-behaviour"><a href="#A-Integration-as-expectations-about-acceptable-behaviour" class="headerlink" title="A. Integration as expectations about acceptable behaviour"></a>A. Integration as expectations about acceptable behaviour</h2><p>在 Study 1 中可以發現，如果將兩者隔離，很容易造成規劃的浪費和開發者在最後期限前超時工作。UX designer 同時跨越多個專案進行設計，丟出設計之後就沒有可接收開發者的反饋，只有等到 sprint meeting 的反應才重新設計，這時可能已經為期已晚。</p>
-<p>在 Study 2 中可以發現，頻繁確保兩者之間有相互支持，並且在 UX design 和代碼之間可以互相溝通，相較于 Study 1 上，溝通性有上升，但這些遭遇的問題將會在每個人參與討論會議的過程中的一部份。</p>
-<p>在 Study 3 中，每一個成員都有機會被其他角色問到自己領域的問題，同時也可以在與客戶討論中的觀察，在隨後討論。這都歸因于他們在同一間辦公室工作。</p>
-<h2 id="B-Integration-as-mutual-awareness"><a href="#B-Integration-as-mutual-awareness" class="headerlink" title="B. Integration as mutual awareness"></a>B. Integration as mutual awareness</h2><p>相對于 Study 1 中，Study 2, 3 擁有了共同享有決策的責任，同時提高了互動上的認識。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/68/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/67/">67</a><a class="page-number" href="/page/68/">68</a><span class="page-number current">69</span><a class="page-number" href="/page/70/">70</a><a class="page-number" href="/page/71/">71</a><span class="space">&hellip;</span><a class="page-number" href="/page/74/">74</a><a class="extend next" rel="next" href="/page/70/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/68/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/67/">67</a><a class="page-number" href="/page/68/">68</a><span class="page-number current">69</span><a class="page-number" href="/page/70/">70</a><a class="page-number" href="/page/71/">71</a><span class="space">&hellip;</span><a class="page-number" href="/page/75/">75</a><a class="extend next" rel="next" href="/page/70/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1041,7 +1037,7 @@ If d1 small, θ = -60
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">84</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">610</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">472</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">84</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">614</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">476</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1051,6 +1047,38 @@ If d1 small, θ = -60
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/24/uva-13000/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13000 - VIP Treatment</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/24/uva-13070/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13070 - Palm trees in the snow</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/24/uva-13036/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13036 - Birthday Gift to SJ - 2</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/24/uva-13057/">
+              
+                <i class="icon-file-o"></i> 
+              
+            UVa 13057 - Prove Them All</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/24/uva-13015/">
@@ -1098,38 +1126,6 @@ If d1 small, θ = -60
                 <i class="icon-file-o"></i> 
               
             批改娘 10038. Fast Covering Problem</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/30/jg-10093/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10093. Fast Matrix Chain Multiplication (OpenMP)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/30/jg-10094/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10094. Fast 0/1 Knapsack Problem</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/30/jg-10027/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10027. Fast Sudoku</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/04/30/jg-10087/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10087. Sparse Matrix Multiplication (OpenMP)</a>
           </li>
         
       </ul>
