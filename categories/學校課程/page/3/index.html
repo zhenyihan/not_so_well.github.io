@@ -89,6 +89,585 @@
         
           <section id="main">
   
+    <article id="post-rendering-realistic-camera" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/rendering-realistic-camera/" class="article-date">
+  <time datetime="2016-01-21T08:35:46.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/rendering-realistic-camera/">pbrt-v2 加速結構 Realistic Camera 改寫</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/" data-id="cipwal3mb0087xoxcvggm147t" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h3 id="Ray-Sphere-Intersection"><a href="#Ray-Sphere-Intersection" class="headerlink" title="Ray Sphere Intersection"></a>Ray Sphere Intersection</h3><p>計算射線和球體的交點，可以參照 <code>/pbrt-v2/shapes/sphere.cpp</code> 中 <code>bool Shpere::Intersect()</code> 的算法。</p>
+<p>假設球體圓心座標 <span>$O$</span><!-- Has MathJax -->，射線單位向量 <span>$I$</span><!-- Has MathJax --> 的起點座標 <span>$C$</span><!-- Has MathJax -->，且最近目標交點座標 <span>$P$</span><!-- Has MathJax -->，原半徑 <span>$\mathrm{radius}$</span><!-- Has MathJax -->。射線走單位時間 <span>$t$</span><!-- Has MathJax --> 會到達球面上。</p>
+<ul>
+<li><span>$\overrightarrow{OC} + \overrightarrow{I} \times t = \overrightarrow{OP}$</span><!-- Has MathJax --></li>
+<li><span>$|\overrightarrow{OP}| = \text{radius}$</span><!-- Has MathJax --></li>
+<li><span>$|\overrightarrow{OC} + \overrightarrow{I} \times t| = |\overrightarrow{OP}|$</span><!-- Has MathJax --></li>
+<li><span>$|\overrightarrow{I}|^2 t^2 + 2 \; (\overrightarrow{OC} \cdot \overrightarrow{I}) \; t + |\overrightarrow{OC}|^2 - \text{radius}^2 = 0$</span><!-- Has MathJax -->
+</li>
+</ul>
+<p>解一元二次方程式之後可以得到 <span>$t$</span><!-- Has MathJax --> 得值，並得到交點座標 <span>$P$</span><!-- Has MathJax -->。</p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework2/submission/images/hw2_circle_intersect.png" alt=""></p>
+<h3 id="Snell’s-Law"><a href="#Snell’s-Law" class="headerlink" title="Snell’s Law"></a>Snell’s Law</h3><p>根據物理法則斯乃爾定律計算折射的方向向量，課程中提供三種做法。</p>
+<p>變數解釋：入射介面材質 <span>$\eta_1$</span><!-- Has MathJax -->，折射介面材質 <span>$\eta_2$</span><!-- Has MathJax -->，入射單位向量 <span>$\overrightarrow{I}$</span><!-- Has MathJax -->，交點面法向量 <span>$\overrightarrow{N}$</span><!-- Has MathJax -->，折射方向向量 <span>$\overrightarrow{T}$</span><!-- Has MathJax --></p>
+<p>特別小心 <code>ray-&gt;d = Normalize(ray-&gt;d)</code> 的處理，Heckbert’s Method 計算維持在單位圓上，故不用做最後的正規化計算。</p>
+<h4 id="Whitted’s-Method"><a href="#Whitted’s-Method" class="headerlink" title="Whitted’s Method"></a>Whitted’s Method</h4><table>
+<thead>
+<tr>
+<th><span>$\sqrt{}$</span><!-- Has MathJax --></th>
+<th><span>$/$</span><!-- Has MathJax --></th>
+<th><span>$\times$</span><!-- Has MathJax --></th>
+<th><span>$+$</span><!-- Has MathJax --></th>
+<th>compute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td><span>$n = \eta_1 / \eta_2$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+<td><span>$I&apos; = I / (-I \cdot N)$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>3</td>
+<td><span>$J = I&apos; + N$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>8</td>
+<td>5</td>
+<td><span>$\alpha = 1 / \sqrt{n^2(I&apos; \cdot I&apos;) - (J \cdot J)}$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>3</td>
+<td>3</td>
+<td><span>$T&apos; = \alpha J - N$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+<td><span>$T&apos; = T&apos; / \| T&apos; \|$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>2</td>
+<td>8</td>
+<td>17</td>
+<td>15</td>
+<td>TOTAL</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Heckbert’s-Method"><a href="#Heckbert’s-Method" class="headerlink" title="Heckbert’s Method"></a>Heckbert’s Method</h4><table>
+<thead>
+<tr>
+<th><span>$\sqrt{}$</span><!-- Has MathJax --></th>
+<th><span>$/$</span><!-- Has MathJax --></th>
+<th><span>$\times$</span><!-- Has MathJax --></th>
+<th><span>$+$</span><!-- Has MathJax --></th>
+<th>compute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td><span>$\eta = \eta_1 / \eta_2$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>3</td>
+<td>2</td>
+<td><span>$c_1 = - I \cdot N$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td></td>
+<td>3</td>
+<td>2</td>
+<td><span>$c_2 = \sqrt{1 - \eta^2(1 - c_1^2)}$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>7</td>
+<td>4</td>
+<td><span>$T = \eta I + (\eta c_1 - c_2) N$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>13</td>
+<td>8</td>
+<td>TOTAL</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Other-Method"><a href="#Other-Method" class="headerlink" title="Other Method"></a>Other Method</h4><table>
+<thead>
+<tr>
+<th><span>$\sqrt{}$</span><!-- Has MathJax --></th>
+<th><span>$/$</span><!-- Has MathJax --></th>
+<th><span>$\times$</span><!-- Has MathJax --></th>
+<th><span>$+$</span><!-- Has MathJax --></th>
+<th>compute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>1</td>
+<td></td>
+<td></td>
+<td><span>$n = \eta_2 / \eta_1$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>3</td>
+<td>2</td>
+<td><span>$c_1 = - I \cdot N$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td></td>
+<td>2</td>
+<td>3</td>
+<td><span>$\beta = c_1 \sqrt{n^2 - 1 + c_1^2}$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td></td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td><span>$T = (I + \beta N ) / n$</span><!-- Has MathJax --></td>
+</tr>
+<tr>
+<td>1</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>TOTAL</td>
+</tr>
+</tbody>
+</table>
+<p>其中以 Heckbert’s Method 消耗最少計算數。如果除法速度快於乘法，則使用 Other Method，原則上很少有機器運算除法比乘法快。</p>
+<h3 id="RasterToCamera"><a href="#RasterToCamera" class="headerlink" title="RasterToCamera"></a>RasterToCamera</h3><p>這部分處理後得到 <code>Transform RasterToCamera</code>。若計算錯誤，會造成一片黑或者圖片顯示的大小問題。座標轉換處理細節可以參考實際的例子，如下圖所示：</p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework2/submission/images/cambasic1A.png" alt="http://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays"></p>
+<ul>
+<li>Raster-To-NDC 轉換矩陣 <span>$A=\text{Scale}(scale, scale, 1)$</span><!-- Has MathJax -->，進行縮放。</li>
+<li>NDC-To-Camera 轉換矩陣 <span>$B=\text{Translate}(Vector(0, 0, filedistance)) \times \text{Translate}(Vector(X, -Y, 0))$</span><!-- Has MathJax -->，進行位移。</li>
+<li>最後得到 RasterToCamera 轉換矩陣 <span>$C= B \times A \times \text{Scale}(-1, 1, 1)$</span><!-- Has MathJax -->，最後將 x 軸顛倒以符合成像問題。</li>
+</ul>
+<h3 id="Ray-Weight"><a href="#Ray-Weight" class="headerlink" title="Ray Weight"></a>Ray Weight</h3><p>作業要求經過 <code>float GenerateRay()</code> 回傳 <span>$\mathrm{weight} = \frac{\cos^4 \theta&apos;}{Z^2}$</span><!-- Has MathJax -->，這麼設置會過暗，根據論文 A Realistic Camera Model for Computer Graphics 中寫道</p>
+<blockquote>
+<p>If the exit pupil subtends a small solid angle from <span>$x&apos;$</span><!-- Has MathJax -->, <span>$\theta&apos;$</span><!-- Has MathJax --> can be assumed to be constant and equal the angle between <span>$x&apos;$</span><!-- Has MathJax --> and the center of the disk. This allows us to simplify<br><span>$E(x&apos;) = \int_{x&apos;&apos; \in D} L(x&apos;&apos;, x&apos;) \frac{\cos \theta&apos; \cos \theta&apos;&apos;}{\| x&apos;&apos; - x&apos;\|} dA&apos;&apos;$&lt;span&gt;$to:$&lt;/span&gt;&lt;!-- Has MathJax --&gt;$E(x&CloseCurlyQuote;) = L \frac{A}{Z^2} \cos^4 \theta&CloseCurlyQuote;$</span><!-- Has MathJax --><br>where <span>$Z$</span><!-- Has MathJax --> is the axial distance from the film plane to the dist and <span>$A$</span><!-- Has MathJax --> is the area of the disk. </p>
+</blockquote>
+<p><img src="http://morris821028.github.io/hw-rendering/homework2/submission/images/paperfigure6.jpg" alt="A Realistic Camera Model for Computer Graphics: Figure 6"></p>
+<p>因此需要額外乘上常數 <span>$A$</span><!-- Has MathJax -->，其中 <span>$A$</span><!-- Has MathJax --> 是最裡層的透鏡面積，因為我們是根據最裡層的透鏡面做均勻取樣，得到 <span>$A = \mathit{backLens.radius}^2 \pi$</span><!-- Has MathJax -->。</p>
+<h3 id="Sampling"><a href="#Sampling" class="headerlink" title="Sampling"></a>Sampling</h3><p>單位圓均勻取樣方法有以下兩種，而非均勻取樣的寫法可參照 Sample 3 (錯誤的做法參照) 出來的效果看出。</p>
+<h4 id="Sampling-1"><a href="#Sampling-1" class="headerlink" title="Sampling 1"></a>Sampling 1</h4><p>採用內建函數 <code>CencentricSampleDisk()</code>，採用 A Low Distortion Map Between Disk and Square 論文中提到的方案，將一個正方形壓縮到一個圓形中。參照作法如下圖所示  <img src="http://morris821028.github.io/hw-rendering/homework2/submission/images/pbrt_low_distortion.gif" alt=""></p>
+<p>其中給定 <span>$a, b$</span><!-- Has MathJax --> 均勻分布 <span>$[0, 1]$</span><!-- Has MathJax -->，則得到 <span>$r = a, \; \phi = \frac{\pi}{4} \frac{b}{a}$</span><!-- Has MathJax -->，最後計算得到座標 <span>$x = r \cos \phi, \; y = r \sin \phi$</span><!-- Has MathJax -->。</p>
+<h4 id="Sampling-2"><a href="#Sampling-2" class="headerlink" title="Sampling 2"></a>Sampling 2</h4><p>採用教科書上提供，其中給定 <span>$a, b$</span><!-- Has MathJax --> 均勻分布 <span>$[0, 1]$</span><!-- Has MathJax -->，令 <span>$r = \sqrt{a}, \; \phi = 2 \pi b$</span><!-- Has MathJax -->，最後計算得到座標 <span>$x = r \cos \phi, \; y = r \sin \phi$</span><!-- Has MathJax -->。</p>
+<h4 id="Sampling-3"><a href="#Sampling-3" class="headerlink" title="Sampling 3"></a>Sampling 3</h4><p>分布 <span>$[0, 1]$</span><!-- Has MathJax -->，令 <span>$r = a, \; \phi = 2 \pi b$</span><!-- Has MathJax -->，最後計算得到座標 <span>$x = r \cos \phi, \; y = r \sin \phi$</span><!-- Has MathJax -->。這種寫法在相同半徑下，角度均勻分布，不同半徑下的周長與 <span>$r$</span><!-- Has MathJax --> 成正比，導致不同半徑的取樣點不均勻，越靠近中心點取樣越密集，意即容易造成中心點看起來較亮。</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="http://blog.csdn.net/codeboycjy/article/details/6225886" target="_blank" rel="external">PBRT学习笔记：在单位圆内部均匀采样 -<br>codeboycjy的专栏</a></li>
+</ul>
+<h2>Final Images Rendered Compare 4 samples</h2>
+
+<p></p><h4>Gauss Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.dgauss_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.dgauss_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.dgauss_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+<p></p><h4>Fisheye Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.fisheye_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.fisheye_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.fisheye_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+<p></p><h4>Telephoto Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.telephoto_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.telephoto_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.telephoto_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+
+<p></p><h4>Wide-Angle Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.wide_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.wide_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.wide_4.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+<h2>Final Images Rendered Compare 512 samples</h2>
+
+<p></p><h4>Gauss Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/ref/dof-dragons.dgauss_512ref.jpg"><br>         <p><font><tt>Reference</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.dgauss_512.jpg"><br>        <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.dgauss_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.dgauss_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+<p></p><h4>Fisheye Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/ref/dof-dragons.fisheye_512ref.jpg"><br>      <p><font><tt>Reference</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.fisheye_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.fisheye_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.fisheye_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+<p></p><h4>Telephoto Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/ref/dof-dragons.telephoto_512ref.jpg"><br>      <p><font><tt>Reference</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.telephoto_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.telephoto_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.telephoto_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+
+
+<p></p><h4>Wide-Angle Lens</h4><p></p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/ref/dof-dragons.wide_512ref.jpg"><br>      <p><font><tt>Reference</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling1/dof-dragons.wide_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 1)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling2/dof-dragons.wide_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 2)</tt></font></p><p><br>    </p></td><br>    <td width="25%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework2/submission/images/expr/sampling3/dof-dragons.wide_512.jpg"><br>      <p><font><tt>My Implementation (Sampling 3)</tt></font></p><p><br>    </p></td><br>  </tr><br></table>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-rendering-height-field" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/rendering-height-field/" class="article-date">
+  <time datetime="2016-01-21T07:57:57.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/rendering-height-field/">pbrt-v2 加速結構 Height Field 改寫</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-height-field/" data-id="cipwal3m60081xoxcq2gjqmx7" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/rendering-height-field/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h3 id="前情提要-pbrt"><a href="#前情提要-pbrt" class="headerlink" title="前情提要 pbrt"></a>前情提要 pbrt</h3><p>一套數位影像生成軟體，盡可能以物理性質為基底打造的，目前已經到了 pbrt-v3。pbrt 主要的工作在於 modeling 後，可以在場景內放置以幾何描述的物體、光源、拍攝曝光 … 等設定，藉由模擬光線走訪得到呈現在螢幕上每一個 pixel 的顏色。</p>
+<h3 id="目標工作"><a href="#目標工作" class="headerlink" title="目標工作"></a>目標工作</h3><p>Height Field 是一個高度場，測資中以山脈構造為主，等間隔取樣每一平面上的每一點高度的場景，當間隔越小越接近真實場景。原生寫法是將點放置在三維空間，轉換成一堆三角網格，將其丟入 KD-tree 或者是 BVH 等加速結構，加快光線模擬找交點 (三維空間中，一射線和一多面體的交點) 的效能。而現在挑戰用 3D-DDA 的方式進行交點查找。</p>
+<p>實作採用 3D-DDA 算法降至 2D Grid 上進行交點測試。Uniform Grid 將會切割成 <span>$N \times M$</span><!-- Has MathJax --> 的格子，在 2D 平面上，先找到 ray 進入的格子點，接著使用增量算法找到下一個格子，算法只測試投影到 x-y 平面上時，在 ray 鄰近的格子點做交點測試，時間複雜度 <span>$O(\sqrt{N \times M})$</span><!-- Has MathJax -->，與預設的其他算法所需要的 traversal 複雜度差不多。</p>
+<p>原本預設的 Height Field 拆成好幾個 Triangle，做法類似 Triangle Mesh，接著將這幾個 Triangle 利用 BVH 或者是 KD-tree 的架構進行，原本的做法會考慮三個維度，使用投影的方式只考慮兩個維度下的情況，接著再針對有相交的格子測試，最後才進行 3D Triangle 是否與 ray 相交。</p>
+<p>實作 Height Field 時，考慮快取和再計算之間的好壞，則有兩種方法</p>
+<ol>
+<li>預先將預處理每個 3D Triangle 座標 (消耗空間)</li>
+<li>需要時，再創建 Triangle 出來測試 (消耗時間)</li>
+</ol>
+<p>由於要找 ray 碰度到 uniform grid 的第一個格子，需要預處理 Height Field Bound Box，計算 Bound Box 需要 <span>$O(N \times M)$</span><!-- Has MathJax -->，若不預處理會造成 3D-DDA 與暴力法 <span>$O(N \times M)$</span><!-- Has MathJax --> 無異。</p>
+<p>若對 Height Field 進行 2D-DDA 好處在於一定是數個三角形構成，因此不用等到 <code>ray.maxT</code> 小於下一格交點的 <code>NextCrossingT[stepAxis]</code> 才能結束，一與三角形有交點就可以離開，因為每一格之間都有獨立性。</p>
+<h4 id="實作與測試細節"><a href="#實作與測試細節" class="headerlink" title="實作與測試細節"></a>實作與測試細節</h4><h4 id="測試環境"><a href="#測試環境" class="headerlink" title="測試環境"></a>測試環境</h4><p>一開始為了熟悉 pbrt 架構環境只實作求出交點的函數，</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> Heightfield2::Intersect(<span class="keyword">const</span> Ray &amp;r, <span class="keyword">float</span> *tHit, <span class="keyword">float</span> *rayEpsilon,</span><br><span class="line">        DifferentialGeometry *dg) <span class="keyword">const</span> &#123;</span><br><span class="line">    <span class="comment">// 3D DDA</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而直接忽略單純詢問交點是否存在，這會導致畫面一片黑，因為每打到一個交點會嘗試從物體表面的交點連到點光源。若下述函數恆真，則不存在光源到交點的路徑，因此產出來的圖片是一片黑。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> Heightfield2::IntersectP(<span class="keyword">const</span> Ray &amp;r) <span class="keyword">const</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="紋理模糊"><a href="#紋理模糊" class="headerlink" title="紋理模糊"></a>紋理模糊</h4><p>找出紋理的兩個參數 <span>$(u, v)$</span><!-- Has MathJax --> 時，從 <code>trianglemesh.cpp</code> 複製過來的 <code>class Triangle</code> 其 <code>bool Triangle::Intersect()</code> 函數得到的 <span>$u, v$</span><!-- Has MathJax --> 都是相對於三角形的 <span>$0 \le u, v \le 1$</span><!-- Has MathJax --> (直接 rendering 會看起來很多小格子點)，因此得到相對的 <span>$u, v$</span><!-- Has MathJax --> 和交點 <span>$p_{hit}$</span><!-- Has MathJax --> (Object coordinate)，則把 <span>$p_{hit}$</span><!-- Has MathJax --> 再次投影到 x-y 平面上，由於 height field 在 x-y 平面上長寬都是 1，投影到平面後得到 <span>$p_{projection}$</span><!-- Has MathJax -->，對於整個 height field <span>$u = p_{projection}.x, \; v = p_{projection}.y$</span><!-- Has MathJax -->。</p>
+<blockquote>
+<p>若測試 texture.pbrt 時，發生過模糊情況，其主要原因在於過多次座標轉換，如 <code>Object -&gt; World -&gt; Object -&gt; World</code>，求出來的 <span>$u, v$</span><!-- Has MathJax --> 誤差就會放大。</p>
+</blockquote>
+<p>將 height field 存成好幾個 triangle 可以像 <code>class TriangleMesh</code> 利用 <code>index</code> 標籤來壓縮記憶體，但實作為方便仍然每一個三角形都有實體的 <code>Point</code>，儲存三角形每一個點座標採用 object coordinate，先把 <span>$ray$</span><!-- Has MathJax --> 從 <code>WorldToObject</code> 得到 <span>$ray&apos;$</span><!-- Has MathJax -->，得到的交點 <span>$p_{hit}$</span><!-- Has MathJax --> 再進行 <code>ObjectToWorld</code>，如此一來模糊情況就會消失。</p>
+<h4 id="Phong-圓滑化"><a href="#Phong-圓滑化" class="headerlink" title="Phong 圓滑化"></a>Phong 圓滑化</h4><p>Phong interpolation 方法在三角形上面操作時，需要得知三個頂點的法向量，給予 height field 的資訊，並不曉得每一個頂點的法向量為何。得到每一個頂點的法向量，採用預先處理所有頂點的法向量並儲存起來，因為不斷地正規化是很耗時間的 (<code>float sqrt(float x)</code> 儘管採用 fast inverse square root 算法，也要極力避免多餘的運算)。</p>
+<p>再計算頂點法向量時，根據影像處理中常用的一次差分 (differentiation) 遮罩</p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework1/submission/images/hftest_1.png" alt=""></p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework1/submission/images/hftest_2.png" alt=""></p>
+<h5 id="Case-1-邊緣"><a href="#Case-1-邊緣" class="headerlink" title="Case 1 邊緣"></a>Case 1 邊緣</h5><span>$$N_x = \begin{bmatrix}
+0 &amp; 0 &amp; 0 \\
+-1 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 0 \\
+\end{bmatrix}, \;
+N_y = \begin{bmatrix}
+0 &amp; 0 &amp; 0 \\
+0 &amp; 1 &amp; 0 \\
+0 &amp; -1 &amp; 0 \\
+\end{bmatrix}$$</span><!-- Has MathJax -->
+<h5 id="Case-2-非邊緣"><a href="#Case-2-非邊緣" class="headerlink" title="Case 2 非邊緣"></a>Case 2 非邊緣</h5><span>$$N_x = \begin{bmatrix}
+0 &amp; 0 &amp; 0 \\
+-1 &amp; 0 &amp; 1 \\
+0 &amp; 0 &amp; 0 \\
+\end{bmatrix}, \;
+N_y = \begin{bmatrix}
+0 &amp; 1 &amp; 0 \\
+0 &amp; 0 &amp; 0 \\
+0 &amp; -1 &amp; 0 \\
+\end{bmatrix}$$</span><!-- Has MathJax -->
+<p>上圖矩陣的中心座標為 <span>$(x, y)$</span><!-- Has MathJax -->，將相鄰座標的高度值 <span>$z$</span><!-- Has MathJax --> 相減得到兩個方向的向量 <span>$N_x, \; N_y$</span><!-- Has MathJax -->，外積得到座標 <span>$(x, y)$</span><!-- Has MathJax --> 的法向量 <span>$N_{x, y} = \mathrm{Cross}(N_x, N_y)$</span><!-- Has MathJax -->。</p>
+<p>從另一個角度來看，將 height field 三角化後，每一個頂點原則上有 6 個鄰居，可以對每一個鄰居進行差分，接著順時針或者逆時針將兩兩相臨的向量外積，得到 6 個法向量平均後得到 <span>$N_{x, y}$</span><!-- Has MathJax -->，這做法看起來比上述的差分來得穩定，但初始化消耗的時間會比較長，且撰寫的外積順序不對容易造成零向量的正規化錯誤。</p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong_interpolation_1.png" alt=""></p>
+<p><img src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong_interpolation_2.png" alt=""></p>
+<p></p><h3>Final Images Rendered with my implementation of heightfield.cpp</h3><p></p>
+<p></p><p>&nbsp;</p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/hftest_2.jpg" width="400" height="400"><br>      <p><font><tt>hftest.pbrt </tt> (without Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 0.125 seconds</font></li><br>        <li><font>My implementation: 0.130 seconds (104% original)</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/landsea-0_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-0.pbrt </tt> (without Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 0.815 seconds</font></li><br>        <li><font>My implementation: 1.050 seconds (128% original)</font></li><br>      </ul><br>    </p></td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/landsea-1_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-1.pbrt </tt> <tt> </tt> (without Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 0.850 seconds</font></li><br>        <li><font>My implementation: 1.020 seconds (120% original)</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/landsea-2_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-2.pbrt </tt> <tt> </tt> (without Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 0.780 seconds</font></li><br>        <li><font>My implementation: 0.870 seconds (115% original)</font></li><br>      </ul><br>    </p></td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/texture_2.jpg" width="400" height="400"><br>      <p><font><tt>texture.pbrt </tt> (without Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 0.450 seconds</font></li><br>        <li><font>My implementation: 0.520 seconds (120% original)</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><br>    </td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="100%" colspan="2"><br>     <img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/3ddda/landsea-big_2.jpg" width="600" height="600"><br>      <p><font><tt>landsea-big.pbrt </tt> (without Phong<br>            interpolation)</font></p><br>            <p><font>Timings:</font><br>      <ul><br>        <li><font>Original: 6.200 seconds</font></li><br>        <li><font>My implementation: 2.200 seconds (35% original)</font></li><br>      </ul><br>    </p></td><br>  </tr><br></table>
+
+<p></p><h3>Final Images Rendered with my implementation of heightfield.cpp</h3><p></p>
+<p></p><p>&nbsp;</p>
+<table border="0" width="100%" cellspacing="0" cellpadding="0"><br>  <tr><br>     <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/hftest_2.jpg" width="400" height="400"><br>      <p><font><tt>hftest.pbrt </tt> (with Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>My implementation: 0.135 seconds</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/landsea-0_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-0.pbrt </tt> (with Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>My implementation: 1.100 seconds</font></li><br>      </ul><br>    </p></td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/landsea-1_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-1.pbrt </tt> <tt> </tt> (with Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>My implementation: 1.050 seconds</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/landsea-2_2.jpg" width="400" height="400"><br>      <p><font><tt>landsea-2.pbrt </tt> <tt> </tt> (with Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>My implementation: 0.900 seconds</font></li><br>      </ul><br>    </p></td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="50%"><img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/texture_2.jpg" width="400" height="400"><br>      <p><font><tt>texture.pbrt </tt> (with Phong<br>      interpolation)</font><br>      </p><p><font>Timings:</font><br>      <ul><br>        <li><font>My implementation: 0.530 seconds</font></li><br>      </ul><br>    </p></td><br>    <td width="50%"><br>    </td><br>  </tr><br>  <tr><br>    <td width="50%"></td><br>    <td width="50%"></td><br>  </tr><br>  <tr><br>    <td width="100%" colspan="2"><br>     <img border="0" src="http://morris821028.github.io/hw-rendering/homework1/submission/images/phong/landsea-big_2.jpg" width="600" height="600"><br>    <p><font><tt>landsea-big.pbrt </tt> (with Phong interpolation)</font></p><br>          <p><font>Timings:</font><br>    <ul><br>      <li><font>My implementation: 2.300 seconds</font></li><br>    </ul><br>    </p></td><br>  </tr><br></table>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-realtime-system-add-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/realtime-system-add-scheduler/" class="article-date">
+  <time datetime="2016-01-21T07:27:07.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/3eq7W2z.jpg" rel="gallery_cipwal3lt007nxoxcce54tc6i">
+        <img src="http://i.imgur.com/3eq7W2z.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/realtime-system-add-scheduler/">即時系統 加入排程器</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/" data-id="cipwal3lt007nxoxcce54tc6i" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h2><p>修改 linux kernel，在 <code>kernel/sched.</code>} 相關 scheduler 部分增加 Weighted Round-Robin scheduler、Shortest Job First scheduler 以及 Rate-monotonic scheduler。最後藉由 Project 1 的練習撰寫測試程序驗證 scheduler 是否符合預期結果。</p>
+<h3 id="修改檔案列表"><a href="#修改檔案列表" class="headerlink" title="修改檔案列表"></a>修改檔案列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── README.md</span><br><span class="line">├── arch</span><br><span class="line">│   └── x86</span><br><span class="line">│       ├── include</span><br><span class="line">│       │   └── asm</span><br><span class="line">│       │       ├── unistd_32.h</span><br><span class="line">│       │       └── unistd_64.h</span><br><span class="line">│       └── kernel</span><br><span class="line">│           └── syscall_table_32.S</span><br><span class="line">├── include</span><br><span class="line">│   └── linux</span><br><span class="line">│       ├── sched.h</span><br><span class="line">│       └── syscalls.h</span><br><span class="line">└── kernel</span><br><span class="line">    ├── sched.c</span><br><span class="line">    ├── sched_fair.c</span><br><span class="line">    ├── sched_rt.c</span><br><span class="line">    └── sched_weighted_rr.c</span><br></pre></td></tr></table></figure>
+<p>特別注意到，若編譯環境為 <code>x86_64</code> 則需要額外修改 <code>arch/x86/include/asm/unistd_64.h</code> 複製 <code>arch/x86/include/asm/unistd_32.h</code> 增加的 syscall。 同理，增加自己定義的 syscall 時，需要修改 <code>arch/x86</code> 下的那三個檔案 (如果發現編譯 kernel 時，出現 <code>WARNING: syscall NOT IMPLEMENTION.</code> 大多數都是這個造成)。</p>
+<p>在 <code>include/linux/sched.h</code> 中，增加 task 的成員變數，提供接下來針對 task 操作需要的參數，特別的是在 <code>struct sched_rt_entity;</code> 中，相較於一般資料結構的寫法，linux 採用倒過來將節點訊息放在資料內部中，利用 <code>#define container_of(ptr, type, member)</code> 取得物件訊息，這種寫法方便解決 task 在數個 scheduler 中轉換。</p>
+<p>因為 syscall 的方式設定 task weighted，增加一個全區變數 <code>int weighted_rr_time_slice;</code>，每一次 syscall 去設定這一個全區變數值，然後 task 建立時，經過 <code>sched_fork</code>，直接利用被修改全區變數作為這一個 task 的 weight。若要特別針對 task 設定 weighted round-robin，在建立前都要呼叫 syscall 設定全區變數。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sched_rt_entity &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">struct</span> list_head weighted_rr_list_item;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">struct</span> task_struct &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> task_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr_prio</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> weighted_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: bonus RMS</span></span><br><span class="line">    <span class="keyword">int</span> period;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> weighted_rr_time_slice;</span><br></pre></td></tr></table></figure>
+<h3 id="Part-1-Weighted-Round-Robin-Scheduler"><a href="#Part-1-Weighted-Round-Robin-Scheduler" class="headerlink" title="Part 1. Weighted Round-Robin Scheduler"></a>Part 1. Weighted Round-Robin Scheduler</h3><ul>
+<li><p><code>enqueue_task_weighted_rr()</code><br>函數將會給予 task 和 rq，將 task 根據 rq 的資料結構重新將 task 放入。若按照 <code>list</code> 結構，直接模擬 queue 即可，由於 linux 提供 list 本身為雙向串列，直接加入尾端只需要 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --> 時間。並且運行 <code>rq-&gt;weighted_rr.nr_running++;</code> 增加 rq 中的計數，隨後用來在回報該 scheduler 中有沒有存在 task 需要運行，方便在 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --> 時間內完成，由於 Weighted round-robin 只需要確認 list 是否為空，那麼也可以利用 linux 提供的 <code>list_empty()</code> 確認。</p>
+</li>
+<li><p><code>dequeue_task_weighted_rr()</code><br>當 task 完成任務時，都要呼叫 <code>update_curr_weighted_rr</code> 進行統計運行多久，並且更新與 task 相關的排程權重。接著將 task 從 rq 串列中移除，並且更新 scheduler 的 task 計數 (<code>rq-&gt;weighted_rr.nr_running--;</code>)。時間複雜度 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --></p>
+</li>
+<li><p><code>requeue_task_weighted_rr()</code><br>將一個 task 出列，在 Weighted round-robin 只需要直接對將 <code>task.weighted_rr_list_item</code> 移到串列最尾端，由於採用雙向串列，直接跟 scheduler 取得 list head (linux list 的 head 是不存放任何資訊) 直接加入尾端即可。時間複雜度 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --></p>
+</li>
+<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
+</li>
+<li><p><code>pick_next_task_weighted_rr()</code><br>當最上層分配一段時間給 scheduler 運行，運行時會調用這個函數，並拿取要執行的 task，但並不用將其移除串列，並執行 <code>next-&gt;se.exec_start = rq-&gt;clock;</code> 紀錄 task 的開始運行時間，再呼叫 <code>void update_curr_weighted_rr(struct rq *)</code>。若不更新時間，則計算的相對運行時間會錯誤。</p>
+</li>
+<li><p><code>task_tick_weighted_rr()</code><br>當 scheduler 運行時，每隔一段固定的時間會呼叫此函數。若程序執行量超過 scheduler 的設定，則需要更新串列，特別注意到 <code>if (p-&gt;task_time_slice &amp;&amp; --p-&gt;task_time_slice)</code> 在原本預設是 <code>unsigned int</code> 型態，處理不當會造成 overflow，另一種情況會是一開始 quantum 設定為 0 所導致。<br>需根據不同的 task 要補充不同的量 <code>p-&gt;weighted_time_slice</code>，不只要讓這支程式重進進入串列，同時需要呼叫 <code>set_tsk_need_resched(p)</code> (參考 <code>kernel/sched_rt.c</code> 代碼)，藉以重新呼叫 <code>pick_next_task_weighted_rr(struct rq*)</code>，否則這支程序會運行到結束。</p>
+</li>
+</ul>
+<h3 id="Part-2-Shortest-Job-First-Scheduler"><a href="#Part-2-Shortest-Job-First-Scheduler" class="headerlink" title="Part 2. Shortest Job First Scheduler"></a>Part 2. Shortest Job First Scheduler</h3><ul>
+<li><p><code>enqueue_task_weighted_rr()</code><br>與 Weighted round-robin 類似，利用 list 做插入排序，可以在最慘 <span>$\mathcal{O}(n)$</span><!-- Has MathJax --> 時間內維護一個優先權由高至低的 list。需要 task 時，直接將串列的首元素移除。</p>
+</li>
+<li><p><code>dequeue_task_weighted_rr()</code><br>類同 Weighted round-robin。</p>
+</li>
+<li><p><code>requeue_task_weighted_rr()</code><br>在最短工作優先排程中，由於 task 優先權會變動，不方便確定執行過一陣子的 task 要移動到哪裡，最簡單的實作方式採用 <code>dequeue</code> 後再一次 <code>enqueue</code>。時間複雜度 <span>$\mathcal{O}(n)$</span><!-- Has MathJax --></p>
+</li>
+<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
+</li>
+<li><p><code>pick_next_task_weighted_rr()</code><br>類同 Weighted round-robin。 </p>
+</li>
+<li><p><code>task_tick_weighted_rr()</code><br>在最短工作優先排程中若按照 Weighted round-robin 的寫法且不補充 quantum，則會變成 non-preemptive SJF。相反地，若要實作 preemptive SJF，需要在 <code>check_preempt_curr_weighted_rr(struct rq*, struct task_struct*, int)</code> 檢查執行的程序是不是串列的首元素，意即是不是最高優先權，如果不是最高優先權，則呼叫 <code>resched_task()</code> 即可完成 (詳見 Bonus RMS 的寫法)。</p>
+</li>
+</ul>
+<h3 id="Bonus-RMS"><a href="#Bonus-RMS" class="headerlink" title="Bonus RMS"></a>Bonus RMS</h3><p>額外增加 syscall，修改三個檔案 <code>unistd_32.h</code>, <code>unistd_64.h</code>, <code>syscall_table_32.S</code>。增加 Rate-monotonic scheduler 的額外週期 (period) 和 syscall 函數主題，修改兩個檔案 <code>sched.h</code>, <code>sched.c</code>。</p>
+<h4 id="程式碼細節-sched-weighted-rr-c"><a href="#程式碼細節-sched-weighted-rr-c" class="headerlink" title="程式碼細節 sched_weighted_rr.c"></a>程式碼細節 <code>sched_weighted_rr.c</code></h4><ul>
+<li><code>enqueue_task_weighted_rr</code><br>使用與最短工作優先排程相同寫法，但利用週期 (period) 進行由優先權高到低排序。</li>
+<li><code>check_preempt_curr_weighted_rr</code><br>週期程式可能會搶之前正在運行程式，若發現運行程式的優先權低於要進入排程器的程式優先權，呼叫 <code>resched_task()</code> 重新排程。</li>
+<li>其餘類同 SJF。</li>
+</ul>
+<h4 id="測試程序-test-rms-c"><a href="#測試程序-test-rms-c" class="headerlink" title="測試程序 test_rms.c"></a>測試程序 <code>test_rms.c</code></h4><p>參考 Project 1 的寫法，linux 針對每一個 thread 有各自計時的計時器，當 thread 被 context-switch 時，計時器也會隨之停止。</p>
+<p>利用 main thread 產生週期性程式，<code>pthread_create</code> 並不會馬上將 thread 立即執行，迫使 main thread 的方式使用 <code>sleep(1)</code>，以秒為單位產生週期性程式。由於要考慮週期程式的執行時間，又能在輸出緩衝區觀察順序關係，利用 thread 的計時器，盡可能接近 1ms 才進行一次印出，但這也會造成幾毫秒的誤差，對於一支程序一秒大約印出 1000 個字元，測試程式中，將連續相同字元計數，若相同字元取用四捨五入到秒才進行印出，計時誤差部分就不予輸出。</p>
+<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/morris821028/hw-realtime-system" target="_blank" rel="external">https://github.com/morris821028/hw-realtime-system</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-realtime-system-qemu" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/01/21/realtime-system-qemu/" class="article-date">
+  <time datetime="2016-01-21T07:13:45.000Z" itemprop="datePublished">2016-01-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cipwal3lx007pxoxcxn89om4s">
+        <img src="http://i.imgur.com/2sHgITS.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/01/21/realtime-system-qemu/">初體驗 qemu</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cipwal3lx007pxoxcxn89om4s" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/01/21/realtime-system-qemu/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <p>若不想在 Windows 上灌 Virtual Box 進行 kernel 修改，那麼在 Linux 上面灌 qemu，在上面測試，假設只要測試 kernel 那麼 qemu 在第一次編譯以及在部分檔案重新編譯都只需要兩三分鐘。若 Windows 上用 Virtual Box 灌 Linux，又在 Linux 上面灌 qemu，容易遭遇到記憶體不夠的窘境。</p>
+<h3 id="Ubuntu-Environment"><a href="#Ubuntu-Environment" class="headerlink" title="Ubuntu Environment"></a>Ubuntu Environment</h3><p>Ubuntu 環境需要安裝下列插件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install qemu-system</span><br><span class="line">$ sudo apt-get install libncurses5-dev</span><br></pre></td></tr></table></figure>
+<h3 id="Buildroot"><a href="#Buildroot" class="headerlink" title="Buildroot"></a>Buildroot</h3><p>用 busybox 建造一直失敗，轉向學長推薦的 buildroot，用別人打包好的環境替 qemu 建造 file system。</p>
+<p><a href="https://buildroot.uclibc.org/download.html" target="_blank" rel="external">site</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://buildroot.uclibc.org/downloads/buildroot-2015.11.1.tar.bz2</span><br><span class="line">$ bzip2 -d FileName.bz2</span><br><span class="line">$ tar xvf FileName.tar</span><br></pre></td></tr></table></figure>
+<h4 id="Compile-Config"><a href="#Compile-Config" class="headerlink" title="Compile Config"></a>Compile Config</h4><p>Buildroot 提供很多參數給予選擇</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
+<p>這次作業設定，由於需要改寫 kernel 版本為 2.6.32.* 左右，因此相關的 gcc 編譯器等設定如下。同時，根據機器架構設定，助教預設在 visual box 上面，通常為 i386，而我們用實驗室 server，編 x86 64。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Target options  ---&gt;</span><br><span class="line">    Target Architecture (x86_64)  ---&gt;</span><br><span class="line">        x86_64</span><br><span class="line"></span><br><span class="line">Toolchain  ---&gt;</span><br><span class="line">    C library (glibc)  ---&gt;</span><br><span class="line">        glibc</span><br><span class="line">    Kernel Headers (Manually specified Linux version)  ---&gt;</span><br><span class="line">        custom 2.6.x</span><br><span class="line">        2.6.32.6</span><br><span class="line"></span><br><span class="line">System configuration  ---&gt;</span><br><span class="line">    [*] Enable root login with password</span><br><span class="line">    [*] remount root filesystem read-write during boot </span><br><span class="line"></span><br><span class="line">Filesystem images  ---&gt; </span><br><span class="line">    [*] ext2/3/4 root filesystem</span><br><span class="line">    [*] tar the root filesystem</span><br></pre></td></tr></table></figure>
+<h4 id="Compile"><a href="#Compile" class="headerlink" title="Compile"></a>Compile</h4><p><code>make -j8</code> 用 8 個執行緒編譯，如果機器有很多個 core，那麼可以用 <code>make -j20</code> 在非常短的時間內完成。</p>
+<p>接著在 <code>buildroot</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make -j8</span><br><span class="line">$ cp output/image/rootfs.ext* WORKSPACE_PATH</span><br></pre></td></tr></table></figure>
+<h3 id="Linux-kernel-config"><a href="#Linux-kernel-config" class="headerlink" title="Linux kernel config"></a>Linux kernel config</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make defconfig</span><br><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[_] Enable loadable module support</span><br><span class="line"></span><br><span class="line">File systems  ---&gt; </span><br><span class="line">    [*] Second extended fs support</span><br><span class="line">        [*] ext2</span><br><span class="line"></span><br><span class="line">Device Drivers  ---&gt;</span><br><span class="line">    Generic Driver Options  ---&gt; </span><br><span class="line">        [*] Create a kernel maintained /dev tmpfs (EXPERIMENTAL) </span><br><span class="line">        [*] Automount devtmpfs at /dev</span><br></pre></td></tr></table></figure>
+<p>create <code>arch/x86/boot/bzImage</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make -j20</span><br></pre></td></tr></table></figure>
+<h3 id="Test-Flow"><a href="#Test-Flow" class="headerlink" title="Test Flow"></a>Test Flow</h3><h4 id="move-test-execute-file"><a href="#move-test-execute-file" class="headerlink" title="move test execute file"></a>move test execute file</h4><p><code>mnt.sh</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mount rootfs.ext2 mnt</span><br><span class="line">sudo cp test_weighted_rr/test_weighted_rr mnt/root/</span><br><span class="line">sudo umount mnt</span><br></pre></td></tr></table></figure>
+<p><code>run.sh</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -M pc -kernel arch/x86/boot/bzImage -hda rootfs-dirty.ext4 -netdev user,id=network0 -device e1000,netdev=network0 -nographic -append &quot;root=/dev/sda console=ttyS0&quot;</span><br></pre></td></tr></table></figure></p>
+<h3 id="How-to-enlarge-the-rootfs-ext4"><a href="#How-to-enlarge-the-rootfs-ext4" class="headerlink" title="How to enlarge the rootfs.ext4"></a>How to enlarge the rootfs.ext4</h3><p><a href="http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image" target="_blank" rel="external">http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ dd if=/dev/zero of=foo.img count=0 bs=1M seek=2000   # assuming target size is 2000M</span><br><span class="line"># e2fsck -f foo.img</span><br><span class="line"># resize2fs foo.img</span><br></pre></td></tr></table></figure>
+<h3 id="Screen-Workspace"><a href="#Screen-Workspace" class="headerlink" title="Screen Workspace"></a>Screen Workspace</h3><p><a href="http://ssorc.tw/19" target="_blank" rel="external">commond tutorial</a></p>
+<p>執行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ screen</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>ctrl+a c</code><br>開啟新的視窗，並同時切換到這個新的視窗</li>
+<li><code>ctrl+a tab</code><br>切換視窗</li>
+<li><code>ctrl+a |</code><br>切割垂直視窗，並產生新的視窗。</li>
+<li><code>ctrl+a k</code><br>關閉此視窗</li>
+</ul>
+<p>之所以用 Screen 指令，主要是因為遠端到工作站上操作 qemu，若程序掛掉，很容易遭遇到要重新連線的麻煩事。</p>
+<h3 id="Speical-Thanks"><a href="#Speical-Thanks" class="headerlink" title="Speical Thanks"></a>Speical Thanks</h3><ul>
+<li>蕭光宏 蕭大帥</li>
+<li>Lab 332 Parallel &amp; Distributed Laboratory</li>
+</ul>
+<h3 id="Virtual-Box"><a href="#Virtual-Box" class="headerlink" title="Virtual Box"></a>Virtual Box</h3><h4 id="第一次運行"><a href="#第一次運行" class="headerlink" title="第一次運行"></a>第一次運行</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src</span><br><span class="line">$ sudo wget http://newslab.csie.ntu.edu.tw/course/rts2015/projects/linux-2.6.32.60.tar.gz</span><br><span class="line">$ sudo tar -zxvf linux-2.6.32.60.tar.gz</span><br><span class="line">$ cd linux-2.6.32.60</span><br><span class="line">$ sudo make mrproper</span><br><span class="line">$ sudo make menuconfig</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/arch/x86/include/asm/unistd_64.h arch/x86/include/asm/</span><br><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/kernel/sched_weighted_rr.c kernel/</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vim /etc/default/grub</span><br><span class="line">#Add &quot;#&quot; to comment the following 2 lines</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT=10</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT_QUIET=true</span><br><span class="line">$ sudoupdate-grub2</span><br><span class="line">$ sudoshutdown -r now</span><br></pre></td></tr></table></figure>
+<h4 id="Test-flow"><a href="#Test-flow" class="headerlink" title="Test flow"></a>Test flow</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src/linux-2.6.32.60</span><br><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
+<h4 id="Debug-by-printk"><a href="#Debug-by-printk" class="headerlink" title="Debug by printk"></a>Debug by <code>printk</code></h4><p>在另一個 terminal 開啟以下代碼，並且等待執行測試 scheduler 得執行檔在 kernel 運行時所打印出的 <code>printk</code> 訊息。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo more /proc/kmsg</span><br></pre></td></tr></table></figure>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-realtime-system-using-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/01/21/realtime-system-using-scheduler/" class="article-date">
@@ -105,7 +684,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cipw7179e007itixc5bmv0zhz">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cipwal3m0007txoxc8p205xa3">
         <img src="http://i.imgur.com/2L6Zmwa.jpg" itemprop="image">
       </a>
     
@@ -124,7 +703,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cipw7179e007itixc5bmv0zhz" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cipwal3m0007txoxc8p205xa3" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -210,7 +789,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cipw717aa008ttixcsmx73zv5" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cipwal3na0092xoxcdcbk9928" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/23/security-notes7/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -289,7 +868,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cipw717a6008mtixc5koqzhs4" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/19/security-notes6/" data-id="cipwal3n3008vxoxchmr7tm1m" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/19/security-notes6/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -470,7 +1049,7 @@ A     B     C
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cipw71741001ktixc8tfn9t6l">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/6c9iCJd.png" rel="gallery_cipwal3fa001mxoxcgscnktym">
         <img src="http://i.imgur.com/6c9iCJd.png" itemprop="image">
       </a>
     
@@ -489,7 +1068,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cipw71741001ktixc8tfn9t6l" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/16/cognitive-style-note4/" data-id="cipwal3fa001mxoxcgscnktym" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/16/cognitive-style-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -616,7 +1195,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cipw717tr00uatixcfujhf7nh" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/13/vr-note4/" data-id="cipwal45v00ujxoxc1021poye" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/13/vr-note4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -700,7 +1279,7 @@ A     B     C
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cipw717a2008htixc7mc8mziv" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2015/06/12/security-notes5/" data-id="cipwal3n7008zxoxckqowwcy9" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2015/06/12/security-notes5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -776,770 +1355,6 @@ A     B     C
 
 
   
-    <article id="post-vr-note3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/06/vr-note3/" class="article-date">
-  <time datetime="2015-06-06T00:53:53.000Z" itemprop="datePublished">2015-06-06</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/06/vr-note3/">虛擬實境 考古筆記</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/06/vr-note3/" data-id="cipw717tk00u2tixc8oskpztb" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/06/06/vr-note3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>虛擬實境這一門課可以讓你體驗有如在上另一門課的虛擬實境，前半段講生物結構，來了解軟硬體需要那些特性、效能，後半段在講視覺建模算法，牽涉到計算幾何、線性代數 … 等課程。</p>
-<p>在幾何課程中介紹的 Delaunay triangulation 對於建模算法是相當重要，接著在多重解析度部分牽涉到傳輸跟處理速度，在資料結構的儲存上很有趣。為了加速運算效能、漸進式需求，各種轉換壓縮都會跑出來。</p>
-<h2 id="複習"><a href="#複習" class="headerlink" title="複習"></a>複習</h2><ol>
-<li><p>(15%)[Definition]<br>詳細說明一個虛擬實境 (virtual reality) 系統需要具備那些特性，並說明一個虛擬實境系統要用到哪些軟體技術。</p>
-<p> 提供人們能感知的動態環境，視覺、嗅覺、觸覺，並且能與環境互動中得到反饋，得到逼真感覺。需要以下幾個軟體</p>
-<ol>
-<li>影像處理與繪製</li>
-<li>物理引擎</li>
-<li>擷取資料的整合</li>
-</ol>
-</li>
-<li><p>(15%)[Human perception]<br>說明人類 1. 單眼立體視覺的原理，2. 雙眼立體視覺的原理；並3. 比較其優缺點。</p>
-<ol>
-<li>單眼立體視覺靠單一眼球調整焦距，將數張影像交給大腦來整合，這必須藉由對物體認知來補足。</li>
-<li>雙眼立體視覺的原理主要靠左右兩個眼球不同的相位差，來計算立體影像的距離差距。</li>
-<li>視野範圍以及反應時間，單眼必須藉由調整焦距來補足，雙眼可以同時獲取不同相位差的影像。</li>
-</ol>
-</li>
-<li><p>(15%)[Hardware]<br>說明感應手套 (sensing glove) 與力回饋手套 (force-feedback glove) 的原理，並比較他們在應用上的差別(可舉例說明)。</p>
-<p> 感應手套是由操作者的反應傳輸給感測器，藉由手套上感應器之間的變化數據得到操作者給予的狀態。力回饋手套則是將物理特性反饋給使用者，藉由手套上的機械，施予使用者力反饋。</p>
-<p> 感應手套為使用者操作，力反饋手套則相反由環境操作。</p>
-</li>
-<li><p>(15%)[Modeling]<br> 說明五種 3D 模型的表面表示式 (surface representation)，並比較這些表示式的優缺點。</p>
-<p> 目前共計主要分成五種表示法：</p>
-<ul>
-<li><p>regular square grid meshes (RSG)</p>
-</li>
-<li><p>triangulated regular meshes (TRM)</p>
-</li>
-<li><p>triangulated irregular networks (TINs)</p>
-</li>
-<li><p>polygon meshes</p>
-</li>
-<li><p>parametric patches</p>
-<p>RSG 建造簡單，但會有四點不共平面，影響到貼圖繪製上的問題。TRM 解決四點不共平面問題，但與 RSG 問題無法凸顯邊緣。TINs 解決無法凸顯邊緣問題，但需要經過最佳化算法來得到不規則三角網格，儲存方式必須記錄所有的點座標，由於要經過最佳化算法，處理速度會慢上很多。動態更動座標的效果較差。polygon meshes 建造相對困難，多邊形的最小單位是三角形，頂點儲存量比 TINs 少很多，parametric patches 藉由取樣點套入參數，讓表面接近平滑，針對部分訊息的改造，平滑效果造成的反饋比較逼真。</p>
-</li>
-</ul>
-</li>
-<li><p>(15%)[Multiresolution modeling]<br>說明並比較以小波轉換為基礎的多重解析度模塑 (wavelet-based multiresolution modeling) 技術與 Lindstrom 等人的對稱三角網格 (symmetric triangulated networks) 多重解析度模塑技術的原理及優缺點。</p>
-<ul>
-<li>wavelet-based multiresolution modeling<br>解析度資料量與面積成正比，考慮到與觀察者之間的距離，用另外三張影響轉換到更高解析度，每一次解析度增加兩倍。</li>
-<li><p>symmetric triangulated networks<br>考慮到地形高地、平坦性對於觀察者的影響，投影到使用者的平面，判斷是否差異過大需要提供更高解析，解析度資料量所需節點數成正比</p>
-<p>相較之下，小波轉換給予的傳輸資料反應會比較慢，同時也會在使用者感受不到差異的地方提供更高解析度，很容易浪費資源，對稱三角網格在資料鏈結會複雜許多，沒有小波轉換的儲存架構來得容易理解，但對稱三角網格反應速度快，支持快速的解析度變換。</p>
-</li>
-</ul>
-</li>
-<li><p>(15%)[Multiresolution modeling]<br> 說明漸進網格 (progressive mesh) 多重解析度模塑與二次誤差 (quadric-error-metric) 多重解析度模塑的相同與差異處，並比較兩者的優缺點。  </p>
-<p> 漸進網格藉由拔點、縮邊，提供不同解析度，依序拔點，考慮四個因素來決策拔點順序，這四個因素分別為影響到其他點之間的距離、縮邊的長度總和、頂點材質的差異、對邊界影響程度。  </p>
-<p> 考慮的是從精細模型轉換到粗糙模型的差異變化，挑選變成粗糙的影響最小的先拔除，這樣的計算量會比較大，拔除一點後，鄰近的點的誤差值計算也要跟著重新計算。  </p>
-<p> 二次誤差類似漸進網格的方式進行拔點縮點，但縮邊完的的結果不會只有三種可能，縮到兩端點的其中一個、或者是中點，提供一個數學計算來找到縮到哪一個地方更好。  </p>
-<p> 二次誤差考慮的是從端點誤差值得相加，並且產生一個新的頂點，有點霍夫曼編碼的意味在。計算從粗糙模型上的點到精細模型平面的距離平方，與之前的模型 (Progressive mesh - Hoppe) 恰恰相反，並不是考慮精細模型上的點到粗糙模型平面的距離平方。因此對於 QEM 的誤差可以累加。問題是粗糙模型上的頂點是無法得知，屬於未知數，用內插法。QEM 誤差精確度只是約略，速度快但品質沒有 Progressive mesh 來得好。</p>
-</li>
-</ol>
-<ol>
-<li><p>(15%)[Multiresolution modeling]<br> 說明 (a) 動態載入 (dynamic loading) 的意義。(b) 動態載入與多重解析度模塑技術整合會產生什麼問題。(c)解決上述問題的三種方法。</p>
-<p> 動態載入為在記憶體不足時，將部分資料存放在磁碟中，當程式運行到需要那些資料進行運算時再從磁碟中讀取，這樣的過程稱為動態載入。</p>
-<p> 動態載入對於多重解析度塑模來說，主要是記憶體問題以及所需要的解析度跟數據大小關係，解析度度越高，所需要的資料量越多。但是畫面呈現的解析度不一下，要怎麼進行資料讀取，動態載入的數據結構定義則需要特別設計，例如是要 response time 最小、計算複雜度最低，讀取數量最小 … 等。</p>
-<p> 假設需要不同解析度可以靠 Discrete layered multiresolution models，每一種解析度彼此獨立儲存，這樣的方法可以提供基礎的不同解析度，但讀取時間相對長，儲存在磁碟的空間需求大，效果呈現是最快的，但是離散結果會有不連續的解析度變化。</p>
-<p> 為了解決解析度連續變化問題，可以使用 progressive mesh 來達到，提供以點、線與解析度呈現線性變化。</p>
-<p> 若需要不同解析度，可以利用 hierarchical models 來完成畫面中每一處的解析度不同，這是一種資料結構，當需要更高解析度時，則走訪更深的樹節點來印出所需要的畫面。</p>
-<p> 評價效果好壞利用 Delaunay triangulation 計算平滑程度。</p>
-</li>
-<li><p>(15%)[Rendering]<br> 說明shading的意義，敘述 Gouraud shading 與 Phong shading 的作法，最後比較他們的優缺點。</p>
-</li>
-</ol>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cognitive-style-note3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/02/cognitive-style-note3/" class="article-date">
-  <time datetime="2015-06-01T23:55:31.000Z" itemprop="datePublished">2015-06-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/02/cognitive-style-note3/">遊戲介面設計及效果 Game UI &amp; Effect</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/02/cognitive-style-note3/" data-id="cipw7173y001ftixcmyvrgg10" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/06/02/cognitive-style-note3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>上次沒有好好地將遊戲內容進行擷取說明，單純對介面設計原則做說明，介面設計會根據裝置操作有所不同吧，那遊戲介面是否又能如此？</p>
-<p>要把法則呈現在遊戲中又是另一回事，畢竟遊戲跟網頁又有點差別，當然也有人認為認知風格跟遊戲性不相干，倒不如說會跟遊戲內容有關，遊戲內容決定介面設計方向，若要根據認知風格設計，想必會是一道難題。</p>
-<p>遊戲內容的多寡將決定運行的流程、架構，遊戲介面越簡潔越好，最後的演化就是什麼 <strong> 都沒有最好 </strong>，除非有人喜歡儀表板，那就另當別論。隨著遊戲必要才出現的介面，會導致程式撰寫相當麻煩，要用排除法來防止奇葩的流程走向。</p>
-<p>不僅介面擺設需要考量，還要有觸發時間、方法，以及浮現效果，這些會影響到使用者是否知道可以使用，大部分的介面以文字為主，那串接效果影響不大。為了提升使用者體驗，最好是使用圖示為主，但這會造成跟背景融合的一體感，可能會造成無法被使用者察覺可觸發，必須在圖示效果加點功夫。</p>
-<p>就像虛擬實境課程內容所提及的漸進式效果會比較好，對於使用者有如虛擬實境，也就是說介面出現的時間跟方法不能太過迅速。關於上虛擬實境課程的那些小事，有如在上影像處理課程的虛擬實境呢。</p>
-<blockquote>
-<p>以上內容，僅本人觀察。</p>
-</blockquote>
-<h2 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h2><p>如果圖片看不到，請至 Github 中的 doc 目錄下查閱本篇附圖。</p>
-<script type="text/javascript" src="http://morris821028.github.io/hexo-tag-oj/jquery.githubRepoWidget.js"></script><div class="github-widget" data-repo="morris821028/hw-GameMaker"></div>
-<p>遊戲執行檔和開源代碼都在其中，當然還有遊戲的編輯器。更多的遊戲截圖在裡頭，只支持 windows 平台。</p>
-<h2 id="Animate"><a href="#Animate" class="headerlink" title="Animate"></a>Animate</h2><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Menu Enter/Select</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/menu.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Button Enter</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/button.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Popup Menu</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/popup.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Menu Focus</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/focus.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Lighting</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/lighting.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Fog</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/fog.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Use Props</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/props.gif" alt="Menu"></td>
-</tr>
-<tr>
-<td>Caption</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/animate/caption.gif" alt="Menu"></td>
-</tr>
-</tbody>
-</table>
-<h2 id="Screenshot"><a href="#Screenshot" class="headerlink" title="Screenshot"></a>Screenshot</h2><h3 id="Menu-Design"><a href="#Menu-Design" class="headerlink" title="Menu Design"></a>Menu Design</h3><p>選單使用方向鍵和滑鼠點擊操控，同時提供大綱說明。</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>How to Play</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot102.png" alt="Menu1"></td>
-</tr>
-<tr>
-<td>Story</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot103.png" alt="Menu2"></td>
-</tr>
-<tr>
-<td>Test Room</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot104.png" alt="Menu3"></td>
-</tr>
-<tr>
-<td>Achievement</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot105.png" alt="Menu4"></td>
-</tr>
-<tr>
-<td>Options</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot106.png" alt="Menu4"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Tutorial-Design"><a href="#Tutorial-Design" class="headerlink" title="Tutorial Design"></a>Tutorial Design</h3><p>使用教學關卡，步入遊戲元素與操作。</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Tutorial</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot101.png" alt="Tutorial"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Game-UI-Design"><a href="#Game-UI-Design" class="headerlink" title="Game UI Design"></a>Game UI Design</h3><p>遊戲介面細節設計</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Tip</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot107.png" alt="Tip"></td>
-</tr>
-<tr>
-<td>Control Information</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot108.png" alt="Information"></td>
-</tr>
-<tr>
-<td>Exit Warning</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot109.png" alt="Information"></td>
-</tr>
-<tr>
-<td>Props View 1 (Scroll up)</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot110.png" alt="Letter"></td>
-</tr>
-<tr>
-<td>Props View 2 (Scroll down)</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot111.png" alt="Letter"></td>
-</tr>
-<tr>
-<td>Level Complete</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot114.png" alt="Clear"></td>
-</tr>
-<tr>
-<td>Level Fail</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot115.png" alt="Fail"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Game-Element"><a href="#Game-Element" class="headerlink" title="Game Element"></a>Game Element</h3><p>遊戲元素效果</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Hide</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot112.png" alt="Hide"></td>
-</tr>
-<tr>
-<td>Use</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot119.png" alt="Use"></td>
-</tr>
-<tr>
-<td>Test Room</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot113.png" alt="Test"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Option-Design"><a href="#Option-Design" class="headerlink" title="Option Design"></a>Option Design</h3><p>遊戲配置設計</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Sound</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot116.png" alt="Sound"></td>
-</tr>
-<tr>
-<td>Difficult</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot117.png" alt="Difficult"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Story-Design"><a href="#Story-Design" class="headerlink" title="Story Design"></a>Story Design</h3><p>過場 (eyecatch) 劇情的介面設計</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Story</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot118.png" alt="Story"></td>
-</tr>
-<tr>
-<td>Story branch 1</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot120.png" alt="Story"></td>
-</tr>
-<tr>
-<td>Story branch 2</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot124.png" alt="Story branch"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Other-Mode"><a href="#Other-Mode" class="headerlink" title="Other Mode"></a>Other Mode</h3><p>遊戲模式設計</p>
-<table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Time Mode 1 (Time Count)</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot121.png" alt="Time"></td>
-</tr>
-<tr>
-<td>Time Mode 2 (Time Up)</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot122.png" alt="Time"></td>
-</tr>
-<tr>
-<td>Time Mode 3 (Time Over)</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/screenshot123.png" alt="Time"></td>
-</tr>
-</tbody>
-</table>
-<h2 id="Feature"><a href="#Feature" class="headerlink" title="Feature"></a>Feature</h2><p>考量的設計並沒全部去實作，提供設計參考。</p>
-<h3 id="Menu-Layout"><a href="#Menu-Layout" class="headerlink" title="Menu Layout"></a>Menu Layout</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Old 1</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page1.jpg" alt="Old 1"></td>
-</tr>
-<tr>
-<td>Old 2</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page7.jpg" alt="Old 2"></td>
-</tr>
-<tr>
-<td>X-Box</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page2.jpg" alt="X-Box"></td>
-</tr>
-<tr>
-<td>Andriod</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page3.jpg" alt="Android"></td>
-</tr>
-<tr>
-<td>Hexagon</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page4.jpg" alt="Hexagon"></td>
-</tr>
-<tr>
-<td>Overview 1</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page5.jpg" alt="Overview 1"></td>
-</tr>
-<tr>
-<td>Overview 2</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page6.jpg" alt="Overview 2"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Game-Layout"><a href="#Game-Layout" class="headerlink" title="Game Layout"></a>Game Layout</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Origin</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page8.jpg" alt="Origin"></td>
-</tr>
-<tr>
-<td>Clear</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page9.jpg" alt="Clear"></td>
-</tr>
-<tr>
-<td>Icon With props 1</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page10.jpg" alt="Icon"></td>
-</tr>
-<tr>
-<td>Icon With props 2</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page11.jpg" alt="Icon"></td>
-</tr>
-<tr>
-<td>Exit Menu</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page13.jpg" alt="Exit Menu"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Option-Setting"><a href="#Option-Setting" class="headerlink" title="Option Setting"></a>Option Setting</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Keyboard 1</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page14.jpg" alt="Keyboard 1"></td>
-</tr>
-<tr>
-<td>Keyboard 2</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page15.jpg" alt="Keyboard 2"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Over-Layout"><a href="#Over-Layout" class="headerlink" title="Over Layout"></a>Over Layout</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Popup</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page16.jpg" alt="popup"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Game-Flow"><a href="#Game-Flow" class="headerlink" title="Game Flow"></a>Game Flow</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>With Over</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page17.jpg" alt="over"></td>
-</tr>
-<tr>
-<td>With Eyecatch</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page18.jpg" alt="eyecatch"></td>
-</tr>
-</tbody>
-</table>
-<h3 id="Game-Caption"><a href="#Game-Caption" class="headerlink" title="Game Caption"></a>Game Caption</h3><table>
-<thead>
-<tr>
-<th>Info</th>
-<th>Demo</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Balloon</td>
-<td><img src="https://raw.githubusercontent.com/morris821028/hw-GameMaker/master/doc/image/feature/file-page19.jpg" alt="balloon"></td>
-</tr>
-</tbody>
-</table>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-security-notes4" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/29/security-notes4/" class="article-date">
-  <time datetime="2015-05-28T22:51:10.000Z" itemprop="datePublished">2015-05-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/29/security-notes4/">資訊安全 小考 2 筆記</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/29/security-notes4/" data-id="cipw717a1008etixcpdn7n1kv" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/29/security-notes4/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>筆記錯誤多多，請以僅供參考的角度去質疑</p>
-</blockquote>
-<h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><ol>
-<li><p>Below is a key distribution protocol.<br>(a) Please describe the details of “replay attack” when <span>$N_1$</span><!-- Has MathJax --> is removed from the protocol.<br>(b) Please modify the protocol to enable party A to confirm that party B already received <span>$K_s$</span><!-- Has MathJax -->? </p>
-</li>
-<li><p>Please explain link encryption and end-to-end encryption.</p>
-</li>
-<li><p>(a) Please describe details of the Fermat’s theorem (or called Fermat’s little theorem).<br>(b) How to compute the multiplicative inverse of an integer <span>$a$</span><!-- Has MathJax --> modulo <span>$p$</span><!-- Has MathJax --> based on the Fermat’s theorem?<br>(c) What is the requirement for <span>$a^{-1}$</span><!-- Has MathJax --> to exist?</p>
-</li>
-<li><p>(a) Please describe details of the Euler’s theorem.<br>(b) Based on this theorem, please describe the <strong> basic idea </strong> of the RSA encryption and decryption process.</p>
-</li>
-<li><p>The Miller-Rabin algorithm is used to test whether an odd integer n is a<br>prime. Please complete the following missing steps of teh algorithm.   (15%)<br>(1) Find integers <span>$k, q$</span><!-- Has MathJax --> (<span>$k$</span><!-- Has MathJax --> &gt; 0, <span>$q$</span><!-- Has MathJax --> odd), so that <span>$(n - 1)$</span><!-- Has MathJax --> = <code>__________</code><br>(2) Select a random integer <span>$a$</span><!-- Has MathJax -->, <span>$1 &lt; a &lt; n - 1$</span><!-- Has MathJax --><br>(3) if (<code>_______</code>) then return (“maybe prime”)<br>(4) for <span>$j = 0$</span><!-- Has MathJax --> to <span>$k - 1$</span><!-- Has MathJax --> do<br>(5)     if (<code>_________</code>) then return (“maybe prime”)<br>(6) return (“composite”)</p>
-</li>
-<li><p>Please describe details of the Chinese remainder theorem for the case of <span>$n = p \times q$</span><!-- Has MathJax --> where both <span>$p$</span><!-- Has MathJax --> and <span>$q$</span><!-- Has MathJax --> are primes. (Your anseer should include how to transform an ordinary domain integer <span>$A$</span><!-- Has MathJax --> to the CRT domain, and the CRT formula used to inverse-transform the CRT domain representation back to the ordinary domain integer).</p>
-</li>
-</ol>
-<h2 id="Notes"><a href="#Notes" class="headerlink" title="Notes"></a>Notes</h2><h3 id="Part-1"><a href="#Part-1" class="headerlink" title="Part 1"></a>Part 1</h3><p>基礎步驟如下</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(1) A -&gt; KDC : IDA || IDB || N1</span><br><span class="line">(2) KDC -&gt; A : E(Ka, [Ks || IDA || IDB || N1]) || E(Kb, [Ks || IDA])</span><br><span class="line">(3) A -&gt; B   : E(Kb, [Ks || IDA])</span><br><span class="line">(4) B -&gt; A   : E(Ks, N2)</span><br><span class="line">(5) A -&gt; B   : E(Ks, f(N2))</span><br></pre></td></tr></table></figure>
-<p>如果沒有 <span>$N_1$</span><!-- Has MathJax -->，紀錄 <code>IDA || IDB、E(Ka, [Ks || IDA || IDB]) || E(Kb, [Ks || IDA])</code>，就能假冒 KDC 讓 A 用固定的 <span>$K_s$</span><!-- Has MathJax --> 去跟 B 連線。再藉由已知明文，就能知道雙方的溝通內容，進行竊聽。</p>
-<p>為了讓 A 知道 B 擁有 <span>$K_s$</span><!-- Has MathJax --> 修改其中兩個步驟</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">modify  (3) E(Kb, [Ks || IDA]) || Nx</span><br><span class="line">        (4) E(Ks, N2 || Nx)</span><br></pre></td></tr></table></figure>
-<h3 id="Part-2"><a href="#Part-2" class="headerlink" title="Part 2"></a>Part 2</h3><ul>
-<li>link encryption 屬於 router 之間的通訊，屬於低階網路層協定，在每一條連輸線路各自獨立的加解密，會修改訊息 header，可以增加 padding，保護流量偵測。</li>
-<li>end-to-end encryption 屬於原點、目的地之間的加密，它們共同享有一把 shared key，屬於高階網路層協定，用來保護資料安全，訊息 header 保留給傳輸用。</li>
-</ul>
-<h3 id="Part-3"><a href="#Part-3" class="headerlink" title="Part 3"></a>Part 3</h3><p>Fermat’s theorem : </p>
-<p>$<span>$a^{p-1} \equiv 1 (\text{mod } p)$</span><!-- Has MathJax -->$</p>
-<p>為了要求 <span>$x^{-1}$</span><!-- Has MathJax -->，則利用費馬小定理 <span>$x^{p-2} \times x \equiv 1 (\text{mod } p)$</span><!-- Has MathJax -->，因此 <span>$x^{-1} \equiv x^{p-2} (\text{mod }p)$</span><!-- Has MathJax -->，特別小心 <span>$p$</span><!-- Has MathJax --> 一定要是質數，且滿足 <span>$gcd(x, p) = 1$</span><!-- Has MathJax -->。</p>
-<h3 id="Part-4"><a href="#Part-4" class="headerlink" title="Part 4"></a>Part 4</h3><p>Euler’s theorem</p>
-<p>$<span>$a^{\phi(n)} \equiv 1 (\text{mod } n) \text{ , }gcd(a, n) = 1$</span><!-- Has MathJax -->$</p>
-<p>先來複習一下 RSA 算法的產生與加解密</p>
-<ol>
-<li>select two large primes <span>$p$</span><!-- Has MathJax --> and <span>$q$</span><!-- Has MathJax --> at random.</li>
-<li>Let <span>$N = p \times q$</span><!-- Has MathJax -->, <span>$\phi(N) = (p-1)(q-1)$</span><!-- Has MathJax --></li>
-<li>select (at random or fixed) the encryption key <span>$e$</span><!-- Has MathJax --><br> where <span>$1 &lt; e &lt; \phi(N)$</span><!-- Has MathJax -->, <span>$gcd(e,\phi(N))=1$</span><!-- Has MathJax --><br> so, <span>$e^{-1} \mod \phi(N)$</span><!-- Has MathJax --> exists</li>
-<li>solve following equation to find decryption key <span>$d = e^{-1}$</span><!-- Has MathJax -->, <span>$e \times d \mod \phi(N)=1$</span><!-- Has MathJax --></li>
-<li>publish public/encryption key:<span>$KP = \left \{ e,N \right \}$</span><!-- Has MathJax --></li>
-<li>keep secret private/decryption key:<span>$KS = \left \{ d, p, q \right \}$</span><!-- Has MathJax --></li>
-</ol>
-<p>encrypt a message <span>$M$</span><!-- Has MathJax --> the sender:</p>
-<ul>
-<li>obtains public key of <strong> recipient </strong><span>$KP = \left \{ e,N \right \}$</span><!-- Has MathJax --></li>
-<li>computes: <span>$C = M^e \mod N$</span><!-- Has MathJax --></li>
-</ul>
-<p>decryption a ciphertext <span>$C$</span><!-- Has MathJax --></p>
-<ul>
-<li>uses his private key<span>$KS = \left \{ d, p, q \right \}$</span><!-- Has MathJax --></li>
-<li>computes: <span>$M = C^d \mod N$</span><!-- Has MathJax --></li>
-</ul>
-<p>用來加解密，為什麼會是正確的呢？</p>
-<span>$$\begin{align}
-&amp; M \equiv (M^e)^d \mod N \\
-&amp; M \equiv M^{ed} \mod N  \\
-&amp; \because ed \equiv 1 \mod \phi(N) \text{ and Euler&apos;s theorem} \\
-&amp; \therefore M \equiv M^{ed \mod \phi(N)} \mod N \\
-&amp; M \equiv M^{1} \mod N
-\end{align}$$</span><!-- Has MathJax -->
-<p>這裡很神祕，假設 <span>$n = 21$</span><!-- Has MathJax -->，則 <span>$phi(n) = 12$</span><!-- Has MathJax -->，根據歐拉公式 <span>$3^{12} \equiv 15 \mod 21$</span><!-- Has MathJax --> 違反歐拉定理，但是在 ACM-ICPC 競賽中，有一點明白到，<span>$a^i$</span><!-- Has MathJax --> 在 <span>$\mod n$</span><!-- Has MathJax --> 下的餘數循環節長度 L，則滿足 <span>$L | phi(n)$</span><!-- Has MathJax -->，藉由這一點來正確解密，至於到底算不算利用歐拉定理仍是個有趣問題。</p>
-<h3 id="Part-5"><a href="#Part-5" class="headerlink" title="Part 5"></a>Part 5</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(1) 2^k q</span><br><span class="line">(3) a^q == 1 mod n</span><br><span class="line">(5) a^(2^j q) == n-1 mod n</span><br></pre></td></tr></table></figure>
-<h3 id="Part-6"><a href="#Part-6" class="headerlink" title="Part 6"></a>Part 6</h3><p>雖然題目要求得不多，這裡直接拿 RSA 作範例</p>
-<ol>
-<li><span>$N = p \times q$</span><!-- Has MathJax -->
-</li>
-<li><p>目標計算 <span>$M = C^d \mod N$</span><!-- Has MathJax --><br>分開計算得到兩個部分，這裡可以利用歐拉定理加快，因此 <span>$d$</span><!-- Has MathJax --> 可以先 <span>$\mod \phi(p)$</span><!-- Has MathJax --></p>
-<span>$Mp = C^d \mod p$</span><!-- Has MathJax -->
-<span>$Mq = C^d \mod q$</span><!-- Has MathJax -->
-</li>
-<li><p>套用中國餘式定理 CRT，簡單的模型如下： </p>
-<span>$a_i = M \mod m_i$</span><!-- Has MathJax -->
-<span>$M = a_1 c_1 + a_2 c_2 + \text{ ... }$</span><!-- Has MathJax -->
-<span>$Mi = m_1 \times m_2 ... \times m_n / m_i$</span><!-- Has MathJax -->
-<span>$c_i = M_i \times (M_i^{-1}) \mod m_i$</span><!-- Has MathJax -->
-</li>
-<li><p>因此 RSA 可以預先處理 <span>$c_p = q \times (q^{-1} \mod p)$</span><!-- Has MathJax --> 和 <span>$c_q = p \times (p^{-1} \mod q)$</span><!-- Has MathJax -->，還原的算法則是 <span>$M = Mp \times c_p + Mq \times c_q \mod N$</span><!-- Has MathJax --></p>
-</li>
-</ol>
-<p>結論，由於拆分後的 bit length 少一半，乘法速度快 4 倍，快速冪次方快 2 倍 (次方的 bit length 少一半)，但是要算 2 次，最後共計快 4 倍。CPU 的乘法想必不會用快速傅立葉 FFT 來達到乘法速度為 <span>$O(n \log n)$</span><!-- Has MathJax --></p>
-<p>但是利用 CRT 計算容易受到硬體上攻擊，因為會造成 <span>$p, q$</span><!-- Has MathJax --> 在分解過程中獨立出現，當初利用 <span>$N$</span><!-- Has MathJax --> 很難被分解的特性來達到資訊安全，但是卻因為加速把 <span>$p, q$</span><!-- Has MathJax --> 存放道不同時刻的暫存器中。</p>
-<p>其中一種攻擊，計算得到 <span>$M = Mp \times q \times (q^{-1} \mod p) + Mq \times p \times (p^{-1} \mod q) \mod N$</span><!-- Has MathJax --> 當擾亂後面的式子 (提供不穩定的計算結果)。得到 <span>$M&apos; = Mp \times q \times (q^{-1} \mod p) + (Mq + \Delta) \times p \times (p^{-1} \mod q) \mod N$</span><!-- Has MathJax --></p>
-<p>接著 <span>$(M&apos; - M) = (\Delta&apos; \times p) \mod N$</span><!-- Has MathJax -->，若要求 <span>$p$</span><!-- Has MathJax --> 的方法為 <span>$gcd(M&apos; - M, N) = gcd(\Delta&apos; \times p, N) = p$</span><!-- Has MathJax -->，輾轉相除的概念呼之欲出，原來 <span>$p$</span><!-- Has MathJax --> 會被這麼夾出，當得到兩個 <span>$p, q$</span><!-- Has MathJax -->，RSA 算法就會被破解。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cognitive-style-note2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/05/17/cognitive-style-note2/" class="article-date">
-  <time datetime="2015-05-17T13:01:13.000Z" itemprop="datePublished">2015-05-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/介面設計/">介面設計</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/17/cognitive-style-note2/">認知風格 設計篇</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/05/17/cognitive-style-note2/" data-id="cipw7173s001atixcflfelwnc" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/05/17/cognitive-style-note2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ui/">ui</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>接續上一篇</p>
-<h2 id="調整方法"><a href="#調整方法" class="headerlink" title="調整方法"></a>調整方法</h2><p>調適能力 (Adaptivity) 與調適性 (Adaptability)。前者能依據使用者的互動 (interaction) 自動修改應用程式的行為，後者則是依照預先定義好的選項來改變應用程式的行為。</p>
-<table>
-<thead>
-<tr>
-<th>網頁設計類型</th>
-<th>優點</th>
-<th>缺點</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Adaptivity</td>
-<td>迅速地貼近使用者，使用者不必做過多設定</td>
-<td>由於自動變化，對於使用者教學會相當困難</td>
-</tr>
-<tr>
-<td>Adaptability</td>
-<td>客製化過程有參與感，可以更了解系統功能</td>
-<td>入門困難，適應介面到可以客製的過程長</td>
-</tr>
-</tbody>
-</table>
-<h2 id="介面初步"><a href="#介面初步" class="headerlink" title="介面初步"></a>介面初步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">test version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | type you want                       |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br></pre></td></tr></table></figure>
-<p>從最基礎的設計中，明顯地會需要一個輸入框與觸發的按鈕。但是搜尋條件有幾種，從 <strong> 作者 </strong>、<strong> 本文 </strong>、<strong> 標題 </strong>、<strong> 出版期刊 </strong> … 等，這些要怎麼設計才好？</p>
-<p><a href="http://buzzorange.com/techorange/2015/05/07/better-than-google/" target="_blank" rel="external">《大神落伍了？這些搜索引擎比 Google 精確還更有趣》</a> 這裡提到專門的搜尋引擎，可以針對音樂、圖片、社群、找人 … 等內容進行搜尋。他們是怎麼完成的？</p>
-<h2 id="介面二步"><a href="#介面二步" class="headerlink" title="介面二步"></a>介面二步</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">test version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line">    | BOOK NAME |  | AUTHOR |  | WHERE |        |Find it!|</span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br></pre></td></tr></table></figure>
-<p>這裡的設計多了三個欄位，有些欄位可填、可不填，進行分開的搜尋。然而會不會發生有人誤填一些資訊，誤把人名當書名，造成搜尋結果不好。為了考量這些，基本上都是在搜尋結果中做一個排序，排序的優先權可能先按照書名、作者、地點。搜尋方式的比例差異通常呈現普遍性。</p>
-<p>為了加速篩選結果，通常會先抓書名，如果書名不夠具有特色，則會嘗試抓作者名稱，如果作者出版很多本書，則會考慮出版時間、內容。能按照內容進行搜索的引擎，肯定規模很大。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line">    | BOOK NAME |  | AUTHOR |  | WHERE |        |Find it!|</span><br><span class="line">    +-----------+  +--------+  +-------+        +--------+</span><br><span class="line"> </span><br><span class="line"></span><br><span class="line">+---------------+---------------+---------------------+</span><br><span class="line">|  BOOK NAME    |  AUTHOR       |  WHERE              |</span><br><span class="line">+---------------+---------------+---------------------+</span><br><span class="line">                                                       </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  TITLE        |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  SUBTITLE     |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  CHAPTER      |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  NICKNAME     |                                      </span><br><span class="line">+---------------+                                      </span><br><span class="line">|  PROLOGUE     |                                      </span><br><span class="line">+---------------+</span><br></pre></td></tr></table></figure>
-<p>有一種方式是提供搜尋條件的細節，來增加使用者的搜尋效率。上面就是一個範例，不僅僅只是官方書名提供搜索，細節劃分也是相當重要。甚至有人會將書給予暱稱，例如書的名稱太普通，卻以某種封裝、寫法出名，那麼這些書的名稱可能就比較特別。</p>
-<p>對於場依賴的而言，看得到的搜尋介面相當重要，它們比較容易根據環境提供的條件，因此設計效能上影響很多。反過來看看場獨立的人，對於這個介面操作可能會將自己的想法投入，這些想法可能來自於自身或者是之前學習過的知識。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">argument version</span><br><span class="line">         ______     ______     ______     __  __    </span><br><span class="line">        /\  == \   /\  __ \   /\  __ \   /\ \/ /    </span><br><span class="line">        \ \  __&lt;   \ \ \/\ \  \ \ \/\ \  \ \  _&quot;-.  </span><br><span class="line">         \ \_____\  \ \_____\  \ \_____\  \ \_\ \_\ </span><br><span class="line">          \/_____/   \/_____/   \/_____/   \/_/\/_/ </span><br><span class="line">                                                    </span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | learning in 23 days type:reference  |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br></pre></td></tr></table></figure>
-<p>對於隱藏式的操作想必也是相當上手。但這種使用需要教學，不是相當方便。可以由簡到繁地引領使用者，例如說第一次搜尋操作後，自動填充，提示使用者下一次搜尋的方法。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">+-------------------------------------+     *--------*</span><br><span class="line">| learning in 23 days                 |     |Find it!| &lt;--- click</span><br><span class="line">+-------------------------------------+     *--------*</span><br></pre></td></tr></table></figure>
-<p>得到結果後</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">    | learning in 23 days type:reference  |     |Find it!|</span><br><span class="line">    +-------------------------------------+     +--------+</span><br><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* ...</span><br></pre></td></tr></table></figure>
-<p>現在的設計大多都是由 <strong> 簡到繁 </strong> 的方式，從蘋果軟體中都可以發現到這些特徵，將不常用的功能都先藏在特定的地方，先基礎地提供最低需求，當使用者發現結果越來越不好時，主動地去察覺要怎麼使用更複雜的操作。</p>
-<h2 id="介面三步"><a href="#介面三步" class="headerlink" title="介面三步"></a>介面三步</h2><p>當然有些人搜尋的結果，會根據場依賴、場獨立來查閱，場依賴偏向是由觀眾評分、評論來判定是否找到正確的書，場獨立純文本內容為主。著重的觀點不同，為了成功銷售所有的書籍，顯示的方法如下兩種參考。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* Learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* WTF Learning, author:Blob</span><br><span class="line">    detail ..</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">----------------------------------------------------------------------</span><br><span class="line">Find result with ...</span><br><span class="line"></span><br><span class="line">* [HOT] STAR: 5, learning in 23 days, author:Alice, type:reference</span><br><span class="line">    detail ...</span><br><span class="line">* STAR: 3, WTF Learning, author:Blob</span><br><span class="line">    detail ..</span><br><span class="line">* ...</span><br></pre></td></tr></table></figure>
-<p>以上示範的是場獨立、依賴的兩種。當然上面的設計屬於階層式、也有水平擺放訊息的方式。其實還有很多種的！</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">* 1 TITLE AUTHOR </span><br><span class="line">    * 1.1 DETAIL</span><br><span class="line">    * 1.2 DETAIL</span><br><span class="line">        * 1.2.1 DETAIL</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">+-------+   +------------------------------------------+</span><br><span class="line">|       |   |  TITLE                                   |</span><br><span class="line">|       |   +------------------------------------------+</span><br><span class="line">| COVER |                                               </span><br><span class="line">|       |   +------------------------------------------+</span><br><span class="line">|       |   |  AUTHOR, DETAIL                          |</span><br><span class="line">|       |   |                                          |</span><br><span class="line">+-------+   +------------------------------------------+</span><br></pre></td></tr></table></figure>
-<p>如果找書不根據任何別人推坑的想法，階層式會是很好的細節來決策，嘗試把每一本書的概要都仔細讀過，階層式很吃 <strong> 優先權順序 </strong>，設計起來相當挑戰。</p>
-<p>如果是下方的方式，比較偏向大致上已經在事前知道要買哪本書，有了大概目標。這樣的設計方式方便跳躍性的搜索，因為階層式會 <strong> 改變高度 </strong>，檢索時的位移量不同會造成操作時間會比較久，但是下方的那種方式屬於固定位移量。</p>
-<p>至於對色彩學的配色部分，又分單色、雙色欄位，來加快視窗滑動的對齊。而每一個欄位的文字色彩也相當講究，用色數量越多，看起來越五花八門，面向的使用族群也越多。為了讓使用者有 <strong> 貼切感 </strong> (服務的專一性)，通常用色不大於三種。</p>
-<h2 id="回頭調整"><a href="#回頭調整" class="headerlink" title="回頭調整"></a>回頭調整</h2><p>Adaptivity 提供系統自動調整變化，最好提醒使用者可以切換回去舊的介面設計，否則多個使用者在現實中交談時，可能會發生矛盾的錯亂交流。</p>
-<p>Adaptability 提供使用者自定義，這些功能從系統中抽離出來，對於開發者來說是件好事，讓所有功能盡可能地讓特定使用者使用，但普遍性來說，大多數的功能都會被忽略，甚至當作從來沒有過。</p>
-<p>Adaptability 類型的網頁設計，提供高度穩定性、客製化，有利於長時間的網站經營，培養長遠的顧客為主，對於短期入門的新手而言，對於客製化的吃力程度不一，當尚未熟悉系統前，對於功能設定處於一知半解狀態，需要閱讀文檔或累積經驗。因此在使用前期效率並不高，有待一段時間後，使用效率就有機會突破 Adaptivity 類型的。</p>
-<p>正因為使用時間的長短，Adaptability 比較適合高頻率使用的軟體，而且功能性很強。相較於 Adaptivity 給予功能性較低，但操作起來會比較耗時 (滑鼠移動、滾動) 的軟體。</p>
-<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><strong><em> Evaluation of a personalized digital library based on cognitive styles: Adaptivity vs. adaptability </em></strong></p>
-<p>課程需求才看得，雖然我對裡面的實驗方法一點也不認同，很多地方沒有考慮進去，實驗的順序性有考慮到，卻沒有去考慮適應面向的主體，拿幾次任務的時間來進行比較往往是不夠的，根據時間成長的效率比較也應該被提出。</p>
-<h3 id="課程公告"><a href="#課程公告" class="headerlink" title="課程公告"></a>課程公告</h3><blockquote>
-<p>由於明天的課程有多數同學因畢業旅行而無法前來上課，因此明天上課的方式將不在課堂上進行，而改為同學閱讀所附的 paper，並找時間與組員討論所附的問題</p>
-</blockquote>
-<p>請容許我罵一聲！我擦！為什麼不上課！雖然老師上課的認知風格與我不同，無法好好地學習知識，在盡可能地去適應，卻不斷地減少上課次數，學期結束前都還沒有適應吧。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/2/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><a class="page-number" href="/categories/學校課程/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/categories/學校課程/page/4/">4</a><a class="page-number" href="/categories/學校課程/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/9/">9</a><a class="extend next" rel="next" href="/categories/學校課程/page/4/">Next &raquo;</a>
@@ -1554,7 +1369,7 @@ A     B     C
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">84</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">88</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1564,6 +1379,38 @@ A     B     C
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10092/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10092. OpenCL Build Program Debug</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10091/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10091. Fast Matrix Multiplication (OpenCL)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10090/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10090. Dot Product (OpenCL)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10089/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10089. Print Platform Information (OpenCL)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/26/uva-13100/">
@@ -1611,38 +1458,6 @@ A     B     C
                 <i class="icon-file-o"></i> 
               
             UVa 13036 - Birthday Gift to SJ - 2</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13057/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13057 - Prove Them All</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13015/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13015 - Promotions</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13024/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13024 - Saint John Festival</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13029/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13029 - Emoticons</a>
           </li>
         
       </ul>
