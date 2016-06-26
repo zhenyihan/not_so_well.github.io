@@ -89,6 +89,628 @@
         
           <section id="main">
   
+    <article id="post-lesson/database-review2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/10/lesson/database-review2/" class="article-date">
+  <time datetime="2015-01-10T04:35:17.000Z" itemprop="datePublished">2015-01-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/01/10/lesson/database-review2/">資料庫複習 Ch.13</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review2/" data-id="cipwcq8y8023e0rxcaffdzeiw" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/01/10/lesson/database-review2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/資料庫系統/">資料庫系統</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Chapter-13"><a href="#Chapter-13" class="headerlink" title="Chapter 13"></a>Chapter 13</h2><p>Design Theory for Relational Databases</p>
+<h3 id="名詞定義"><a href="#名詞定義" class="headerlink" title="名詞定義"></a>名詞定義</h3><ul>
+<li><p><strong> Functional Dependencies </strong>  </p>
+<ul>
+<li>定義<br><em>X</em> -&gt; <em> Y </em> is an assertion about a relation <em> R </em> that whenever two tuples of <em> R </em> agree on all the attributes of <em> X </em>, then they must also agree on all attributes in set <em> Y </em>.</li>
+<li>特性  <ul>
+<li>X-&gt;A<sub>1</sub>A<sub>2</sub> … A<sub>n</sub>  holds for <em> R </em> exactly when each of X-&gt;A<sub>1</sub>, X-&gt;A<sub>2</sub>,…, X-&gt;A<sub>n</sub> hold for R.<br>例子 <strong> Drinkers(name, addr, beersLiked, manf, favBeer) </strong><br>FD : <strong> name -&gt; addr favBeer </strong> &amp; <strong> beersLiked -&gt; manf </strong><br><strong> name -&gt; addr favBeer </strong> = <strong> name -&gt; addr </strong> and <strong> name -&gt; favBeer </strong>.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong> Keys of Relations </strong><br>換句話說 superkey 可能是複合的好幾個 key 構成，因此 key 一定也是 superkey，不論 superkey 或者是 key 都可以決定所有的 attribute。特別注意，key 是最小單位，因此 key 的子集不會是 key。</p>
+<ul>
+<li><strong>superkey</strong><br><em>K</em> is a superkey for relation <em>R</em> if <em>K</em>  functionally determines all of <em>R</em>.</li>
+<li><strong>key</strong><br><em>K</em> is a key for <em>R</em> if <em>K</em> is a superkey, but no proper subset of <em>K</em>  is a superkey.</li>
+<li>例子 <strong> Drinkers(name, addr, beersLiked, manf, favBeer) </strong><br>FD : <strong> name -&gt; addr favBeer </strong> &amp; <strong> beersLiked -&gt; manf </strong><br>得到 <strong> {name, beersLiked} </strong> 是一個 superkey，發現 <strong> {name} </strong> 和 <strong> {beersLiked} </strong> 不是 superkey，得到 <strong> {name, beersLiked} </strong> 是一個 key。</li>
+</ul>
+</li>
+<li><p><strong> Inference Test </strong><br>如何找到 inferring FD？所謂的 inferring FD 就是藉由遞移關係得到的 FD，可以由原本集合中的幾個 FD 推斷出來，因此這些 inferring FD 不是必要存在的。那就先把 <strong> Y -&gt; B </strong> 移除，再由剩下的 FD 組合，查看是否存在可以推論出 B 的可能，如果任何情況都推不出 B，則 <strong> Y -&gt; B </strong> 不是 inferring FD。<br>We are given FD’s X1 -&gt; A1, X2 -&gt; A2,…, Xn -&gt; An , and we want to know whether an FD Y -&gt; B  must hold in any relation that satisfies the given FD’s.<br>例子 If A -&gt; B  and B -&gt; C hold, surely A -&gt; C.</p>
+</li>
+<li><p><strong> Closure Test </strong><br>遞移閉包測試。<br>An easier way to test is to compute the <strong> closure </strong> of <em> Y </em>, denoted <strong> Y+ </strong>.</p>
+<ul>
+<li>Basis: <strong> Y+ </strong> = Y.</li>
+<li>Induction: Look for an FD’s left side X that is a subset of the current <strong> Y+ </strong>.  If the FD is X -&gt; A, add A to <strong> Y+ </strong>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="Relational-Schema-Design"><a href="#Relational-Schema-Design" class="headerlink" title="Relational Schema Design"></a>Relational Schema Design</h3><p>schema design 目標是避免異常、冗餘。</p>
+<p>Goal of relational schema design is to avoid anomalies and redundancy.</p>
+<ul>
+<li><strong> Update anomaly </strong> :<br>更新異常，當一個事實改變時，只會發生一次修改，而不會發生很多次的修改。意即針對一個關聯屬性修改，最多更動一個 row (entity)，不會更動數行的 row。<br>one occurrence of a fact is changed, but not all occurrences.</li>
+<li><p><strong> Deletion anomaly </strong> :<br>刪除異常，當一個 row 移除時，確定合法的事實被移除。如果發生關聯上屬性移除，但該屬性本應該存在，卻遭到移除而不存在資料庫中，就這麼地憑空消失。<br>valid fact is lost when a tuple is deleted.</p>
+</li>
+<li><p><strong> Boyce-Codd Normal Form </strong><br>無論怎麼找 FD，都會發現到 FD 的 left hand side <em>X</em> 都是 superkey，那麼 R 就是一個 <strong> BCNF </strong>。<br>We say a relation <em>R</em>  is in <strong> BCNF </strong>  if whenever <em>X</em> -&gt;<em>Y</em>  is a nontrivial FD that holds in <em>R</em>, <em>X</em>  is a superkey.</p>
+<ul>
+<li><em>nontrivial</em>  means <em>Y</em>  is not contained in <em>X</em>.</li>
+<li>a <em>superkey</em>  is any superset of a key (not necessarily a proper superset).</li>
+<li>例子 <strong> Drinkers(name, addr, beersLiked, manf, favBeer) </strong><br>FD : <strong> name -&gt; addr favBeer </strong> &amp; <strong> beersLiked -&gt; manf </strong><br>In each FD, the left side is <strong>not</strong> a superkey. Shows <em>Drinkers</em> is <strong>not</strong> in BCNF.</li>
+</ul>
+</li>
+<li><p><strong> Decomposition into BCNF </strong></p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BCNF_Decompose(R, FD)</span><br><span class="line">    find X s.t.: X != (X+) != [all attributes] // X is one of FD&apos;s left hand side</span><br><span class="line">    if (not found) then “R is in BCNF”</span><br><span class="line">    let Y = (X+) - X</span><br><span class="line">    let Z = [all attributes] - (X+)</span><br><span class="line">    decompose R into R1(X union Y) and R2(X union Z) </span><br><span class="line">    continue to decompose recursively R1 and R2</span><br></pre></td></tr></table></figure>
+<h3 id="Third-Normal-Form"><a href="#Third-Normal-Form" class="headerlink" title="Third Normal Form"></a>Third Normal Form</h3><p>接續上面的 Decomposition，將會產生一些問題。拆分上不合乎常理，發生過度的拆分，這問題發生在於給定的 FD 格式。</p>
+<p>舉個例子 (street address, city, zip code)</p>
+<ul>
+<li>FD : <em>AB</em> -&gt; <em>C</em>  and <em>C</em> -&gt; <em>B</em>.<br>Example: A = street address, B = city, C = zip code.</li>
+<li>There are two keys, <strong> {A, B} </strong> and <strong> {A, C} </strong>.</li>
+<li><em>C</em> -&gt; <em>B</em>  is a BCNF violation, so we must decompose into <em>AC</em>, <em>BC</em>. </li>
+<li>顯然地 AC 有很嚴重的問題，既不存在 A -&gt; C 也不存在 C -&gt; A。</li>
+</ul>
+<p>避免此問題</p>
+<ul>
+<li>An attribute is <strong> prime </strong> if it is a member of any key. 也就是 attribute 是某一 key 的 subset。</li>
+<li><em>X</em> -&gt; <em>A</em> violates 3NF if and only if <em>X</em> is not a superkey, and also <em>A</em>  is not prime.</li>
+</ul>
+<p>接續上個例子 (street address, city, zip code)</p>
+<ul>
+<li>There are two keys, <strong> {A, B} </strong> and <strong> {A, C} </strong>.</li>
+<li>Thus<em> A</em>, <em>B</em>, and <em>C</em>  are each prime.</li>
+<li>Although <em>C</em> -&gt; <em>B</em>  violates BCNF, it does not violate 3NF.</li>
+</ul>
+<h3 id="properties-of-a-decomposition"><a href="#properties-of-a-decomposition" class="headerlink" title="properties of a decomposition"></a>properties of a decomposition</h3><p>最後，來看看得到的 3NF 和 BCNF 給予什麼特性？</p>
+<p>There are two important properties of a decomposition:</p>
+<ul>
+<li><strong> Lossless Join </strong> :<br>it should be possible to project the original relations onto the decomposed schema, and then reconstruct the original.</li>
+<li><strong> Dependency Preservation </strong> :<br>it should be possible to check in the projected relations whether all the given FD’s are satisfied.</li>
+</ul>
+<p>資料不失真，保證可以藉由投影、Join 將分解的 schema 組合成原本的資料。同時所有的相依關係仍然保留，可以把原本 FD 都滿足所有的 schema。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/database-review" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2015/01/10/lesson/database-review/" class="article-date">
+  <time datetime="2015-01-10T01:08:30.000Z" itemprop="datePublished">2015-01-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/01/10/lesson/database-review/">資料庫複習 Ch.12</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2015/01/10/lesson/database-review/" data-id="cipwcq8xz023a0rxc8z22dpx6" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2015/01/10/lesson/database-review/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/資料庫系統/">資料庫系統</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Chapter-12"><a href="#Chapter-12" class="headerlink" title="Chapter 12"></a>Chapter 12</h2><h3 id="E-R-Model"><a href="#E-R-Model" class="headerlink" title="E/R Model"></a>E/R Model</h3><blockquote>
+<p>Entity-Relationship Model 實體關係模型</p>
+</blockquote>
+<p>The E/R model allows us to sketch database schema designs. </p>
+<p>協助描繪資料庫 schema 設計，藉由 E/R model 映射到資料庫的 Relation model。</p>
+<h3 id="名詞定義"><a href="#名詞定義" class="headerlink" title="名詞定義"></a>名詞定義</h3><ul>
+<li><strong> Entity </strong> = “thing” or object.<br>實體，對應到現實生活中的名詞，例如蘋果 mac2013、微軟 win8、 … 等。單指一個、一件實體存在。</li>
+<li><strong> Entity set </strong> = collection of similar entities.<br>很多類似的實體產生的集合，例如計算機、員工 … 等實體集合。<br>Similar to a class in object-oriented languages.</li>
+<li><strong> Attribute </strong> = property of (the entities of) an entity set.<br>屬性，通常是一個數值的呈現，例如計算機的運算能力、員工薪資、 … 等。<br>Attributes are simple values, e.g. integers or character strings, not structs, sets, etc.</li>
+</ul>
+<p>繪製 E/R Diagrams 時，呈現方式</p>
+<ul>
+<li><strong> Entity set </strong> = rectangle.<br>實體集合使用矩形圖表示</li>
+<li><strong> Attribute </strong> = oval,<br>屬性使用橢圓表示，並且連到實體集合，表示這些實體集合都具有這些屬性特徵。<br>with a line to the rectangle representing its entity set.</li>
+<li><p><strong> Relationships </strong> = diamond.<br>用菱形連接兩個以上的實體集合，表示實體集合之間的關係。<br>A relationship connects two or more entity sets, with lines to each of the entity sets involved.</p>
+</li>
+<li><p><strong> Relationship Set </strong><br>The “value” of a relationship is a relationship set, a set of tuples with one component for each related entity set.<br>For the relationship <strong> Sells </strong>, we might have a relationship set like:  </p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Bar</th>
+<th>Beer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joe’s Bar</td>
+<td>Bud</td>
+</tr>
+<tr>
+<td>Joe’s Bar</td>
+<td>Miller</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Bud</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Pete’s Ale</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Bud Lite</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong> Multiway Relationships </strong><br>Our three binary relationships <strong> Likes </strong>, <strong> Sells </strong> , and <strong> Frequents </strong> do not allow us to make this distinction.   </li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Bar</th>
+<th>Drinker</th>
+<th>Beer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Joe’s Bar</td>
+<td>Ann</td>
+<td>Miller</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Ann</td>
+<td>Bud</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Ann</td>
+<td>Pete’s Ale</td>
+</tr>
+<tr>
+<td>Joe’s Bar</td>
+<td>Bob</td>
+<td>Bud</td>
+</tr>
+<tr>
+<td>Joe’s Bar</td>
+<td>Bob</td>
+<td>Miller</td>
+</tr>
+<tr>
+<td>Joe’s Bar</td>
+<td>Cal</td>
+<td>Miller</td>
+</tr>
+<tr>
+<td>Sue’s Bar</td>
+<td>Cal</td>
+<td>Bud Lite</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><strong> Rounded arrow </strong> = “exactly one,”<br>實心箭頭表示確切對應一個關係，如果一個人會喜愛好幾種酒，其中最愛某一種。<br>i.e., each entity of the first set is related to exactly one entity of the target set.</p>
+</li>
+<li><p><strong> Roles </strong><br>Label the edges between the relationship and the entity set with names called roles.<br>例如丈夫、妻子之間的關係、夥伴之間的關係。</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Husband</th>
+<th>Wife</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bob</td>
+<td>Ann</td>
+</tr>
+<tr>
+<td>Joe</td>
+<td>Sue</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Buddy1</th>
+<th>Buddy2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bob</td>
+<td>Ann</td>
+</tr>
+<tr>
+<td>Joe</td>
+<td>Sue</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p><strong> Subclass </strong> = special case = fewer entities = more properties.<br>從物件導向來說，一個繼承關係，得到的 Subclass 會繼承原本的 Class 的特徵、關係，有可能會具有額外的特徵。<br>Let us suppose that in addition to all the <strong> properties </strong> (attributes and relationships) of beers, ales also have the attribute <strong> color </strong>. Isa triangles (<strong> is a </strong> 的三角形) indicate the subclass relationship. Point to the superclass (指向父類別).</p>
+<ul>
+<li>比較 OO 和 E/R 對 subclass 的定義<br>  也就是說，OO 只會用 is a 描述一個 subclass 的繼承關係。但在 E/R model 中，isa 相當一個欄位，用來描述它是哪一個子類別，也就是說在紀錄時，如果它在某一個子類別時，那麼在父類別中也會記錄到它。<ul>
+<li>In OO, objects are in one class only. Subclasses inherit from superclasses.</li>
+<li>In contrast, E/R entities have representatives  in all subclasses to which they belong.<ul>
+<li><strong> Rule </strong>: if entity e is represented in a subclass, then e is represented in the superclass (and recursively up the tree).</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong> Key </strong><br>Key 是一個 attribute 的集合構成，得到 <em> f(Key) = at most one entity </em>。繪製時，使用底線 (underline) 於作為 key attribute 表示。<br>is a set of attributes for one entity set such that no two entities in this set agree on all the attributes of the key.</p>
+</li>
+<li><p><strong> Weak Entity Sets </strong><br>為了去辨識某個實體，必須倚靠一對一、或者多對一的關係，來確切地找到某個實體。<br>Entity set <em> E </em>  is said to be <strong> weak </strong> if in order to identify entities of <em> E </em> uniquely, we need to follow one or more many-one relationships from <em> E </em> and include the key of the related entities from the connected entity sets.</p>
+<ul>
+<li>例如 Player(name, nubmer) - Plays_on -&gt; Team(name)。當知道 Team 是哪一個時，才能辨識出 Player，否則名稱跟號碼可能會在不同隊中出現重複的。因此 Player 就是一個 <strong> Weak Entity Sets </strong>。</li>
+</ul>
+</li>
+<li><p><strong> Weak Entity-Set Rules </strong><br>A weak entity set has one or more many-one relationships to other (supporting) entity sets.<br>  並不是每一個 relationship 都是 weak entity set 需要的支持。然而被需要的 relationship 必然擁有一個 <strong> rounded arrow </strong>。<br>The key for a weak entity set is its own underlined attributes and the keys for the supporting entity sets.<br>  例如在之前的例子，可以使用 (player) number 和 (team) name 作為 Player 的 key。</p>
+</li>
+</ul>
+<h3 id="Design-Techniques"><a href="#Design-Techniques" class="headerlink" title="Design Techniques"></a>Design Techniques</h3><ul>
+<li>Design Techniques<ul>
+<li>Avoid redundancy.<br>避免冗餘</li>
+<li>Limit the use of weak entity sets.<br>限制 weak entity set 的使用</li>
+<li>Don’t use an entity set when an attribute will do.<br>如果能使用一個 attribute 表示，則無需增加一個 entity set 單獨表示一個 attribute。</li>
+</ul>
+</li>
+</ul>
+<p>分別對應以下幾點。</p>
+<ul>
+<li><p><strong> Redundancy </strong>  = saying the same thing in two (or more) different ways<br>存在用好幾種方法說一件事情，或者提及某個屬性。</p>
+</li>
+<li><p><strong> Entity Sets Versus Attributes </strong><br>對應實體集合的屬性，要符合以下兩點，屬性應為很多實體共同擁有的名稱，並且擁有至少一個 nokey 屬性，或者屬於 many-one 或 many-many 關係中，many 那一方的 entity set。<br>An entity set should satisfy at least one of the following conditions:</p>
+<ul>
+<li>It is more than the name of something; it has at least one nonkey attribute. or</li>
+<li>It is the “many” in a many-one or many-many relationship</li>
+</ul>
+</li>
+<li><p>Weak Entity Sets 使用須知</p>
+<ul>
+<li>避免濫用，通常能夠創建一個 unique ID 來表示一個實體。</li>
+<li>當真的找不到一個普遍性的 unique ID 時，才會逼不得已使用 Weak entity set.</li>
+</ul>
+</li>
+</ul>
+<h3 id="From-E-R-Diagrams-to-Relations"><a href="#From-E-R-Diagrams-to-Relations" class="headerlink" title="From E/R Diagrams to Relations"></a>From E/R Diagrams to Relations</h3><p>關於對應的名詞如下，轉換時找 attribute 時，E/R Diagrams 中的 relationships 也會成為一個 relation ，attribute 的找法，可以從關聯的 entity set 的 key 或者是關係的定義本身。</p>
+<ul>
+<li>Entity set -&gt; relation.</li>
+<li>Attributes -&gt; attributes.</li>
+<li><p>Relationships -&gt; relations whose attributes are only:</p>
+<ul>
+<li>The keys of the connected entity sets.<br>將相連的實體集合的 key 值都拿來作為 attribute。</li>
+<li>Attributes of the relationship itself.</li>
+</ul>
+</li>
+<li><p><strong> Combining Relations </strong><br>結合 Relation，減少 Relation 的個數，將多對一的 relationships 表單，而實體集合屬於 many 的那一方，則可以把 one 那一方結合在一起。切記一定要是多對一，如果是多對多則會造成冗餘發生。</p>
+<ul>
+<li>The relation for an entity-set <em> E </em></li>
+<li>The relations for many-one relationships of which <em> E </em> is the “many.”</li>
+<li>Example: Drinkers(name, addr) and Favorite(drinker, beer) combine to make Drinker1(name, addr, favBeer).</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p><strong> Handling Weak Entity Sets </strong><br>解決 weak entity set 轉化成 relation 時，必然要為它準備一個 complete key 來辨識不同實體於關連到不同的實體集合。如果一個 supporting relationship 不具有 attribute，而且屬於一個冗餘的紀錄，那麼把 relationship 另一方 “one” 的 entity set 的 key 值加入到 weak entity set 所創建的 relation。<br>從之前的例子，把球隊名稱 team(name) 加入到 Player(number, name) 中，變成 relation Player(number, team_name, name)，這是在之前的 Combining Relations 中，就已經得到的結果，因此就可以忽略。</p>
+<ul>
+<li>Relation for a weak entity set must include attributes for its complete key (including those belonging to other entity sets), as well as its own, nonkey attributes.</li>
+<li>A supporting relationship is redundant and yields no relation (unless it  has attributes).</li>
+</ul>
+</li>
+<li><p><strong> Subclasses: Three Approaches </strong></p>
+<ul>
+<li>Object-oriented : One relation per subset of subclasses, with all relevant attributes.<br>父類別和子類別分開，各自成為一個 relation。</li>
+<li>Use nulls : One relation; entities have NULL in attributes that don’t belong to them.<br>把子類別的屬性上提，如果父類別不存在該屬性則填入 null。</li>
+<li>E/R style : One relation for each subclass:<br>存在父類別和子類別的 relation，但是共同屬性都會在父類別中，子類別只保留 key 和新增加的屬性。<ul>
+<li>Key attribute(s).</li>
+<li>Attributes of that subclass.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/database-bcnf" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/30/lesson/database-bcnf/" class="article-date">
+  <time datetime="2014-12-29T23:48:51.000Z" itemprop="datePublished">2014-12-30</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/12/30/lesson/database-bcnf/">資料庫正規化 Database BCNF</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/12/30/lesson/database-bcnf/" data-id="cipwcq8xt02370rxc0r81sden" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/12/30/lesson/database-bcnf/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/資料庫系統/">資料庫系統</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/鬼畜/">鬼畜</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>stackoverflow : Decomposing a relation into BCNF.</p>
+<p>資料庫講到正規化，針對 1NF, 2NF, 3NF 的做法。正規化的目的<br>－要避免資料重複或相互矛盾的情形，並使資料庫在使用時能更有效率、更容易維護。</p>
+<p>關於 1NF, 2NF, 3NF 的細節操作就上網查吧。也就是在還沒正規化前，可能會遭遇到</p>
+<ul>
+<li>修改一個 f(x) = y 值時，可能修改非常大量的 row，因為有可能 f(x, z) = y，無用相依關係的 z 很多。</li>
+<li>刪除某個元素時，造成 y 值沒有被任何相依，導致 y 的資訊無法存入資料庫。 … 如此類推。</li>
+</ul>
+<p>現在給定 relation 和 functional dependencies，正規化它們！</p>
+<p>舉個例子：(直接從 stackoverflow 的例子來說)</p>
+<ul>
+<li>Relation : <em> R(A, C, B, D, E) </em> </li>
+<li>Functional dependencies (FD): <em> A -&gt; B, C -&gt; D </em></li>
+</ul>
+<p>Functional dependencies 簡單來說就是一個決定性的一對多、或者是一對一的相依關係，可以根據 LHS (left hand side) 決策 RHS (right hand side)，當然 function dependencies 的訊息只有部分，也暗示著具有遞移關係。因此例如 <em> A-&gt;B, B-&gt;C </em> 則可以推論出 <em> A-&gt;C </em>。</p>
+<p>定義 X+ 為 X 的遞移閉包，因此假設知道 <em> A-&gt;B, B-&gt;C </em> 則 <em> {A}+ = {A, B, C} </em>，假設知道 <em> AB-&gt;C </em> 則 <em> {A, B}+ = {A, B, C} </em></p>
+<p>回到例子，每一步要找到違反 BCNF 規則 (violates BCNF) 的 R’ 進行拆分。怎麼樣才算違反 BCNF 規則？可以找到一個 <em> X != X+ != [R’ all attributes] </em>，就可以對 R’ 進行拆分。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Step 1:</span><br><span class="line">S = &#123;ABCDE&#125;       </span><br><span class="line">    R&apos; = ABCDE, </span><br><span class="line">    find &#123;A&#125; != &#123;A, B&#125; != &#123;A, B, C, D, E&#125;, </span><br><span class="line">    R1 = (X+) = &#123;A, B&#125;</span><br><span class="line">    R2 = R&apos; - ((X+) - X) = &#123;A, C, D, E&#125;</span><br><span class="line">Step 2:</span><br><span class="line">S = &#123;ACDE, AB&#125;</span><br><span class="line">    R&apos; = ACDE,</span><br><span class="line">    find &#123;C&#125; != &#123;C, D&#125; != &#123;A, C, D, E&#125;, </span><br><span class="line">    R1 = (X+) = &#123;C, D&#125;</span><br><span class="line">    R2 = R&apos; - ((X+) - X) = &#123;A, C, E&#125;</span><br><span class="line">Step 3:</span><br><span class="line">S = &#123;ACE, AB, CD&#125;</span><br><span class="line">    // NOT FOUND END.</span><br></pre></td></tr></table></figure>
+<p>在程式實作 (非人工) 的時候，如何找到 X 滿足上述的條件很重要，由於 X 是所有變數的 subset 情況，相當於 <em> O(2<sup>n</sup>) </em>，很多項目是無用的。假如 <em> R’ = ABE </em>，針對 <em> X = AC </em> 是無效的操作，基本上只要拿所有 function dependencies 的 X = LHS 進行測試即可？這貪心的做法應該是對的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">BCNF_Decompose(R)</span><br><span class="line">    find X s.t.: X != (X+) != [all attributes]</span><br><span class="line">    if (not found) then “R is in BCNF”</span><br><span class="line">    let Y = (X+) - X</span><br><span class="line">    let Z = [all attributes] - (X+)</span><br><span class="line">    decompose R into R1(X union Y) and R2(X union Z) </span><br><span class="line">    continue to decompose recursively R1 and R2</span><br></pre></td></tr></table></figure>
+<p>說真的，老師上課講的練習答案還有錯，講算法時也不夠確切，真不知道教授怎麼教的，還是我沒認真上課。當教授發現全班答題有極端的相似錯誤時，到底是我們學不好？還是他沒教好？教授一點都不會反思。</p>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">5 2</span><br><span class="line">A-&gt;B</span><br><span class="line">C-&gt;D</span><br><span class="line">6 3</span><br><span class="line">AC-&gt;B</span><br><span class="line">C-&gt;D</span><br><span class="line">A-&gt;EF</span><br><span class="line">6 6</span><br><span class="line">AB-&gt;C</span><br><span class="line">BC-&gt;AD</span><br><span class="line">D-&gt;E</span><br><span class="line">CF-&gt;B</span><br><span class="line">BC-&gt;A</span><br><span class="line">BC-&gt;D </span><br><span class="line">5 3</span><br><span class="line">AB-&gt;C</span><br><span class="line">DE-&gt;C</span><br><span class="line">B-&gt;E</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">A-&gt;B</span><br><span class="line">S = &#123;AB, ACDE&#125;</span><br><span class="line">C-&gt;D</span><br><span class="line">S = &#123;AB, CD, ACE&#125;</span><br><span class="line">  </span><br><span class="line">C-&gt;D</span><br><span class="line">S = &#123;CD, ABCEF&#125;</span><br><span class="line">A-&gt;EF</span><br><span class="line">S = &#123;ABC, CD, AEF&#125;</span><br><span class="line">  </span><br><span class="line">AB-&gt;C</span><br><span class="line">S = &#123;ABCDE, ABF&#125;</span><br><span class="line">D-&gt;E</span><br><span class="line">S = &#123;ABCD, DE, ABF&#125;</span><br><span class="line">  </span><br><span class="line">AB-&gt;C</span><br><span class="line">S = &#123;ABD, ABCE&#125;</span><br><span class="line">B-&gt;E</span><br><span class="line">S = &#123;ABC, ABD, BE&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;set&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INF 0x3f3f3f3f</span></span><br><span class="line"><span class="comment">// stackoverflow Database: Decomposing a relation into BCNF</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">parsingStmt</span><span class="params">(<span class="built_in">string</span> s, <span class="built_in">string</span> &amp;l, <span class="built_in">string</span> &amp;r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">size_t</span> pos = s.find(<span class="string">"-&gt;"</span>);</span><br><span class="line">    l = s.substr(<span class="number">0</span>, pos);</span><br><span class="line">    r = s.substr(pos + <span class="number">2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">toBitmask</span><span class="params">(<span class="built_in">string</span> s)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++) &#123;</span><br><span class="line">        assert(s[i] &gt;= <span class="string">'A'</span> &amp;&amp; s[i] &lt;= <span class="string">'Z'</span>);</span><br><span class="line">        ret |= <span class="number">1</span>&lt;&lt;(s[i] - <span class="string">'A'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printBitmask</span><span class="params">(<span class="keyword">int</span> state)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; (<span class="number">1</span>&lt;&lt;i) &lt;= state; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((state&gt;&gt;i)&amp;<span class="number">1</span>)</span><br><span class="line">            <span class="built_in">putchar</span>(i + <span class="string">'A'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; LHS, RHS;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">findFD</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ss = i;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; LHS.size(); j++) &#123;</span><br><span class="line">        <span class="keyword">if</span> ((LHS[j]&amp;i) == LHS[j])</span><br><span class="line">            ss |= RHS[j];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (ss != i)</span><br><span class="line">    	<span class="keyword">return</span> findFD(ss);</span><br><span class="line">    <span class="keyword">return</span> ss;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; decomposing(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; state, <span class="keyword">int</span> fdlhs, <span class="keyword">int</span> fdrhs) &#123;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ret;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; state.size(); i++) &#123; <span class="comment">// X-&gt;Y</span></span><br><span class="line">        <span class="keyword">int</span> X = fdlhs, Y = fdrhs&amp;state[i];</span><br><span class="line">        <span class="keyword">if</span> (Y != state[i] &amp;&amp; (X&amp;state[i]) == X &amp;&amp; Y &amp;&amp; X &amp;&amp; X != Y) &#123;</span><br><span class="line">            ret.push_back(state[i]^X^Y);</span><br><span class="line">            ret.push_back(Y);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            ret.push_back(state[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    sort(ret.begin(), ret.end());</span><br><span class="line">    ret.resize(unique(ret.begin(), ret.end()) - ret.begin());</span><br><span class="line">    <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printResult</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &amp;ret)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"S = &#123;"</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; ret.size(); i++) &#123;</span><br><span class="line">        printBitmask(ret[i]);</span><br><span class="line">        <span class="keyword">if</span> (i != ret.size() - <span class="number">1</span>) &#123;</span><br><span class="line">            <span class="built_in">printf</span>(<span class="string">", "</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"&#125;"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="built_in">string</span> s;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m) &#123;</span><br><span class="line">        LHS.clear(), RHS.clear();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="built_in">cin</span> &gt;&gt; s;</span><br><span class="line">            <span class="built_in">string</span> lhs, rhs;</span><br><span class="line">            parsingStmt(s, lhs, rhs);</span><br><span class="line">            LHS.push_back(toBitmask(lhs));</span><br><span class="line">            RHS.push_back(toBitmask(rhs));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ret;</span><br><span class="line">        <span class="keyword">int</span> update = <span class="number">0</span>;</span><br><span class="line">        ret.push_back((<span class="number">1</span>&lt;&lt;n) - <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            update = (<span class="keyword">int</span>) ret.size();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">                ret = decomposing(ret, LHS[i], findFD(LHS[i]));</span><br><span class="line">                <span class="keyword">if</span> (ret.size() &gt; update) &#123;	</span><br><span class="line">                    printBitmask(LHS[i]);</span><br><span class="line">                	<span class="built_in">printf</span>(<span class="string">"-&gt;"</span>);</span><br><span class="line">                	printBitmask(RHS[i]);</span><br><span class="line">                	<span class="built_in">puts</span>(<span class="string">""</span>);</span><br><span class="line">                    printResult(ret);</span><br><span class="line">                	<span class="keyword">break</span>;</span><br><span class="line">                &#125;            </span><br><span class="line">            &#125;</span><br><span class="line">            update = ret.size() &gt; update;</span><br><span class="line">        &#125; <span class="keyword">while</span> (update);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/geometry-hw5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/12/28/lesson/geometry-hw5/" class="article-date">
+  <time datetime="2014-12-28T00:56:01.000Z" itemprop="datePublished">2014-12-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算幾何/">計算幾何</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/12/28/lesson/geometry-hw5/">計算幾何 - HW05</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/12/28/lesson/geometry-hw5/" data-id="cipwcq8zb02400rxcpr9g0jo9" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/12/28/lesson/geometry-hw5/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/計算幾何/">計算幾何</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Chapter-10"><a href="#Chapter-10" class="headerlink" title="Chapter 10"></a>Chapter 10</h2><h3 id="10-1"><a href="#10-1" class="headerlink" title="10.1"></a>10.1</h3><p>In Section 10.1 we solved the problem of finding all horizontal line segments in a set that intersect a vertical segment. For this we used an interval tree with priority search trees as associated structures. There is also an alternative approach. We can use a 1-dimensional range tree on the y-coordinate of the segments to determine those segments whose y-coordinate lies in the y-range of the query segment. The resulting segments cannot lie above or below the query segment, but they may lie completely to the left or to the right of it. We get those segments in O(logn) canonical subsets. For each of these subsets we use as an associated structure an interval tree on the x-coordinates to find the segments that actually intersect the query segment.</p>
+<p>a. Give the algorithm in pseudocode.<br>b. Prove that the data structure correctly solves the queries.<br>c. What are the bounds for preprocessing time, storage, and query time of this structure? Prove your answers.</p>
+<p>給 n 個水平線段，詢問垂直的線段與那些水平線段有相交，輸出所有有相交的線段。</p>
+<p>a. Algorithm:</p>
+<ol>
+<li>對 n 個線段建造 interval tree，使用課本上 CONSTRUCTINTERVALTREE(l) 的做法。</li>
+<li>對 interval tree 上每一個 node 建造 Priority Search Tree，node 依照 x 劃分，分別對 node.x 的左右兩側建造 PST，距離 node.x 越遠的端點，其優先權越高，左右子樹依照 y-value 分兩堆。</li>
+<li>詢問調用 QUERYINTERVALTREE(v, qx)，得到相對應的 ndoe 後，查找每個 node 下的 Priority Search tree 與線段相交，調用 QUERYPRIOSEARCHTREE()。</li>
+</ol>
+<p>b. Prove that the data structure correctly solves the queries.<br>上述的作法與 axis-parallel rectangular query window 相同。而此問題的詢問是 axis-parallel rectangular query window 的 subset，一個線段的詢問是 <em> qx = qx’</em> 的情況，故得證。</p>
+<p>c. What are the bounds for preprocessing time, storage, and query time of this structure? Prove your answers.</p>
+<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>store space : <strong><em> O(n) </em></strong><br>query time : <strong><em> O(log n + k) </em></strong></p>
+<p>前處理因 interval tree 最慘 <em> T(n) = 2 T(n/2) + O(n) </em>，建造 PST 只需要 <em> O(n) </em>，每個線段最多在兩個 PST 中，得到記憶體空間最多為 <em> O(n) </em>。詢問最多為 interval tree 的深度 <em> O(log n) </em></p>
+<h3 id="10-2"><a href="#10-2" class="headerlink" title="10.2"></a>10.2</h3><p>Let P be a set of n points in the plane, sorted on y-coordinate. Show that, because P is sorted, a priority search tree of the points in P can be constructed in <em> O(n) </em> time.</p>
+<p>類似 bottom0up heap construction，已知 bottom-up heap 可在 O(n) 時間內完成。</p>
+<p>假設最後的樹高 H，第 i 次的 bottom-up 會調整 2<sup>H-i</sup> 個元素，每個元素最多下降 i 層。則</p>
+<span>$$O(\sum_{i = 1}^{H} i \times 2^{H-i}) = O(1 \times 2^{H-1} + 2 \times 2^{H-2} + ... ) \\
+= O((2^{H-1} + 2^{H-2} + ... + 1) + (2^{H-2} + 2^{H-3} + ... + 1) + ...) \\
+= O(2^{H} + 2^{H-1} + ... + 1) = O(2^{H+1}) = O(n)$$</span><!-- Has MathJax -->
+<p>雖然要求左右子樹的 y 值要符合左小、右大，但由於已經根據 y 排好，bottom-up 時，保證調整的 shiftdown 操作會符合其性質。</p>
+<h3 id="10-6"><a href="#10-6" class="headerlink" title="10.6"></a>10.6</h3><p>Let I be a set of intervals on the real line. We want to be able to count the number of intervals containing a query point in O(logn) time. Thus, the query time must be independent of the number of segments containing the query point.</p>
+<p>a. Describe a data structure for this problem based on segment trees, which uses only O(n) storage. Analyze the preprocessing time, and the query time of the data structure.<br>b. Describe a data structure for this problem based on interval trees. You should replace the lists associated with the nodes of the interval tree with other structures. Analyze the amount of storage, preprocessing time, and the query time of the data structure.<br>c. Describe a data structure for this problem based on a simple binary search tree. Your structure should have O(n) storage and O(logn) query time. (Hence, segment trees are actually not needed to solve this problem efficiently.)</p>
+<p>有 n 個 [l<sub>i</sub>, r<sub>i</sub>]，詢問一個點 x 被多少個區間包含，輸出為一個整數。</p>
+<p>a. 使用 segment tree 儲存所有的 interval。</p>
+<p>對於其 node(u) 會 cover(l, r) 的區間，紀錄有多少區間 cover(l, r)，最多有 <em> 2n </em> 個葉節點，樹節點最多 <em> 4n </em> 個，每個 node 只有一個額外的整樹紀錄區間個數。然而一個區間最多被拆分 <em> O(log n) </em> 個，依序插入需消耗共計 <em> O(n log n) </em> 時間。</p>
+<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>query time : <strong><em> O(log n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
+<p>b. 使用 inteerval tree 處理 interval。</p>
+<p>對於每個 node 分別對左右兩側建造平衡樹，這個平衡樹要支持某數字是第 k 大或第 k 小的操作。對於一個 node 而言，會有數個區間交 node.x，假設詢問點 qx 在 node.x 左側，則根據左側的平衡樹，查找 qx 是第 k 小，用以回報個數。每一個區間對多在 2 個平衡樹中，故空間複雜度為 <em> O(n) </em>。</p>
+<p>preprocessing time : <strong><em> O(n log n) </em></strong><br>query time : <strong><em> O(log<sup>2</sup> n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
+<p>c. 使用 simple binary search tree。</p>
+<ol>
+<li>將 n 個線段的端點，共計 2n 個丟入 binary search tree。</li>
+<li>每一個 node 紀錄有多少個區間包含它，如果 node 是某個線段的右端點，則無視此區間的包含情況。</li>
+<li>對於每個詢問 qx，輸出 node = lower_bound(qx) 的包含結果。</li>
+</ol>
+<p>將所有端點排序後，會得到 [a<sub>0</sub>, a<sub>1</sub>, a<sub>2</sub>, …, a<sub>2n</sub>]，每一個 node 的資訊是 [a<sub>i</sub>, a<sub>i+1</sub>) 的區間包含訊息。簡單地說，切成最小塊的相鄰資訊，與 segment tree 反過來的概念。</p>
+<p>前處理使用 line sweep algorithm 掃描線算法，來找到每一個端點被多少個線段包含。掃描線算法需要 <em> O(n log n) </em>，binary search tree 只需要 <em> O(n) </em>，查找 lower_bound 只需要 <em> O(log n) </em>，保證最多 2n 個端點，樹最多使用 <em> O(n) </em> 個空間。</p>
+<p>preprocessing time : <strong><em> O(n log n + n) = O(n log n) </em></strong><br>query time : <strong><em> O(log n) </em></strong><br>store space : <strong><em> O(n) </em></strong></p>
+<h3 id="10-7"><a href="#10-7" class="headerlink" title="10.7"></a>10.7</h3><p>a. We want to solve the following query problem: Given a set S of n disjoint line segments in the plane, determine those segments that intersect a vertical ray running from a point (qx,qy) vertically upwards to infinity. Describe a data structure for this problem that uses O(nlogn) storage and has a query time of O(logn+k), where k is the number of reported answers.<br>b. Now suppose we only want to report the first segment hit by the query ray. Describe a data structure for this problem with O(n) expected storage and O(logn) expected query time. Hint: Apply the locus approach</p>
+<p>給定 n 個不相交的線段，詢問一點開始的射線，射線方向向 y 軸正向，輸出所有交到的線段。</p>
+<p>a. 使用 segment tree，依照所有的端點的 x 值，接著對於每個 node 建造以 y 值得 binary search tree，儲存數個線段，因為不相交，保證 binary search tree 在 [xl, xr] 區間的所有線段都是單調的。每個線段最多切成 <em> O(log n) </em>，故使用空間 <em> O(n log n) </em>，詢問 <em> O(log n + k) </em>，只須訪問 <em> O(log n) </em> 個節點，從 binary tree tree 最遠的開始往下輸出即可。</p>
+<p>b. 只找第一個碰到的線段，使用 trapezoidal map 找到 point location，走訪 DG 其最後一個 segment below 的情況就是輸出結果。已知 trapezoidal map 在隨機增量算法中，expected size of search structure <em> O(n) </em>，expected query time <em> O(log n) </em>。</p>
+<h2 id="Chapter-11"><a href="#Chapter-11" class="headerlink" title="Chapter 11"></a>Chapter 11</h2><h3 id="11-1"><a href="#11-1" class="headerlink" title="11.1"></a>11.1</h3><p>In Chapter 1 we defined the convex hull of a set P of points as the intersection of all convex sets containing the points. In the current chapter we saw another definition: the convex hull of P is the set of all convex combinations of the points in P. Prove that these two definitions are equivalent, that is, prove that a point q is a convex combination of points in P if and only if q lies in every convex set containing P.</p>
+<p>首先 convex combinations 指得是<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax -->，證明 q 會在所有的凸包集中，也就是 q 點相當於任抓幾點出來，會在這幾點形成的凸包中，公式計算類似物理上的質心計算。</p>
+<p>(=&gt;)<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax -->. Prove q lies in every convex set containing P.</p>
+<ul>
+<li>Base :  <span>$n = 2, q = \lambda_{1} p_{1} + \lambda_{2} p_{2}$</span><!-- Has MathJax -->, q lies on segment p<sub>1</sub>p<sub>2</sub>, which must be a subset of every convex set containing p<sub>1</sub>, p<sub>2</sub>.</li>
+<li>Suppose:  <span>$n \le k$</span><!-- Has MathJax --> 均成立，當 <em> n = k + 1 </em> 時<span>$\lambda_{k+1} = 0$</span><!-- Has MathJax --> 必定成立。  </li>
+</ul>
+<span>$$\begin{align}
+&amp; q = \lambda_{1} p_{1} + \lambda_{2} p_{2} + ... + \lambda_{k} p_{k} + \lambda_{k+1} p_{k+1} \\
+&amp; = (1 - \lambda_{k+1}) \left [ \frac{\lambda_{1}}{1 - \lambda_{k+1}} p_{1} + \frac{\lambda_{2}}{1 - \lambda_{k+1}} p_{2} + ... + \frac{\lambda_{k}}{1 - \lambda_{k+1}} p_{k} \right ] + \lambda_{k+1} p_{k+1} \\
+&amp; = (1 - \lambda_{k+1}) ({\lambda_{1}}&apos; p_{1} + {\lambda_{2}}&apos; p_{2} + ... + {\lambda_{k}}&apos; p_{k}) + \lambda_{k+1} p_{k+1} \\
+&amp; \text{where } {\lambda_{i}}&apos; = \frac{\lambda_{i}}{1 - \lambda_{k+1}}, \lambda_{1} + \lambda_{2} + ... + \lambda_{k} = 1 - \lambda_{k+1} \\
+&amp; \sum_{i = 1}^{k} {\lambda_{i}}&apos; = \sum_{i = 1}^{k} \frac{\lambda_{i}}{1 - \lambda_{k+1}} = \frac{1}{1 - \lambda_{k+1}} \sum_{i = 1}^{k} \lambda{i} = 1
+\end{align}$$</span><!-- Has MathJax -->  
+<p>Hence, the point<span>${q}&apos; = \sum_{i=1}^{k} {\lambda_{i}}&apos; p_{i}$</span><!-- Has MathJax --> is convex combination of p<sub>1</sub>, p<sub>2</sub>, …, p<sub>k</sub>, q’ lies every convex set containing the them.  </p>
+<span>$q = (1 - \lambda_{k+1}) {q}&apos; + \lambda_{k+1} p_{k+1}$</span><!-- Has MathJax -->  
+<p>every convex set containing p<sub>1</sub>, p<sub>2</sub>, …, p<sub>k</sub>, q’. Since it also contains p<sub>k+1</sub> the set must contain q as a convex combination of two points.<br>(&lt;=) Prove q lies in every convex set containing P =&gt;<span>$q = \sum_{i = 1}^{n} \lambda_{i} p_{i}, \lambda_{i} \geq 0, \sum_{i = 1}^{n} \lambda_{i} = 1$</span><!-- Has MathJax --><br>In particular, q lies in the smallest convex set, the convex hull of P. Triangulate the convex hull, q must lie in one of the triangles<span>$\triangle p_{1} p_{2} p_{3}$</span><!-- Has MathJax -->. Connect q to p<sub>1</sub>, p<sub>2</sub>, p<sub>3</sub>. This partitions the triangle into tree smaller ones.  </p>
+<span>$$\left\{\begin{matrix}
+\triangle p_{1} p_{2} p_{3} = A \\
+\triangle q p_{2} p_{3} = A_{1} \\ 
+\triangle q p_{1} p_{3} = A_{2} \\ 
+\triangle q p_{1} p_{2} = A_{3} \\
+A = A_{1} + A_{2} + A_{3}
+\end{matrix}\right. \Rightarrow q = \frac{A_{1}}{A} p_{1} + \frac{A_{2}}{A} p_{2} + \frac{A_{3}}{A} p_{3}$$</span><!-- Has MathJax -->  
+<p>得證。</p>
+<h3 id="11-2"><a href="#11-2" class="headerlink" title="11.2"></a>11.2</h3><p>Prove that the worst case running time of algorithm CONVEXHULL is O(n3), and that there are sets of points where a bad choice of the random permutation makes the algorithm actually need Θ(n3) time.</p>
+<p>CONVEXHULL 共有三層 for loop.</p>
+<ul>
+<li>LINE 7 如果每次的新加入的 p<sub>i</sub> 都在 convex hull 外面，即 F<sub>conflict</sub>(p<sub>i</sub>) 非空。</li>
+<li>LINE 10<span>$e \in \pounds$</span><!-- Has MathJax -->，而最多有 i - 1 個，投影的情況下，最多 i 個點都在凸包上，因此最多產生 i - 1 個 facets。</li>
+<li>LINE 18 對每個新加入的 facets 最多增加 n - i 個 conflict 點。</li>
+</ul>
+<p>故最慘 O(n<sup>3</sup>)。</p>
+<h3 id="11-6"><a href="#11-6" class="headerlink" title="11.6"></a>11.6</h3><p>Describe a data structure that allows you to test whether a query point q lies inside a convex polytope with n vertices in R3. (Hint: Use the results from Chapter 6.)</p>
+<p>快速判斷一個點是否在 3D convex hull 中。</p>
+<ul>
+<li>方案一：3D point location by 3D trapezoidal map. 感覺非常難做，弄出很多柱狀體。</li>
+<li>方案二：convex hull 最多會有 3n - 6 個面，最多有 3n - 6 個面不等式，判斷是否全在同一側 <em> O(n) </em>。</li>
+<li>方案三：將做好的 3D convex hull，將所有點投影到 x-y 平面，每一個梯形區域會由 2 個 convex hull 的面覆蓋，要不沒有面。對於投影的 2D 建造 trapezoidal map。query 一個點 q 時，先投影到 x-y 平面，找到所在的梯形區域，針對兩面的不等式進行判斷。預處理 <em> O(n log n) </em>，詢問 <em> O(log n) </em>。</li>
+</ul>
+<h3 id="11-8"><a href="#11-8" class="headerlink" title="11.8"></a>11.8</h3><p>Describe a randomized incremental algorithm to compute the intersection of half-planes, and analyze its expected running time. Your algorithm should maintain the intersection of the current set of half-planes. To figure out where to insert a new half-plane, maintain a conflict graph between the vertices of the current intersection and the half-planes that are still to be inserted.</p>
+<ul>
+<li><p>維護半平面 hi 與 Sj 的相交資訊。</p>
+</li>
+<li><p><code>add half-place</code><br>繞外部 (半平面的另一側的凸包邊) 的 edge e，將 h<sub>conflict</sub>(e) 移除掉 intersection(e, h<sub>conflict</sub>(e)) in<span>$\bar{h_{i}}$</span><!-- Has MathJax -->。<br>期望值的複雜度依賴中間過程中產生的交集點個數。</p>
+</li>
+<li><p>假設 c(H, h) 表示 inter(H) 和 h 的 conflict vertice 個數。<br>則<span>$\sum_{i = 1}^{n} \left [ \frac{2}{i} \sum_{h \in S \setminus S_{i} }{c(H,  h)} \right ]$</span><!-- Has MathJax -->－所有的花費。  </p>
+</li>
+</ul>
+<span>$$E[c(S_{i}, h_{i})] = \frac{1}{n-i} \sum_{h \in S \setminus S_{i} } c(S_{i}, h) \\
+\Rightarrow \sum_{i = 1}^{n} \left ( \frac{2}{i} \sum_{h \in S \setminus S_{i} }{c(H,  h)} \right ) = \sum_{i = 1}^{n} \left ( \frac{2}{i} \sum_{h \in S \setminus S_{i} }{E(S_{i},  h_{i-1})} \right ) \\
+= \sum_{i = 1}^{n} \left ( \frac{2}{i} (n - i) E(S_{i},  h_{i-1}) \right ) = \sum_{i = 1}^{n} \left ( \frac{2(n-i)}{i} E[\text{the number of of vertices destroy ed at i+1}] \right )$$</span><!-- Has MathJax -->  
+<p>對於每一個 vertice v 被創建的時間為 tc(v), 被移除的時間 td(v)。</p>
+<span>$$\sum_{i = 1}^{n} \left ( \frac{2(n-i)}{i} E[\text{the number of vertices destroy ed at i+1}] \right ) \\
+= \sum_{v} \frac{2(n - td(v) + 1)}{td(v) - 1} \le \sum_{v} \frac{2(n - tc(v)) + 2}{tc(v)} \\
+\le \sum_{n}^{i=1} \frac{2(n - i) + 2}{i} E[\left |v \mid tc(v) = i \right |] \\
+= \sum_{n}^{i=1} \frac{2(n - i) + 2}{i} \times 2
+= O(\sum_{n}^{i=1} \frac{n}{i} - 1) = O(n ln n)$$</span><!-- Has MathJax -->  
+<p>得證。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-lesson-database" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/12/17/lesson-database/" class="article-date">
@@ -114,7 +736,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/17/lesson-database/" data-id="cipwal3ji0056xoxcbzkdyuxq" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/12/17/lesson-database/" data-id="cipwcq7gv005f0rxcnhj93ess" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/12/17/lesson-database/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -235,7 +857,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/NA67biS.png" rel="gallery_cipwal4tv021cxoxckpizmyy8">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/NA67biS.png" rel="gallery_cipwcq8v602250rxcahlc7s1a">
         <img src="http://i.imgur.com/NA67biS.png" itemprop="image">
       </a>
     
@@ -254,7 +876,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/05/lesson/civilization-w11/" data-id="cipwal4tv021cxoxckpizmyy8" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/12/05/lesson/civilization-w11/" data-id="cipwcq8v602250rxcahlc7s1a" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/12/05/lesson/civilization-w11/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -323,7 +945,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/05/lesson/NLP-paper2/" data-id="cipwal4t40210xoxc0a33eeyw" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/12/05/lesson/NLP-paper2/" data-id="cipwcq8rh021g0rxcrsdl0m8k" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/12/05/lesson/NLP-paper2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -430,7 +1052,7 @@ x^{2}(t, c) = \frac{N \times (AD - CB)^{2} }{(A+C)\times (B + D) \times (A + B) 
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/12/02/lesson/civilization-note/" data-id="cipwal4u1021fxoxcwv75ipdp" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/12/02/lesson/civilization-note/" data-id="cipwcq8te021v0rxc477ek4js" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/12/02/lesson/civilization-note/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -543,7 +1165,7 @@ x^{2}(t, c) = \frac{N \times (AD - CB)^{2} }{(A+C)\times (B + D) \times (A + B) 
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/" data-id="cipwal4xm0239xoxci7xpgp4a" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/" data-id="cipwcq8z1023t0rxc9su3vrzp" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/28/lesson/geometry-hw4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -734,7 +1356,7 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/" data-id="cipwal4ui021mxoxcn32bykgz" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/" data-id="cipwcq8uf02220rxc87oxqlij" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/11/26/lesson/civilization-w10/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -801,406 +1423,9 @@ AND 就是做交集操作，不知道該怎麼寫才好。</li>
 
 
   
-    <article id="post-lesson/NLP-paper1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/11/22/lesson/NLP-paper1/" class="article-date">
-  <time datetime="2014-11-22T03:18:19.000Z" itemprop="datePublished">2014-11-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/自然語言/">自然語言</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/22/lesson/NLP-paper1/">自然語言處理 論文研讀 1</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/22/lesson/NLP-paper1/" data-id="cipwal4sw020vxoxcpu4uvu56" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/11/22/lesson/NLP-paper1/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/自然語言/">自然語言</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>語意分析涉及正反意見在文字語句中判定，因此必須使用多方視角看待問題與答案，這一點在之前，有人做過意見導向的資訊萃取、資訊摘要 (於文件、語句、片語)。語意分析通常分為三個階段，<strong> 校準 </strong>、 <strong> 辨識 </strong>、 <strong> 分類 </strong> 所有已經讀取的文句。這篇論文探討文件分級 (document-level) 的分析，將會著重分析 <strong> 特定類型的評論文件 </strong>。</p>
-<p>第一個問題－極性分類 (polarity classification)，對於目標決策正極性 (贊同) 或者是 負極性 (反對)，最近也在擴大到中性文件的分類上，雖然研究成果相當多且廣，極性分類仍然是自然語言處理系統中重大的挑戰。</p>
-<p>接著將會著重於語言學上的極性分類。在語言學中，建立一個高校的極性分類透過：</p>
-<ul>
-<li>high order n-grams</li>
-<li>複合形容詞，例如 happy 被視為正，而 terrible 視為負面。</li>
-<li>詞彙的相依關係</li>
-<li>來自於中立文件中所描述的詞組</li>
-</ul>
-<p>… 本文略</p>
-<p>主要是極性分類，反映正反兩方兩種評論，為了增加精準度，其一種方法把單純闡述事實的評論去除、以及在中性評論用的用詞特別處理，接著對於形容詞與關聯名詞做統計，確保面向的評論對象是所需。</p>
-<p>至於 n-gram 部分，有說明到 n 越大，將會造成模糊範圍增加，這樣一來其極性價值就會被削減，對於精準度是會掉的，只用 n = 2 好不好？他說他複合使用 n = 2 和 n = 3 將精準度提升，看到所謂顯著 2% 上升，似乎跟誤差無仿。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/civilization-w9" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/11/18/lesson/civilization-w9/" class="article-date">
-  <time datetime="2014-11-18T02:12:35.000Z" itemprop="datePublished">2014-11-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/XE220WR.png" rel="gallery_cipwal4vd021yxoxcn2nw2ob2">
-        <img src="http://i.imgur.com/XE220WR.png" itemprop="image">
-      </a>
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/4jDPBw2.png" rel="gallery_cipwal4vd021yxoxcn2nw2ob2">
-        <img src="http://i.imgur.com/4jDPBw2.png" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/18/lesson/civilization-w9/">[通識] 文明的進程 Week 9</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/18/lesson/civilization-w9/" data-id="cipwal4vd021yxoxcn2nw2ob2" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/11/18/lesson/civilization-w9/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="心得"><a href="#心得" class="headerlink" title="心得"></a>心得</h2><p>請閱讀 <a href="http://www.commentshk.com/2010/08/blog-post_21.html" target="_blank" rel="external">梁文道：媚俗</a>，並寫出：你覺得台灣媒體中最常出現哪些情感字眼？反映了怎樣的情感專制呢？（100字）</p>
-<p>文章中描述有關 <strong> 激動 </strong>、<strong> 動情 </strong> 兩字的使用，呈現一種媚俗的表現，</p>
-<blockquote><p>媚俗（德語：Kitsch）是一種被視為次等的視覺藝術形式，對現存藝術風格欠缺品味地作複製，又或是對已獲廣泛認同的藝術作毫無價值的模仿。<br>媚俗這個概念最初所描述的一類藝術作品，是對19世紀在美學上傳達誇張的傷悲和情緒的藝術手法（例如通俗劇）的一種回應，所以，「媚俗藝術」和「傷感藝術」有密切關係。</p>
-<footer><strong>wiki</strong><cite><a href="http://zh.wikipedia.org/wiki/%E5%AA%9A%E4%BF%97" target="_blank" rel="external">zh.wikipedia.org/wiki/%E5%AA%9A%E4%BF%97</a></cite></footer></blockquote>
-<p>那篇文章是在 2010 年寫的，至今也有 4 年多的時間，而現今正在選舉當頭，而在經歷食安風暴的那段日子，新聞中最常出現的一詞為 <strong> 痛批 </strong>，這一詞是由新聞媒體創造出來的，在其他文本中是沒有任何中文字詞解釋。</p>
-<p>其實這一詞等同於 <strong> 回應 </strong>，但是又增添了情感上的強化，呈現一種委屈、於心不忍的回應，有一種 <strong> 明明對你這麼好，為什麼你居然這麼對我 </strong>。儘管當事者並沒有這樣的情感，但仍然是作為為某些族群發聲的言論，亦或是一種包裝罵人的態度。</p>
-<p>越來越少見到苛責、辱罵、… 等，一種單方面說明對方不好之處，<strong> 痛批 </strong> 一詞給予發言人背景、地位，讓人覺得他說話必然有其理由、逼不得已說出這樣的話來。</p>
-<p>直接地情緒化辱罵的發言，都將用 <strong> 痛批 </strong> 來包裝過於單一情緒化不理智的發言，也就是課程講的內容，我們再也無法直視情緒，任何不理智的情緒都必須被美化成另外一種較為平靜的情感。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/civilization-exam" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/11/12/lesson/civilization-exam/" class="article-date">
-  <time datetime="2014-11-12T02:16:33.000Z" itemprop="datePublished">2014-11-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/12/lesson/civilization-exam/">[通識] 文明的進程 小考集</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/12/lesson/civilization-exam/" data-id="cipwal4tm0217xoxcikgux954" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/11/12/lesson/civilization-exam/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>好幾題都 0 分，也許只是相性不合。而我也只是寫寫我的回答，沒有什麼標準答案。</p>
-</blockquote>
-<h2 id="Week-1"><a href="#Week-1" class="headerlink" title="Week 1"></a>Week 1</h2><ol>
-<li><p>Brad 小學時的校長做了一件甚麼事情讓 Brad 終身難忘？<br> 讓 Brad 參加音樂會，在音樂會的最後上台自白疾病的原因與如何面對，受到同學們的認同與理解。  </p>
-</li>
-<li><p>Brad 的父親最後幫學校圖書館建書櫃，還送 Brad 甚麼當作和解的禮物？<br> 一頂工地安全帽。  </p>
-</li>
-<li><p>Brad 接電話時為什麼總是先說自己養了狗？<br> 因為妥瑞症引起的聲音有如狗吠一般，先避免對方猜疑發生了什麼。  </p>
-</li>
-<li><p>Brad 說他也有閱讀困難，是怎麼樣的困難？<br> 無法控制自己的脖子不時擺動，使得無法長時間專注於書本內容。  </p>
-</li>
-<li><p>Brad 對於進入那些公共場合有所顧忌？為什麼？<br> 圖書館、教會、電影院、音樂會。因為那而的人們必須保持固定的儀態和禮貌。</p>
-</li>
-</ol>
-<h2 id="Week-2"><a href="#Week-2" class="headerlink" title="Week 2"></a>Week 2</h2><ol>
-<li><p>哪個特質不屬於現代心靈：(1) 顧忌他人觀感 (2) 喜怒形於色 (3) 觀察盤算對方。<br> (2) 喜怒形於色。(1)(3) 都有著抑制自我生物本能、顧及他人的模式，(2) 則沒有。  </p>
-</li>
-<li><p>中世紀餐桌上最不常見的餐具是？ (1) 主餐盤 (2) 刀子 (3) 叉子<br> (3) 叉子。刀子與主餐盤為餐點必備的工具和器材，而叉子是用來區隔他人食物而存在，當時物質不豐裕的情況下，算是奢侈地存在。  </p>
-</li>
-<li><p>為什麼 Erasmas 在禮儀書中判斷「用餐時胡吃海塞」是鄉巴佬的行為？<br> 原本作答為 <strong> 有如飢餓的野獸，為了區隔人與野獸的差別。 0 分</strong><br> 行為不得體，沒有顧及他人的觀感，鄉巴佬總是做這些事情。(應該類似於這種回答？)  </p>
-</li>
-<li><p>人際互動的「文明化」如何有助於科學研究方法的發展？<br> 原本作答為 <strong> 文明化的互動反應物質生活與當時文化的流行，是一個直接的證據。 0 分</strong><br> 人際互動的行為反應社會階級結構，藉此了解結構進行研究。(應該類似於這種回答？)  </p>
-</li>
-<li><p>越是自命文明的人就越容易對他人的舉止感到「不舒服」為什麼？<br> 原本作答為 <strong> 因為認為禮儀與自己相同才算文明，舉止不同的他人只會像野獸。 0 分</strong><br> 階級高低的差別反應在舉止，因此在對於不同階級的人感到厭惡，也等同於對別人行為感到不舒服。</p>
-</li>
-</ol>
-<h2 id="Week-3"><a href="#Week-3" class="headerlink" title="Week 3"></a>Week 3</h2><ol>
-<li><p>中世紀貴族用餐最可能出現的菜色是：牛排、無骨鴨胸肉、全羊？<br> 全羊。當時還沒有食物幕後處理的概念，之後才有避見死相的道德感。  </p>
-</li>
-<li><p>中世紀禮儀最不可能反映的是：身分階級、個人偏好、家庭背景？<br> 個人偏好。當時禮儀與階級有關，不會涉及強調個人。  </p>
-</li>
-<li><p>文藝復興禮儀書最不可能說的是：不可粗俗、注意衛生、迴避不雅？<br> 原本作答為 <strong> 衛生是後期科技進步，才用衛生理由取代粗俗的理由。 0 分</strong><br> 注意衛生。當時講就是顧及別人，從不可粗俗、迴避不雅中可以發現都在顧及別人的觀感。注意衛生是在民主平等後，階級不重要，顧及自己才更有約束力。  </p>
-</li>
-<li><p>就食物的準備而言，為何西方人覺得中華文化的飲食方式很「文明」？<br> 因為食物會經過多道手法，讓食用時看不出原貌，並且便於入口。不用吐骨。  </p>
-</li>
-<li><p>這兩張「最後的晚餐」，哪張場景看起來年代較早？你的理由？<br> 第二張較早，因為沒有個人的餐具。晚期的餐具才比較普及。</p>
-<blockquote>
-<p>居然有藝術類型學生答題，根據畫風的不同來判斷年代 … 等，給這專業跪了，不過想必是 <strong> 0 分 </strong>。</p>
-</blockquote>
-</li>
-</ol>
-<h2 id="Week-4"><a href="#Week-4" class="headerlink" title="Week 4"></a>Week 4</h2><ol>
-<li><p>文藝復興時期常常提醒人們「天使無所不在」，目的是什麼？<br> 在不需要顧及他人的需求時，仍要遵守禮儀的理由。  </p>
-</li>
-<li><p>禮儀書說，便後從廁所回到社交場合時，不能讓人看出洗過手，為什麼？<br> 會讓場合的人因濕淋淋的手而想起廁所的那些汙穢。(備註：早期甚至希望不洗手。)  </p>
-</li>
-<li><p>台北捷運地上劃的排隊等候線，其實不是 <strong> 高度文明 </strong> 的標誌，為什麼？<br> 因為需要外物的約束，如何不需要線就能遵守，表示規則內化，那是更文明。  </p>
-</li>
-<li><p>為何用禮儀書來提升自己氣質的人，反而暴露自己階級地位不高？<br> 原本作答為 <strong> 禮儀書的存在是在階級流動的幫手，教導低階級融入上層階級。 0 分</strong><br> 教導階級高的社為人士的行為模式，正因為需要學習，才表示自己不處於上層階級。  </p>
-</li>
-<li><p>就 Elias 而言，為什麼社會越文明，其兒童與成人之間的差距就越大？<br> 成人的禮儀要求越高，兒童在短時間內無法對百年禮儀融會貫通，而這只是相對差距。</p>
-</li>
-</ol>
-<h2 id="Week-5"><a href="#Week-5" class="headerlink" title="Week 5"></a>Week 5</h2><ol>
-<li><p>在課程 ppt 中，老師用多重比基尼泳裝的貓咪來嘲諷什麼？<br> 原本作答為 <strong> 沒有必要這麼遮遮掩掩，一個母親的象徵竟被當作情色。 0 分</strong><br> 過度地遮掩身體、過度道德化的結果。  </p>
-</li>
-<li><p>以下何者 <strong> 不是 </strong> 社會歷史發展的結果？(1) 哈欠 (2) 洗手 (3) 掩鼻 (4) 遮體。為什麼？<br> 打哈欠一直都是生物自然反應。其餘皆為後天環境影響而做的事情。但是打哈欠用手遮住也算是後天教育而成。  </p>
-</li>
-<li><p>為什麼當前的清涼穿著其是 <strong> 不是 </strong> 世風日下，而是文明化成功的象徵。</p>
-<blockquote>
-<p>世風日下：社會的風俗習慣日漸澆薄，每況愈下。(答題時根本不知道這個詞什麼意思。)</p>
-</blockquote>
-<p> 原本作答為 <strong> 因為向別人暴露身體原本是羞恥的事，面對自己身體不怕外人注目，是心靈上的昇華，外表遮掩不是限制。 0 分 </strong> (生物本能不就是要遮掩自我弱點嗎？)<br> 因為環境影響，代表治安好，不會有鹹豬手的人出現，因此才敢做出清涼穿著。  </p>
-</li>
-<li><p>「人生：就是成人的生活」這個信念對於中世紀的兒童教育有何引響？<br> 原本作答為 <strong> 讓兒童失去原本應有的童年，更早步入成人階段，沒有純真無潔的思想，都被羞恥的教育而想太多什麼不能做的事情。 0 分 </strong><br> 很多事情不能去做、不能去想。因此很多事情也不知道後果的嚴重性。</p>
-</li>
-<li><p>文明的 <strong> 硬體技術 </strong> 可以使得羞恥情感固定下來，請舉一個例子說明。</p>
-<blockquote>
-<p>那時卡在硬體設備與軟體技術，兩個弄在一起時，一直想不到那是什麼鬼，於是在被迫交卷前亂填答案。結果只是單純講硬體設備。  </p>
-</blockquote>
-<p> 廁所。利用大量的裝飾、氣氛，來隔絕與生物的排泄行為的聯想。</p>
-</li>
-</ol>
-<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>被助教寫了 <strong> 沒掌握本課程關鍵重點 </strong>、 <strong> 沒有吸收 </strong>。我不否認，好幾堂課還在想算法分析。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/NLP-hw2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/11/10/lesson/NLP-hw2/" class="article-date">
-  <time datetime="2014-11-10T07:03:13.000Z" itemprop="datePublished">2014-11-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/自然語言/">自然語言</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/10/lesson/NLP-hw2/">自然語言處理 - HW02</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/11/10/lesson/NLP-hw2/" data-id="cipwal4t0020xxoxc6eo35x59" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/11/10/lesson/NLP-hw2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/xml/">xml</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/自然語言/">自然語言</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="編譯環境"><a href="#編譯環境" class="headerlink" title="編譯環境"></a>編譯環境</h2><p>Dev-C++ 5.6.3</p>
-<h2 id="作業內容"><a href="#作業內容" class="headerlink" title="作業內容"></a>作業內容</h2><p>給予 5000 筆的亞馬遜書店評論，每一個評論都已經分類好，總共有五種類型的書評，分別為 <code>book</code>, <code>dvd</code>, <code>health</code>, <code>music</code>, 以及 <code>toys_games</code>。</p>
-<p>利用這 5000 筆分類好的書評寫一個分類器，接著讀入另外測試資料，測試資料每一個書評有既定分類，使用分類器判斷是否符合既定分類，分別計算對於每一種分類書評的準確度 (Accuracy) 和精準度 (Precision)。</p>
-<ul>
-<li>準確度：接近正確答案的機率，在這裡可以理解為分類出來的結果等於實際結果的機率。</li>
-<li>精準度：測試結果一致的機率，在這裡可以理解為分類出來的結果中，實際上是正確的機率。(是否集中於某個實際結果)</li>
-</ul>
-<p>還有一個混用準確度和精準度的概念 f，假設準確度為 R，精準度為 P。</p>
-<span>$F = \frac{1}{\alpha  \frac{1}{P} + (1 - \alpha) \frac{1}{R}} = \frac{(\beta^{2} + 1) PR}{\beta^{2}P+R}$</span><!-- Has MathJax -->
-<p>所謂的 F1 定義為<span>$\beta = 1, \alpha = 1/2$</span><!-- Has MathJax -->，最後得到<span>$F = 2PR / (P+R)$</span><!-- Has MathJax --></p>
-<blockquote><footer><strong>wiki</strong><cite><a href="http://en.wikipedia.org/wiki/Precision_and_recall" target="_blank" rel="external">en.wikipedia.org/wiki/Precision_and_recall</a></cite></footer></blockquote>
-<p>關於輸入輸出資料</p>
-<ul>
-<li><code>gold_standard.xml</code> ： 黃金標準的 5000 筆評論</li>
-<li><code>test_outcome.xml</code> ：原本認為是 <strong> 測試用的反饋資料，用來檢測寫的分類器好不好。 </strong> 後更正為助教的分類器跑出來的結果。</li>
-</ul>
-<blockquote>
-<p>通常會拿到一大筆資料，經驗上 3/4 的資料會拿來訓練，剩下 1/4 會拿來檢測。也就是資料量於 3 : 1，至於一段資料怎麼切分有很多方式，可以擷取中間一段的 1/4 … 等都可以。</p>
-</blockquote>
-<p>看一下 xml 格式</p>
-<figure class="highlight plain"><figcaption><span>gold_standard.xml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;RDF rdf=&quot;http://www.w3.org/1999/02/22-rdf-syntax-ns#&quot;&gt;</span><br><span class="line">  &lt;Text category=&quot;music&quot;&gt;Forget the fact that despite the grumbling</span><br><span class="line">  about today&apos;s &quot;music&quot; ...&lt;/Text&gt;</span><br><span class="line">  &lt;Text category=&quot;health&quot;&gt;Printed all over the box are the words</span><br><span class="line">  &quot;with infrared heat&quot;. ...&lt;/Text&gt;</span><br><span class="line">  &lt;Text category=&quot;music&quot;&gt;I just finished seeing the movie and loved</span><br><span class="line">  the song at the end ...&lt;/Text&gt;</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
-<p>看起來最多兩層，如果不用插件來解析 XML，遞迴處理寫一個 parser 應該不是問題。</p>
-<p>於是就這麼蠻幹 XML parser 下去，仔細查閱一下給定的 XML，會發現文件中有 <code>&amp;amp;amp;</code> 和 <code>&amp;amp;amp;quot;</code> 的確在 XML 的元素 content 不會出現 <code>&gt;</code>, <code>&lt;</code> … 等字元，就跟 HTML 的 character entities 一樣都需要被替換成特殊的顯示規格。但真沒有見過上述的那兩個格式，仔細檢查發現應該是對應 <code>and</code> 字串和 <code>&quot;</code> 引號。解析完作 replace 動作。</p>
-<p>回過頭來看這次所需要的公式：</p>
-<span>$$P(c) = \frac{N_{c}}{N} \\
-P(w|c) = \frac{count(w,c)+1}{count(c)+|V|} \\
-P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
-<p>參數說明：</p>
-<p><em><span>$P(c)$</span><!-- Has MathJax --> 表示該分類佔有群體的機率，也就是在 5000 筆評論中，分類 c 佔有百分比<span>$N_{c}$</span><!-- Has MathJax --> 表示有多少筆評論屬於 c 分類<span>$N$</span><!-- Has MathJax --> 表示評論筆數，這裡已知<span>$N = 5000$</span><!-- Has MathJax -->
-</em><span>$P(w|c)$</span><!-- Has MathJax --> 單詞 w 在分類 c 的出現機率為何<span>$count(w,c)$</span><!-- Has MathJax --> 單詞 w 在分類 c 中出現的次數<span>$count(c)$</span><!-- Has MathJax --> 屬於 c 分類中字詞總數 (評論總共有多少字)<span>$|V|$</span><!-- Has MathJax --> 分類 c 中使用的單詞集合大小。<br>*<span>$P(c|s)$</span><!-- Has MathJax --> 評論句子 s 在分類 c 的機率為何。</p>
-<p>隨後找<span>$P(c|s)$</span><!-- Has MathJax --> 機率值最大作為分類依準。</p>
-<p>最後要找到分類是否正確，對於每一種分類 c 會得到表格</p>
-<table>
-<thead>
-<tr>
-<th>實際結果\分類結果</th>
-<th>Classifier no</th>
-<th>Classifier yes</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Truth no</td>
-<td>true negative(TN)</td>
-<td>false positive(FP)</td>
-</tr>
-<tr>
-<td>Truth yes</td>
-<td>false negative(FN)</td>
-<td>true positive(TP)</td>
-</tr>
-</tbody>
-</table>
-<p>準確度 R 意即：<code>TP / (TP + FN)</code>、精準度 P 意即：<code>TP / (TP + FP)</code></p>
-<p>對於 Micro-average 和 Macro-average 的計算，Micro 和 Macro 概念上我理解程式幾何平均和算數平均的概念，Micro 會把每個分類 c 的表單結果累加到一個表格，隨後按照一般分類算法計算準確和精準度，而 Macro 則是將每個分類算完的結果取算術平均。</p>
-<h2 id="代碼"><a href="#代碼" class="headerlink" title="代碼"></a>代碼</h2><p>傻傻地用分類器判斷與助教的決策比較的運行結果。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">process gold_standard.xml ...</span><br><span class="line">statistics model built ...</span><br><span class="line">--------------------+----------</span><br><span class="line">book                |      1000</span><br><span class="line">dvd                 |      1000</span><br><span class="line">health              |      1000</span><br><span class="line">music               |      1000</span><br><span class="line">toys_games          |      1000</span><br><span class="line">--------------------+----------</span><br><span class="line">process test_outcome.xml ...</span><br><span class="line">testing test_outcome.xml ...</span><br><span class="line">| AC\Assign|      book|       dvd|    health|     music|toys_games|</span><br><span class="line">|      book|       892|        29|        17|         9|        25|</span><br><span class="line">|       dvd|        22|       829|        16|        48|        41|</span><br><span class="line">|    health|        30|        19|       975|        46|       177|</span><br><span class="line">|     music|         5|        13|        12|       870|        28|</span><br><span class="line">|toys_games|        10|        16|        43|        21|       807|</span><br><span class="line">book</span><br><span class="line">        p :0.9301355579</span><br><span class="line">        r :0.9176954733</span><br><span class="line">        f :0.9238736406</span><br><span class="line">dvd</span><br><span class="line">        p :0.9150110375</span><br><span class="line">        r :0.8671548117</span><br><span class="line">        f :0.8904403867</span><br><span class="line">health</span><br><span class="line">        p :0.9172154280</span><br><span class="line">        r :0.7818765036</span><br><span class="line">        f :0.8441558442</span><br><span class="line">music</span><br><span class="line">        p :0.8752515091</span><br><span class="line">        r :0.9375000000</span><br><span class="line">        f :0.9053069719</span><br><span class="line">toys_games</span><br><span class="line">        p :0.7486085343</span><br><span class="line">        r :0.8996655518</span><br><span class="line">        f :0.8172151899</span><br><span class="line">Micro-average</span><br><span class="line">        p :0.8746000000</span><br><span class="line">        r :0.8746000000</span><br><span class="line">        f :0.8746000000</span><br><span class="line">Macro-average</span><br><span class="line">        p :0.8772444134</span><br><span class="line">        r :0.8807784681</span><br><span class="line">        f :0.8790078886</span><br><span class="line"></span><br><span class="line">--------------------------------</span><br><span class="line">Process exited after 6.545 seconds with return value 0</span><br></pre></td></tr></table></figure>
-<blockquote><p>後來發現是公式理解錯誤</p>
-<ul>
-<li>真陽性 (TP, true positive)<br>  正確的肯定。又稱：命中 (hit)</li>
-<li>真陰性 (TN, true negative)<br>  正確的否定。又稱：正確拒絕 (correct rejection)</li>
-<li>偽陽性 (FP, false positive)<br>  錯誤的肯定，又稱：假警報 (false alarm)，第一型錯誤</li>
-<li>偽陰性 (FN, false negative)<br>  錯誤的否定，又稱：未命中 (miss)，第二型錯誤</li>
-</ul>
-<footer><strong>wiki</strong><cite><a href="http://zh.wikipedia.org/wiki/ROC%E6%9B%B2%E7%BA%BF" target="_blank" rel="external">zh.wikipedia.org/wiki/ROC%E6%9B%B2%E7%BA%BF</a></cite></footer></blockquote>
-<p>準確度就是在正確答案中找誤判，而精準度就是在判斷正確下找錯誤。</p>
-<p>後來實驗用 <strong> gold_standard.xml </strong> train 和 test，運行結果為</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">| AC\Assign|      book|       dvd|    health|     music|toys_games|</span><br><span class="line">|      book|       950|         7|        15|         3|        25|</span><br><span class="line">|       dvd|         7|       895|        33|        21|        44|</span><br><span class="line">|    health|         1|         0|       984|         1|        14|</span><br><span class="line">|     music|         1|         3|        15|       968|        13|</span><br><span class="line">|toys_games|         0|         1|        16|         1|       982|</span><br><span class="line">book</span><br><span class="line">        p :0.9906152242</span><br><span class="line">        r :0.9500000000</span><br><span class="line">        f :0.9698825932</span><br><span class="line">dvd</span><br><span class="line">        p :0.9878587196</span><br><span class="line">        r :0.8950000000</span><br><span class="line">        f :0.9391395593</span><br><span class="line">health</span><br><span class="line">        p :0.9256820320</span><br><span class="line">        r :0.9840000000</span><br><span class="line">        f :0.9539505574</span><br><span class="line">music</span><br><span class="line">        p :0.9738430584</span><br><span class="line">        r :0.9680000000</span><br><span class="line">        f :0.9709127382</span><br><span class="line">toys_games</span><br><span class="line">        p :0.9109461967</span><br><span class="line">        r :0.9820000000</span><br><span class="line">        f :0.9451395573</span><br><span class="line">Micro-average</span><br><span class="line">        p :0.9558000000</span><br><span class="line">        r :0.9558000000</span><br><span class="line">        f :0.9558000000</span><br><span class="line">Macro-average</span><br><span class="line">        p :0.9577890462</span><br><span class="line">        r :0.9558000000</span><br><span class="line">        f :0.9567934893</span><br></pre></td></tr></table></figure>
-<p>當然不能拿相同的 train 和 test data 來用，但是也明顯地發現，這個 model 仍然沒有辦法達到很高純度的結果，在部分比例中也只達到 90% 的精度。</p>
-<p>那有沒有一種情況，我們將六種分類的共同交集字符給去除？這樣的效果會不會比較好呢？例如常用的 <code>I</code>、<code>think</code>、<code>it</code> … 等，在 model 中直接無視這些常用字集的效果如何呢？</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">void custom() &#123;</span><br><span class="line">    set&lt;string&gt; common;</span><br><span class="line">    int first_set = 1;</span><br><span class="line">    for (map&lt;string, map&lt;string, int&gt; &gt;::iterator it = categories.begin();</span><br><span class="line">        it != categories.end(); it++) &#123;</span><br><span class="line">        map&lt;string, int&gt; &amp;R = it-&gt;second;</span><br><span class="line">        set&lt;string&gt; s;</span><br><span class="line">        for (map&lt;string, int&gt;::iterator jt = R.begin(); </span><br><span class="line">            jt != R.end(); jt++)</span><br><span class="line">            s.insert(jt-&gt;first);</span><br><span class="line">        if (first_set) 	common = s, first_set = 0;</span><br><span class="line">        else &#123;</span><br><span class="line">            set&lt;string&gt; C;</span><br><span class="line">            set_intersection(common.begin(), common.end(), s.begin(), s.end(), inserter(C, C.begin()));</span><br><span class="line">            common = C;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    for (map&lt;string, map&lt;string, int&gt; &gt;::iterator it = categories.begin();</span><br><span class="line">        it != categories.end(); it++) &#123;</span><br><span class="line">        map&lt;string, int&gt; &amp;R = it-&gt;second;</span><br><span class="line">        for (set&lt;string&gt;::iterator jt = common.begin();</span><br><span class="line">            jt != common.end(); jt++)</span><br><span class="line">            R.erase(*jt);</span><br><span class="line">        int cnt = 0;</span><br><span class="line">        for (map&lt;string, int&gt;::iterator jt = R.begin();</span><br><span class="line">            jt != R.end(); jt++)</span><br><span class="line">            cnt += jt-&gt;second;</span><br><span class="line">        count_category[it-&gt;first] = cnt;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上述代碼為將每一個分類的字集與共同交集，並且將共同交集從每個分類中移除，同時將記數重新統計。根據實驗結果，很多分類都直接噴掉，也許是專有名詞使用的量太少，雖然每個字集仍然有上千上萬不等，但是在分類效應上某些分類完全消失。效果差到不行，所以就直接無視吧。或者提供點意見吧。</p>
-<p>回過頭來解一下關於作業內容，其實作業內容可以化簡為：</p>
-<blockquote>
-<p>輸入只有一組測資，該組測資會有數行，每一行上會有兩個分類結果，第一個分類結果為標準答案，第二個分類結果為根據模型運算的結果。對於測資輸出每一個分類的準確度、精準度以及 f1 的數據結果。</p>
-</blockquote>
-<p>兩個輸入檔案可以壓縮為</p>
-<h3 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">5000</span><br><span class="line">music music</span><br><span class="line">book health</span><br><span class="line">music music</span><br><span class="line">toys_games book </span><br><span class="line">music music</span><br><span class="line">... here are more rows</span><br></pre></td></tr></table></figure>
-<p>很明顯地，第二個評論中，誤把 book 類型判斷成 health。</p>
-<h3 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">| AC\Assign|      book|       dvd|    health|     music|toys_games|</span><br><span class="line">|      book|       907|        25|        48|         7|        13|</span><br><span class="line">|       dvd|        35|       873|        43|        24|        25|</span><br><span class="line">|    health|        10|         2|       932|        11|        45|</span><br><span class="line">|     music|         9|        46|        56|       865|        24|</span><br><span class="line">|toys_games|        11|        10|       168|        21|       790|</span><br><span class="line">book</span><br><span class="line">        p :0.9331275720</span><br><span class="line">        r :0.9070000000</span><br><span class="line">        f :0.9198782961</span><br><span class="line">dvd</span><br><span class="line">        p :0.9131799163</span><br><span class="line">        r :0.8730000000</span><br><span class="line">        f :0.8926380368</span><br><span class="line">health</span><br><span class="line">        p :0.7473937450</span><br><span class="line">        r :0.9320000000</span><br><span class="line">        f :0.8295505118</span><br><span class="line">music</span><br><span class="line">        p :0.9321120690</span><br><span class="line">        r :0.8650000000</span><br><span class="line">        f :0.8973029046</span><br><span class="line">toys_games</span><br><span class="line">        p :0.8807134894</span><br><span class="line">        r :0.7900000000</span><br><span class="line">        f :0.8328940432</span><br><span class="line">Micro-average</span><br><span class="line">        p :0.8734000000</span><br><span class="line">        r :0.8734000000</span><br><span class="line">        f :0.8734000000</span><br><span class="line">Macro-average</span><br><span class="line">        p :0.8813053583</span><br><span class="line">        r :0.8734000000</span><br><span class="line">        f :0.8773348714</span><br><span class="line"></span><br><span class="line">--------------------------------</span><br><span class="line">Process exited after 1.736 seconds with return value 0</span><br></pre></td></tr></table></figure>
-<p>答案算出來當然跟助教一下啊，知道什麼是 sample output 嗎？在 ACMer 的眼中，代表根據算法不同，答案也許會有誤差，或者是測資不同造成答案不同。而 sample output 通常告訴我們的是輸出格式與可能情況，而非測資的正確答案。</p>
-<blockquote>
-<p>我就是很笨，無法理解這個世界。不知道那檔案是有序對應，看到 attribute 名稱 name 一樣，內容 content 不一樣就自動補完無法理解的英文部分，而沒有去看 tag 中 inner content 內容是相同的。</p>
-</blockquote>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;map&gt;</span><br><span class="line">#include &lt;vector&gt;</span><br><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include &lt;fstream&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">#include &lt;sstream&gt;</span><br><span class="line">#include &lt;math.h&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;string&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;set&gt;</span><br><span class="line">#include &lt;algorithm&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">class XMLParser &#123;</span><br><span class="line">    public:</span><br><span class="line">    struct Node &#123;</span><br><span class="line">        string tag_name, content;</span><br><span class="line">        map&lt;string, string&gt; attr;</span><br><span class="line">        vector&lt;Node&gt; child;</span><br><span class="line">    &#125;;</span><br><span class="line">    Node root; </span><br><span class="line">    XMLParser(string text = "") &#123;</span><br><span class="line">        sin &lt;&lt; text;</span><br><span class="line">        root = Node();</span><br><span class="line">        build(root, "");</span><br><span class="line">    &#125;	</span><br><span class="line">    void replaceAll(std::string&amp; str, const std::string&amp; from, const std::string&amp; to) &#123;</span><br><span class="line">    	if(from.empty())</span><br><span class="line">        	return;</span><br><span class="line">    	size_t start_pos = 0;</span><br><span class="line">    	while((start_pos = str.find(from, start_pos)) != std::string::npos) &#123;</span><br><span class="line">        	str.replace(start_pos, from.length(), to);</span><br><span class="line">        	start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'</span><br><span class="line">    	&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    string html2text(string s) &#123;</span><br><span class="line">        string ret(s);</span><br><span class="line">        replaceAll(ret, "&amp;amp;amp;quot;", "\"");</span><br><span class="line">        replaceAll(ret, "&amp;amp;amp;", "and");</span><br><span class="line">        return ret;</span><br><span class="line">    &#125;</span><br><span class="line">    private:</span><br><span class="line">    stringstream sin;</span><br><span class="line">    void getTagContent(Node &amp;u) &#123;</span><br><span class="line">        char c, div;</span><br><span class="line">        while (sin.get(c)) &#123;</span><br><span class="line">            if (c == '&lt;') &#123;</span><br><span class="line">                while (sin.get(c) &amp;&amp; isspace(c));</span><br><span class="line">                u.tag_name = c;</span><br><span class="line">                while (sin.get(c) &amp;&amp; c != '&gt;' &amp;&amp; !isspace(c))</span><br><span class="line">                    u.tag_name += c;</span><br><span class="line">                if (c == '&gt;')	return;</span><br><span class="line">                while (true) &#123;</span><br><span class="line">                    while (sin.get(c) &amp;&amp; isspace(c));</span><br><span class="line">                    if (c == '&gt;')	return;</span><br><span class="line">                    string a = "", b = "";</span><br><span class="line">                    a += c;</span><br><span class="line">                    while (sin.get(c) &amp;&amp; !isspace(c) &amp;&amp; c != '=')</span><br><span class="line">                        a += c;</span><br><span class="line">                    while (sin.get(c) &amp;&amp; (isspace(c) || c == '"' || c == '\'')) div = c;</span><br><span class="line">                    b += c;</span><br><span class="line">                    while (sin.get(c) &amp;&amp; !isspace(c) &amp;&amp; c != div)</span><br><span class="line">                        b += c;</span><br><span class="line">                    u.attr[a] = b;</span><br><span class="line">                &#125;</span><br><span class="line">                return;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    int build(Node &amp;u, string last) &#123;</span><br><span class="line">        getTagContent(u);</span><br><span class="line">        if (u.tag_name == last)</span><br><span class="line">            return 0;</span><br><span class="line">        while (sin.peek() != EOF &amp;&amp; sin.peek() != '&lt;') &#123;</span><br><span class="line">            char c;</span><br><span class="line">            sin.get(c);</span><br><span class="line">            u.content += c;</span><br><span class="line">        &#125;</span><br><span class="line">        u.content = html2text(u.content);</span><br><span class="line">        while (sin.peek() != EOF) &#123;</span><br><span class="line">            while (sin.peek() != EOF &amp;&amp; isspace(sin.peek()))</span><br><span class="line">                sin.get();</span><br><span class="line">            if (sin.peek() == '&lt;') &#123;</span><br><span class="line">                u.child.push_back(Node());</span><br><span class="line">                if (!build(u.child[u.child.size() - 1], "/" + u.tag_name)) &#123;</span><br><span class="line">                    u.child.pop_back();</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;	</span><br><span class="line">        return 1;	</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">class StatsModel &#123;</span><br><span class="line">    public: </span><br><span class="line">        map&lt;string, map&lt;string, int&gt; &gt; categories; 	// count(w, c)</span><br><span class="line">        map&lt;string, int &gt; commentCount; 			// N_&#123;c&#125;</span><br><span class="line">        map&lt;string, int &gt; count_category; 			// count(c)</span><br><span class="line">        map&lt;string, map&lt;string, int&gt; &gt; judgeTable;</span><br><span class="line">        int N, V;</span><br><span class="line">        int microtable[2][2]; // [truth 0:1][classifier 0:1]</span><br><span class="line">        StatsModel() &#123;</span><br><span class="line">            N = V = 0;</span><br><span class="line">            memset(microtable, 0, sizeof(microtable));</span><br><span class="line">        &#125;</span><br><span class="line">        vector&lt;string&gt; normalSentence(string content) &#123;</span><br><span class="line">            vector&lt;string&gt; w;</span><br><span class="line">            stringstream sin(content);</span><br><span class="line">            string token;</span><br><span class="line">            while (sin &gt;&gt; token) &#123;</span><br><span class="line">                token = igntrim(token);</span><br><span class="line">                token = str2lower(token);</span><br><span class="line">                if (token.length() &gt; 0)</span><br><span class="line">                    w.push_back(token);</span><br><span class="line">            &#125;</span><br><span class="line">            return w;</span><br><span class="line">        &#125;</span><br><span class="line">        void recordJudge(string truth, string classifier) &#123;</span><br><span class="line">            judgeTable[truth][classifier]++;</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++) &#123;</span><br><span class="line">                int t = (it-&gt;first == truth);</span><br><span class="line">                int c = (it-&gt;first == classifier);</span><br><span class="line">                microtable[t][c]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        string judgeComment(string category, string content) &#123;</span><br><span class="line">            vector&lt;string&gt; w = normalSentence(content);</span><br><span class="line">            double Pc, P;</span><br><span class="line">            double maxPwc = - 1e+30;</span><br><span class="line">            string chooseClass = "";</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++) &#123;</span><br><span class="line">                Pc = (double)it-&gt;second / N;</span><br><span class="line">                P = log(Pc);</span><br><span class="line">                map&lt;string, int&gt; &amp;R = categories[it-&gt;first];</span><br><span class="line">                int count_c = count_category[it-&gt;first], count_w_c;</span><br><span class="line">                for (int i = 0; i &lt; w.size(); i++) &#123;</span><br><span class="line">                    count_w_c = 0;</span><br><span class="line">                    if (R.find(w[i]) != R.end())</span><br><span class="line">                        count_w_c = R[w[i]];</span><br><span class="line">                    P += log((double) (count_w_c + 1)/ (count_c + R.size()));</span><br><span class="line">                &#125;</span><br><span class="line">                if (P &gt; maxPwc) </span><br><span class="line">                    maxPwc = P, chooseClass = it-&gt;first;</span><br><span class="line">            &#125;</span><br><span class="line">            recordJudge(category, chooseClass);</span><br><span class="line">            return chooseClass;</span><br><span class="line">        &#125;</span><br><span class="line">        void addComment(string category, string content) &#123;</span><br><span class="line">            commentCount[category]++, N++;</span><br><span class="line">            map&lt;string, int&gt; &amp;S = categories[category];</span><br><span class="line">            vector&lt;string&gt; w = normalSentence(content);</span><br><span class="line">            for (int i = 0; i &lt; w.size(); i++)</span><br><span class="line">                S[w[i]]++;</span><br><span class="line">            count_category[category] += w.size(), V += w.size();</span><br><span class="line">        &#125;</span><br><span class="line">        string igntrim(string s) &#123;</span><br><span class="line">            while (s.size() &gt; 0) &#123;</span><br><span class="line">                if (isspace(s[0]) || s[0] == '.' || s[0] == ',' </span><br><span class="line">                    || s[0] == '!' || s[0] == '"' || s[0] == '\'')</span><br><span class="line">                    s = s.substr(1);</span><br><span class="line">                else &#123;</span><br><span class="line">                    int t = s.length();</span><br><span class="line">                    if (isspace(s[t-1]) || s[t-1] == '.' || s[t-1] == ',' </span><br><span class="line">                        || s[t-1] == '!' || s[t-1] == '"')</span><br><span class="line">                        s = s.substr(0, t-1);</span><br><span class="line">                    else</span><br><span class="line">                        return s;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            return s;</span><br><span class="line">        &#125;</span><br><span class="line">        string str2lower(string s) &#123;</span><br><span class="line">            for (int i = 0; i &lt; s.length(); i++)</span><br><span class="line">                s[i] = tolower(s[i]);</span><br><span class="line">            return s;</span><br><span class="line">        &#125;</span><br><span class="line">        void custom() &#123;</span><br><span class="line">            set&lt;string&gt; common;</span><br><span class="line">            int first_set = 1;</span><br><span class="line">            for (map&lt;string, map&lt;string, int&gt; &gt;::iterator it = categories.begin();</span><br><span class="line">                it != categories.end(); it++) &#123;</span><br><span class="line">                map&lt;string, int&gt; &amp;R = it-&gt;second;</span><br><span class="line">                set&lt;string&gt; s;</span><br><span class="line">                for (map&lt;string, int&gt;::iterator jt = R.begin(); </span><br><span class="line">                    jt != R.end(); jt++)</span><br><span class="line">                    s.insert(jt-&gt;first);</span><br><span class="line">                if (first_set) 	common = s, first_set = 0;</span><br><span class="line">                else &#123;</span><br><span class="line">                    set&lt;string&gt; C;</span><br><span class="line">                    set_intersection(common.begin(), common.end(), s.begin(), s.end(), inserter(C, C.begin()));</span><br><span class="line">                    common = C;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            for (map&lt;string, map&lt;string, int&gt; &gt;::iterator it = categories.begin();</span><br><span class="line">                it != categories.end(); it++) &#123;</span><br><span class="line">                map&lt;string, int&gt; &amp;R = it-&gt;second;</span><br><span class="line">                for (set&lt;string&gt;::iterator jt = common.begin();</span><br><span class="line">                    jt != common.end(); jt++)</span><br><span class="line">                    R.erase(*jt);</span><br><span class="line">                int cnt = 0;</span><br><span class="line">                for (map&lt;string, int&gt;::iterator jt = R.begin();</span><br><span class="line">                    jt != R.end(); jt++)</span><br><span class="line">                    cnt += jt-&gt;second;</span><br><span class="line">//				printf("%d -&gt; %d\n", count_category[it-&gt;first], cnt);</span><br><span class="line">                count_category[it-&gt;first] = cnt;</span><br><span class="line">            &#125;</span><br><span class="line">//			printf("%d\n", common.size());</span><br><span class="line">        &#125;</span><br><span class="line">        void print() &#123;</span><br><span class="line">            printf("%-20s+%10s\n", string(20, '-').c_str(), string(10, '-').c_str());</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++) &#123;</span><br><span class="line">                printf("%-20s|%10d\n", it-&gt;first.c_str(), it-&gt;second);</span><br><span class="line">            &#125;</span><br><span class="line">            printf("%-20s+%10s\n", string(20, '-').c_str(), string(10, '-').c_str());</span><br><span class="line">        &#125;</span><br><span class="line">        void report() &#123;</span><br><span class="line">            // print &lt;judge table&gt;</span><br><span class="line">            printf("|%10s|", "AC\\Assign");</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++)</span><br><span class="line">                printf("%10s|", it-&gt;first.c_str());</span><br><span class="line">            puts("");</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++) &#123;</span><br><span class="line">                printf("|%10s|", it-&gt;first.c_str());</span><br><span class="line">                for (map&lt;string, int&gt;::iterator jt = commentCount.begin();</span><br><span class="line">                    jt != commentCount.end(); jt++) &#123;</span><br><span class="line">                    printf("%10d|", judgeTable[it-&gt;first][jt-&gt;first]);</span><br><span class="line">                &#125;</span><br><span class="line">                puts("");</span><br><span class="line">            &#125;</span><br><span class="line">            // homework format</span><br><span class="line">            // recall: fraction of docs in class i classified correctly</span><br><span class="line">            // precision: fraction of docs assigned class i that are actually about class i</span><br><span class="line">            const double beta = 1;</span><br><span class="line">            double micro_r = 0, micro_p = 0, macro_r = 0, macro_p = 0, f1;</span><br><span class="line">            for (map&lt;string, int&gt;::iterator it = commentCount.begin();</span><br><span class="line">                it != commentCount.end(); it++) &#123;</span><br><span class="line">                double recall = 0, precision = 0, f1 = 0;</span><br><span class="line">                int sumr = 0, sump = 0;</span><br><span class="line">                for (map&lt;string, int&gt;::iterator jt = commentCount.begin();</span><br><span class="line">                    jt != commentCount.end(); jt++) &#123;</span><br><span class="line">                    sumr += judgeTable[it-&gt;first][jt-&gt;first];</span><br><span class="line">                    sump += judgeTable[jt-&gt;first][it-&gt;first];</span><br><span class="line">                &#125;</span><br><span class="line">                recall = (double) judgeTable[it-&gt;first][it-&gt;first] / sumr;</span><br><span class="line">                precision = (double) judgeTable[it-&gt;first][it-&gt;first] / sump;</span><br><span class="line">                f1 = (beta * beta + 1) * precision * recall / (beta * beta * precision + recall);</span><br><span class="line">                </span><br><span class="line">                macro_r += recall, macro_p += precision;</span><br><span class="line">                </span><br><span class="line">                printf("%s\n", it-&gt;first.c_str());</span><br><span class="line">                printf("%9s :%.10lf\n", "p", precision);</span><br><span class="line">                printf("%9s :%.10lf\n", "r", recall);</span><br><span class="line">                printf("%9s :%.10lf\n", "f", f1);</span><br><span class="line">            &#125;</span><br><span class="line">//			for (int i = 0; i &lt; 2; i++, puts("")) </span><br><span class="line">//				for (int j = 0; j &lt; 2; j++)</span><br><span class="line">//					printf("%5d ", microtable[i][j]);</span><br><span class="line">            // [truth 0:1][classifier 0:1] = &#123; &#123;TN, FP&#125;, &#123;FN, TP&#125; &#125; </span><br><span class="line">            micro_r = (double) microtable[1][1] / (microtable[1][1] + microtable[1][0]); // TP / (TP + FN)</span><br><span class="line">            micro_p = (double) microtable[1][1] / (microtable[1][1] + microtable[1][0]); // TP / (TP + FP)</span><br><span class="line">            f1 = (beta * beta + 1) * micro_p * micro_r / (beta * beta * micro_p + micro_r);</span><br><span class="line">            printf("%s\n", "Micro-average");</span><br><span class="line">            printf("%9s :%.10lf\n", "p", micro_p);</span><br><span class="line">            printf("%9s :%.10lf\n", "r", micro_r);</span><br><span class="line">            printf("%9s :%.10lf\n", "f", f1);</span><br><span class="line">            </span><br><span class="line">            macro_r /= commentCount.size();</span><br><span class="line">            macro_p /= commentCount.size();</span><br><span class="line">            f1 = (beta * beta + 1) * macro_p * macro_r / (beta * beta * macro_p + macro_r);</span><br><span class="line">            printf("%s\n", "Macro-average");</span><br><span class="line">            printf("%9s :%.10lf\n", "p", macro_p);</span><br><span class="line">            printf("%9s :%.10lf\n", "r", macro_r);</span><br><span class="line">            printf("%9s :%.10lf\n", "f", f1);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br><span class="line">int main() &#123;</span><br><span class="line">    ifstream fin("gold_standard.xml");</span><br><span class="line">    string xml = "", line;</span><br><span class="line">    while (getline(fin, line))</span><br><span class="line">        xml += "\n" + line;</span><br><span class="line">    printf("process gold_standard.xml ...\n");</span><br><span class="line">    </span><br><span class="line">    XMLParser xmlDoc(xml);</span><br><span class="line">    StatsModel statsModel;</span><br><span class="line">    </span><br><span class="line">    printf("statistics model built ...\n");</span><br><span class="line">    for (int i = 0; i &lt; xmlDoc.root.child.size(); i++) &#123;</span><br><span class="line">        string 	a = xmlDoc.root.child[i].attr["category"],</span><br><span class="line">                b = xmlDoc.root.child[i].content;</span><br><span class="line">        statsModel.addComment(a, b);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    statsModel.print();</span><br><span class="line">//	statsModel.custom();</span><br><span class="line">    </span><br><span class="line">    ifstream tin("test_outcome.xml");</span><br><span class="line">    </span><br><span class="line">    xml = "";</span><br><span class="line">    while (getline(tin, line))</span><br><span class="line">        xml += "\n" + line;</span><br><span class="line">    printf("process test_outcome.xml ...\n");</span><br><span class="line">    </span><br><span class="line">    XMLParser testDoc(xml);</span><br><span class="line">    </span><br><span class="line">    printf("testing test_outcome.xml ...\n");</span><br><span class="line">    for (int i = 0; i &lt; testDoc.root.child.size(); i++) &#123;</span><br><span class="line">        statsModel.recordJudge(xmlDoc.root.child[i].attr["category"], testDoc.root.child[i].attr["category"]);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    statsModel.report();</span><br><span class="line">    </span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/categories/學校課程/page/5/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/4/">4</a><a class="page-number" href="/categories/學校課程/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/categories/學校課程/page/7/">7</a><a class="page-number" href="/categories/學校課程/page/8/">8</a><a class="page-number" href="/categories/學校課程/page/9/">9</a><a class="extend next" rel="next" href="/categories/學校課程/page/7/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/categories/學校課程/page/5/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/4/">4</a><a class="page-number" href="/categories/學校課程/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/categories/學校課程/page/7/">7</a><a class="page-number" href="/categories/學校課程/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/10/">10</a><a class="extend next" rel="next" href="/categories/學校課程/page/7/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -1212,7 +1437,7 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">88</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">92</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1222,6 +1447,38 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10105/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10105. Multiple Device (OpenCL)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10097/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10097. Advanced Matrix Calculator (OpenCL)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10096/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10096. Fast Game of Life (OpenCL)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/26/jg-10095/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10095. Matrix Calculator (OpenCL)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/26/jg-10092/">
@@ -1269,38 +1526,6 @@ P(c|s) = P(c) \prod P(w_{i}|c)$$</span><!-- Has MathJax -->
                 <i class="icon-file-o"></i> 
               
             UVa 13102 - Tobby Stones</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/uva-13101/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13101 - Tobby on Tree</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13000/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13000 - VIP Treatment</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13070/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13070 - Palm trees in the snow</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/24/uva-13036/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13036 - Birthday Gift to SJ - 2</a>
           </li>
         
       </ul>
