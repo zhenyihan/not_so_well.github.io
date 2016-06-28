@@ -89,6 +89,431 @@
         
           <section id="main">
   
+    <article id="post-lesson/geometry-mid" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/10/26/lesson/geometry-mid/" class="article-date">
+  <time datetime="2014-10-26T01:15:32.000Z" itemprop="datePublished">2014-10-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算幾何/">計算幾何</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/26/lesson/geometry-mid/">計算幾何 - 期中考練習</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/10/26/lesson/geometry-mid/" data-id="cipz12ui9029pt1xcx0gaplj6" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/10/26/lesson/geometry-mid/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/計算幾何/">計算幾何</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <ol>
+<li>(15 points total)<br>a.    (10 points) Given a set of points that are presorted by their x-coordinate value, provide an algorithm that computes the convex hull of these points in O(n).<br>b.    (5 points) If more than 2 points are possibly on an edge of convex hull, explain briefly how your algorithm handles this case.</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">int cross(Pt o, Pt a, Pt b) &#123;</span><br><span class="line">    return (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);</span><br><span class="line">&#125;</span><br><span class="line">int monotone(int n, Pt p[], Pt ch[]) &#123;</span><br><span class="line">    sort(p, p+n);</span><br><span class="line">    int i, m = 0, t;</span><br><span class="line">    for(i = 0; i &lt; n; i++) </span><br><span class="line">        while(m &gt;= 2 &amp;&amp; cross(ch[m-2], ch[m-1], p[i]) &lt;= 0)</span><br><span class="line">            m--;</span><br><span class="line">        ch[m++] = p[i];</span><br><span class="line">    for(i = n-1, t = m+1; i &gt;= 0; i--) </span><br><span class="line">        while(m &gt;= t &amp;&amp; cross(ch[m-2], ch[m-1], p[i]) &lt;= 0)</span><br><span class="line">            m--;</span><br><span class="line">        ch[m++] = p[i];</span><br><span class="line">    return m - 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>會將三點一線段的中間那一點替除掉，直到一個線段上只經過兩個點。</p>
+<ol>
+<li>(20 points total)<br>a.    (5 points) What are the types of event points in the plane sweep algorithm for line segment intersection problem?<br>b.    (10 points) Explain briefly when each type of event points is inserted to the event queue. Create a simple example (with 2 line segments) to demonstrate how it works.<br>c.    (5 points) When will the plane sweep algorithm for line segment intersection problem not suitable? Give a quantitative answer (i.e., describe your answer by using the Big-O notations). In addition, why is applying plane sweep algorithm on subdivision overlay in general a good idea?    </li>
+</ol>
+<hr>
+<ul>
+<li>掃描時遇到的三種情況<ol>
+<li>碰到開始的左端點 (加入此線段)</li>
+<li>碰到結束的右端點 (移除此線段)</li>
+<li>碰到線段之間的交點 (預測下個最近的相交點後，將其包含這個交點線段移除後，重新加入)</li>
+</ol>
+</li>
+<li>很簡單的，請參考上述三種情況繪製。</li>
+<li>當交集的數量在<span>$\Theta(n^{2})$</span><!-- Has MathJax --> 的時候，複雜度是<span>$\Theta(n^{2}log n)$</span><!-- Has MathJax -->，還不如直接窮舉任兩個線段計算交點<span>$\Theta(n^{2})$</span><!-- Has MathJax -->，就算要去重複，常數也比掃描線算法來得低。</li>
+</ul>
+<ol>
+<li>(20 points total)<br>a.    (10 points) Draw a simple polygon with 4 different types of vertices. Mark each vertex with its type. In addition, which two out of these 4 types are NOT allowed in a y-monotone piece?<br>b.    (5 points) Mark the “helper” for each of the vertices in your part (a) simple polygon that are not allowed in a y-monotone piece.<br>c.    (5 points) The triangulation of a y-monotone piece (with n vertices) can be done in linear time. Explain briefly why.</li>
+</ol>
+<hr>
+<ul>
+<li>start, split, end, merge, regular vertex 明明有五種！</li>
+<li>split, merge vertex 不符合 y-monotone piece</li>
+<li>加入 helper，對於 split 而言要往下找 split 或者是 regular vertex 相連，對 merge 而言要往上找 merge 或者是 regular 相連。</li>
+<li>因為往左可以根據維護凹性在 O(n) 時間內完成三角化，同理往右走訪。</li>
+</ul>
+<ol>
+<li>(20 points total)<br>a.    (5 points) What is the worst-case time complexity for the algorithm that solves the 2-dimensional linear programming problem?<br>b.    (5 points) Simplex algorithm is known to solve the linear programming problem in Operational Research. Why don’t we simple apply Simplex algorithm for the 2-dimensional linear programming problem?<br>c.    (10 points) Let (H, c) be a linear program. We number the half-planes h1, h2,…, hn. Let Hi be the set of the first i constraints, together with the special constraints m1 and m2 (i.e., the bound so that the solution space is limited). Let vi be the optimal point in Hi that satisfies the constraints. Explain why vi = vi-1 if vi-1 is contained in hi.</li>
+</ol>
+<hr>
+<p>*<span>$O(n^{2})$</span><!-- Has MathJax --> incremental LP problem，每加入一個半平面，都必須重新計算最佳交集。</p>
+<ul>
+<li>Simplex algorithm O(n log n)，在 2D 限制下，可以做到 O(n)。</li>
+<li>其實這是一個廢話，因為 hi 加上去，只會讓最佳解更糟，如果最佳解沒變，那麼最佳解仍然維持。</li>
+</ul>
+<ol>
+<li>(15 points total)<br>a.     (10 points) Briefly explain what a “split node” is. Create a balanced one-dimensional search tree with 8 leave nodes to be “1”, “2”, “3”, “4”, “5”, “6”, “7”, and “8”, and a range query [2, 6] to show where the split node is and how it helps to find all numbers in the range.<br>b.    (5 points) Both kd-trees and range trees are designed to do range query. Give one scenario that the kd-trees should be used and another scenario that the range trees should be adopted.</li>
+</ol>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">           [4]</span><br><span class="line">          /   \</span><br><span class="line">         /     \</span><br><span class="line">        /       \</span><br><span class="line">     [2]        [6]</span><br><span class="line">    /   \       / \</span><br><span class="line">  [1]  [3]    [5]  \</span><br><span class="line">  /\    /\     /\   \</span><br><span class="line">[1][2][3][4] [5][6] [7]</span><br></pre></td></tr></table></figure>
+<p>找到其中一邊的 split node 的寫法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">v = root</span><br><span class="line">while v is not leaf &amp;&amp; (r &lt;= xv || xv&apos; &gt; l)</span><br><span class="line">    if l &lt;= xv&apos;</span><br><span class="line">        v = lc(v)</span><br><span class="line">    else</span><br><span class="line">        v = rc(v)</span><br></pre></td></tr></table></figure>
+<p>最後我們找到兩個 <code>split node [1], [7]</code>，在兩個 split node 之間的葉節點都是答案，對於葉節點可以利用建造時，使用一個 linked list 去完成。</p>
+<ul>
+<li>對於多維度範圍查找用 range tree 最好，可以保證在<span>$O(log^{d} n)$</span><!-- Has MathJax --> 以內找到解，kd-tree 在這種情況很容易退化。</li>
+<li>對於最鄰近點搜索則是使用 kd-tree 最好，range tree 反而沒辦法支持這種操作。</li>
+</ul>
+<ol>
+<li>(20 points)<br>a.    (5 points) Draw the trapezoidal map of the following given figure. Note that the bounding box is provided already. (Give each trapezoid a number, which will be used in part (b).)<br>b.    (10 points) Follow the algorithm to construct the search structure D for the trapezoidal map in part a). The segments are inserted in the order of s4, s3, s2, and s1.<br>c.    (5 points) In the trapezoidal algorithm, the endpoints of line segments are assumed to have different x-coordinate value (i.e., so-called general position). While a method was provided to relax this constraint, explain briefly why the composite-number method (i.e., transform (x, y) to (x|y, y|x)) which has been used in kd-trees and range trees to deal with the similar constraint was not adopted?</li>
+</ol>
+<hr>
+<ul>
+<li>因為它們是 range query，對於相同的 x 值仍然要算相同，利用偏斜的效果不利於操作。</li>
+</ul>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/geometry-hw3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/10/26/lesson/geometry-hw3/" class="article-date">
+  <time datetime="2014-10-25T22:49:32.000Z" itemprop="datePublished">2014-10-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算幾何/">計算幾何</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/26/lesson/geometry-hw3/">計算幾何 - HW03</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/10/26/lesson/geometry-hw3/" data-id="cipz12uhs029ct1xcxqrrxof2" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/10/26/lesson/geometry-hw3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/計算幾何/">計算幾何</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Master-Theorem"><a href="#Master-Theorem" class="headerlink" title="Master Theorem"></a>Master Theorem</h2><span>$$T(n) = 
+\begin{cases}
+aT(n/b) + n^{c} &amp; \text{ if } n &gt; 1 \\
+d &amp; \text{ if } n = 1
+\end{cases}$$</span><!-- Has MathJax -->
+<p>1.<span>$\text{if } log_{b}a &lt; c, T(n) = \theta(n^{c})$</span><!-- Has MathJax --><br>2.<span>$\text{if } log_{b}a = c, T(n) = \theta(n^{c} log n)$</span><!-- Has MathJax --><br>3.<span>$\text{if } log_{b}a &gt; c, T(n) = \theta(n^{log_{b}a})$</span><!-- Has MathJax --></p>
+<h2 id="Extend-Master-Theorem"><a href="#Extend-Master-Theorem" class="headerlink" title="Extend Master Theorem"></a>Extend Master Theorem</h2><span>$$T(n) = 
+\begin{cases}
+aT(n/b) + f(n) &amp; \text{ if } n &gt; 1 \\
+d &amp; \text{ if } n = 1
+\end{cases} \\
+
+E = log_{b}(a)$$</span><!-- Has MathJax -->
+<p>1.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha &lt; -1, T(n) = \theta(n^{E})$</span><!-- Has MathJax --><br>2.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha = -1, T(n) = \theta(n^{E} log_{b} log_{b}(n))$</span><!-- Has MathJax --><br>3.<span>$\text{if } f(n) = O(n^{E} (log_{b}n)^{\alpha} ) \text{ and } \alpha &gt; -1, T(n) = \theta(n^{E}(log_{b}n)^{\alpha + 1})$</span><!-- Has MathJax --></p>
+<h1 id="Chapter-5"><a href="#Chapter-5" class="headerlink" title="Chapter 5"></a>Chapter 5</h1><h2 id="5-1"><a href="#5-1" class="headerlink" title="5.1"></a>5.1</h2><p>In the proof of the query time of the kd-tree we found the following<br>recurrence:<br><span>$$Q(n) = 
+\begin{cases}
+O(1) &amp; \text{ if } n = 1 \\
+2 + 2Q(n/4)&amp; \text{ if } n &gt; 1
+\end{cases}$$</span><!-- Has MathJax --><br>Prove that this recurrence solves to Q(n) = O(√n). Also show that Ω(√n) is a lower bound for querying in a kd-tree by defining a set of n points and a query rectangle appropriately.</p>
+<hr>
+<ol>
+<li>by master theorem,<span>$a = 2, b = 4, c = 0 \Rightarrow Q(n) = \Theta(\sqrt{n})$</span><!-- Has MathJax --><br>2.<span>$\Omega(\sqrt{n})$</span><!-- Has MathJax --> 是 kd-tree 的 lower_bound。如果 + 號存在的行都一直被執行，另外 - 號行都不會被執行，那麼複雜度就會達到<span>$\Omega(\sqrt{n})$</span><!-- Has MathJax -->，要明白如何加上 report 則會更慢，必須將包含的點依序回報。找一個不包含所有點的細長矩形於正中央即可，每次循環切割到 x 時，保證會留下 n/4 個節點。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Algorithm: SEARCHKDTREE(v, R) </span><br><span class="line">if v is leaf</span><br><span class="line">    report the points stored at v if it lies in R.</span><br><span class="line">else</span><br><span class="line">-	if region(lc(v)) contains R</span><br><span class="line">        report subtree lc(v)</span><br><span class="line">+	else if lc(v) intersects R</span><br><span class="line">        SEARCHKDTREE(lc(v), R)</span><br><span class="line">  </span><br><span class="line">-	if region(rc(v)) contains R</span><br><span class="line">        report subtree rc(v)</span><br><span class="line">+ 	else if rc(v) intersects R</span><br><span class="line">        SEARCHKDTREE(rc(v), R)</span><br></pre></td></tr></table></figure>  
+<h2 id="5-3"><a href="#5-3" class="headerlink" title="5.3"></a>5.3</h2><p>In Section 5.2 it was indicated that kd-trees can also be used to store sets of points in higher-dimensional space. Let P be a set of n points in d-dimensional space. In parts a. and b. you may consider d to be a constant.</p>
+<ol>
+<li>Describe an algorithm to construct a d-dimensional kd-tree for the points in P. Prove that the tree uses linear storage and that your algorithm takes<span>$O(n log n)$</span><!-- Has MathJax --> time.</li>
+<li>Describe the query algorithm for performing a d-dimensional range query. Prove that the query time is bounded by<span>$O(n^{1&minus;1/d} +k)$</span><!-- Has MathJax -->.</li>
+<li>Show that the dependence on d in the amount of storage is linear, that is, show that the amount of storage is<span>$O(dn)$</span><!-- Has MathJax --> if we do not consider d to be a constant. Give the dependence on d of the construction time and the query time as well.</li>
+</ol>
+<hr>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Algorithm : build(int k, int l, int r, int dep)</span><br><span class="line">    if l &gt; r</span><br><span class="line">        return NULL</span><br><span class="line">    m = (l + r)/2</span><br><span class="line">    Node ret = median axis[k%K] of point[l, r] ----- O(n)</span><br><span class="line">    split points[l, r] by median               ----- O(n), C++ std::nth_element()</span><br><span class="line">    ret.lson = build((k+1)%K, l, m-1);</span><br><span class="line">    ret.rson = build((k+1)%K, m+1, r);</span><br><span class="line">    return ret;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>利用 median of medians 算法找到中位數，數據儲存用指針來完成搜索，不用移動資料。<br>以上代碼根據遞迴公式<span>$T(n) = 2T(n/2) + O(n) \Rightarrow T(n) = \Theta(n log n)$</span><!-- Has MathJax -->，而 kd-tree 是一個 full binary tree，每一個節點都代表一個實際資料，因此空間複雜度<span>$O(n)$</span><!-- Has MathJax --> </li>
+<li>假設在 d 為空間，Q(n) 表示 n 個點的詢問，依序按照維度切割 (ex. x, y, z, x …)，現在只關注 x 軸上的切割，假設詢問範圍包含所有的 y, z，那麼在 2ed x 節點中，每一個節點具有<span>$n/2^{d}$</span><!-- Has MathJax --> 資料，而同一層會有<span>$2^{d-1}$</span><!-- Has MathJax --> 個 x 維度的子節點。然後遞迴詢問<span>$2^{d-1}$</span><!-- Has MathJax --> 所包含的範圍查找。<br>藉由 master theorem,<span>$a = 2^{d-1}, b = 2^{d}, c = 0 \Rightarrow Q(n) = \Theta(n^{1 - 1/d})$</span><!-- Has MathJax -->  <span>$$Q(n) =
+\begin{cases}
+O(1) &amp; \text{ if } n &lt; 2^{d} \\
+2^{d-1} + 2^{d-1} Q(n/2^{d}) &amp; \text{ if } n \geq 2^{d}
+\end{cases}$$</span><!-- Has MathJax --></li>
+<li>如果 d 不是常數，每一個內部節點空間 O(d)，有 n 個節點則需 O(dn) 的儲存空間。詢問上，需要在 intersected 花 O(d) 時間決定是否存在交集、包含，再來判斷是否走訪子樹，因此詢問是<span>$2dQ(n) = O(dn^{1-1/d})$</span><!-- Has MathJax -->，加上回報的效率為<span>$2dQ(n) = O(dn^{1-1/d} + k)$</span><!-- Has MathJax -->。</li>
+</ol>
+<h2 id="5-5"><a href="#5-5" class="headerlink" title="5.5"></a>5.5</h2><p>Algorithm SEARCHKDTREE can also be used when querying with other ranges than rectangles. For example, a query is answered correctly if the range is a triangle.</p>
+<p>a. Show that the query time for range queries with triangles is linear in the worst case, even if no answers are reported at all. Hint: Choose all points to be stored in the kd-tree on the line y = x.<br>b. Suppose that a data structure is needed that can answer triangular range queries, but only for triangles whose edges are horizontal, vertical, or have slope +1 or −1. Develop a linear size data structure that answers such range queries in O(n3/4+k) time, where k is the number of points reported. Hint: Choose 4 coordinate axes in the plane and use a 4-dimensional kd-tree.<br>c. Improve the query time to O(n2/3+k). Hint: Solve Exercise 5.4 first.</p>
+<hr>
+<ol>
+<li>最慘情況是 O(n)－詢問範圍為三角形。<br>詢問的範圍如圖，所有點落在 y = x 上，三角形範圍是一個很貼近 y = x 的三角形，三角形並沒有包含任何一個點，卻與所有劃分的區域有交集，因此必須走訪所有節點。</li>
+<li>如果要支持三角形範圍查找 (三角形的邊要不垂直、平行、斜率 +1、斜率 -1)。找到一個詢問<span>$O(n^{3/4} + k)$</span><!-- Has MathJax --> 的資料結構。<br>類似 kd-tree，但是輪替的標準為 <strong> x 軸 </strong>、<strong> y 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>，根據 5.3(b) 的公式，相當於 d = 4 的情況，得到<span>$O(n^{1 - 1/4} + k) = O(n^{3/4} + k)$</span><!-- Has MathJax -->。</li>
+<li>加快到<span>$O(n^{2/3} + k)$</span><!-- Has MathJax --> 的詢問時間。<br>在這裡想到是建立兩個 kd-tree，其中一個順序為 <strong> x 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>，另一個順序為 <strong> y 軸 </strong>、<strong> 斜率 1 </strong>、<strong> 斜率 -1 </strong>。前者可以回答向上、向下三角形，後者回答向左、向右三角形。相當於 d = 3 的切割，最多拆成 4 個範圍查找<span>$O(4n^{1 - 1/3} + k) = O(n^{2/3} + k)$</span><!-- Has MathJax -->。<ol>
+<li>在詢問矩形時，拆成四個三角形查找 (向上、向下、向左、向右三角形)</li>
+<li>在詢問三角形時，拆成兩個三角形查找</li>
+</ol>
+</li>
+</ol>
+<h2 id="5-9"><a href="#5-9" class="headerlink" title="5.9"></a>5.9</h2><p>One can use the data structures described in this chapter to determine whether a particular point (a,b) is in a given set by performing a range query with range [a : a]×[b : b]. </p>
+<ol>
+<li>Prove that performing such a range query on a kd-tree takes time O(logn).</li>
+<li>What is the time bound for such a query on a range tree? Prove your answer.</li>
+</ol>
+<hr>
+<ol>
+<li>對於 kd-tree 所消耗的時間 O(log n) 說明。  <span>$[a:a] \times [b:b]$</span><!-- Has MathJax --> 並不會跨區間。在 SEARCHKDTREE(v, R) 函數中，Line SEARCHKDTREE(lc(v), R) 和 SEARCHKDTREE(rc(v), R) 只會有一個符合。<span>$$Q(n) =
+\begin{cases}
+O(1) &amp; \text{ if } n = 1 \\
+1 + Q(n/2) &amp; \text{ if } n &gt; 1
+\end{cases}$$</span><!-- Has MathJax --></li>
+<li>對於 kd-tree 所消耗的時間 O(d log n) 說明。<br>首先能知道會先在第一維度探訪<span>$[a:a]$</span><!-- Has MathJax --> 的葉節點，中間經過 log n 個節點最後到葉節點，然後在其相對應的 y 軸 tree 中查找<span>$[b:b]$</span><!-- Has MathJax --> 也是 log n。因此是<span>$O(\sum{i = 1}^{d} log n) = O(d log n)$</span><!-- Has MathJax --></li>
+</ol>
+<h2 id="5-11"><a href="#5-11" class="headerlink" title="5.11"></a>5.11</h2><p>Let S1 be a set of n disjoint horizontal line segments and let S2 be a set<br>of m disjoint vertical line segments. Give a plane-sweep algorithm that<br>counts in O((n+m) log(n+m)) time how many intersections there are<br>in S1 ∪ S2.</p>
+<hr>
+<p>給 n 個不相交的水平線段、m 個不相交的垂直線段，在 O((n+m) log (n+m)) 的時間內找到焦點個數。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Algorithm:</span><br><span class="line">    1. sort all x-coordinate ----- O((n+m) log (n+m))</span><br><span class="line">    2. sweep x from small to large, maintain a segment tree or range tree.</span><br><span class="line"></span><br><span class="line">    for x = -oo to oo</span><br><span class="line">        for each horizontal line (sx, y)-(ex, y) in x</span><br><span class="line">            if sx = x</span><br><span class="line">                1Drangetree.add(y) 				----- O(log (n+m))</span><br><span class="line">        for each vertical line (x, sy)-(x, ey) in x</span><br><span class="line">            ret += 1Drangetree.query(sy, ey) 	----- O(log (n+m))</span><br><span class="line">        for each horizontal line (sx, y)-(ex, y) in x</span><br><span class="line">            if ex = x</span><br><span class="line">                1Drangetree.remove(y) 			----- O(log (n+m))</span><br><span class="line">    return ret</span><br></pre></td></tr></table></figure>
+<h1 id="Chapter-6"><a href="#Chapter-6" class="headerlink" title="Chapter 6"></a>Chapter 6</h1><h2 id="6-1"><a href="#6-1" class="headerlink" title="6.1"></a>6.1</h2><p>Draw the graph of the search structure D for the set of segments depicted<br>in the margin, for some insertion order of the segments.</p>
+<hr>
+<p>雖然沒有加入順序的考量，但是手爆一個 17 個線段、平面空間 29 個的建造 … 也許有點瘋狂，用最簡單的由上而下掃描，造成一個傾斜的樹也是各種不容易。</p>
+<h2 id="6-2"><a href="#6-2" class="headerlink" title="6.2"></a>6.2</h2><p>Give an example of a set of n line segments with an order on them that<br>makes the algorithm create a search structure of size Θ(n2) and worst-case<br>query time Θ(n).</p>
+<hr>
+<p>找到一個最慘空間<span>$\Theta(n^{2})$</span><!-- Has MathJax -->，最慘詢問時間<span>$\Theta(n)$</span><!-- Has MathJax -->。</p>
+<p>n 個線段，將其中 n/2 放置在同一個水平線上，對於剩餘 n/2 個：</p>
+<p>每次加入的順序 s1, s2, …, si，每次的線段的 x 值會包含前一個線段<span>$s_{i}.lx &lt; s_{i-1}.lx, s_{i}.rx &gt; s_{i-1}.rx$</span><!-- Has MathJax -->，美加入一個線段，會增加 n/2 個內部節點，並且最大深度增加 1。總計加入 n/2 次，增加的節點數量 O(n/2 x n/2) = O(n^2)，深度 O(n/2) = O(n)。</p>
+<h2 id="6-5"><a href="#6-5" class="headerlink" title="6.5"></a>6.5</h2><p>Given a convex polygon P as an array of its n vertices in sorted order along the boundary. Show that, given a query point q, it can be tested in time O(logn) whether q lies inside P.</p>
+<hr>
+<p>由於詢問次數相當多，必須將複雜度降到 O(log n)，採用的方式將凸包其中一個點當作基準，則如果在凸包的點而言，一定會落在某個以基點拉出的三角形內部中，為了方便計算，則可以拿外積的正負邊界上。得到可能的三角形後，從邊界中可以藉由外積計算是否同側。</p>
+<p>採用射線法 O(n) 肯定是吃大虧的。</p>
+<figure class="highlight plain"><figcaption><span>part of UVa 12048 - Inhabitants</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">double cross(Pt o, Pt a, Pt b) &#123;</span><br><span class="line">    return (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);</span><br><span class="line">&#125;</span><br><span class="line">int inside_convex(const Pt &amp;p, Pt ch[], int n) &#123;</span><br><span class="line">    if(n &lt; 3)</span><br><span class="line">        return false;</span><br><span class="line">    if(cross(ch[0], p, ch[1]) &gt; eps)</span><br><span class="line">        return false;</span><br><span class="line">    if(cross(ch[0], p, ch[n-1]) &lt; -eps)</span><br><span class="line">        return false;</span><br><span class="line">    </span><br><span class="line">    int l = 2, r = n-1;</span><br><span class="line">    int line = -1;</span><br><span class="line">    while(l &lt;= r) &#123;</span><br><span class="line">        int mid = (l + r)&gt;&gt;1;</span><br><span class="line">        if(cross(ch[0],p, ch[mid]) &gt; -eps) &#123;</span><br><span class="line">            line = mid;</span><br><span class="line">            r = mid - 1;</span><br><span class="line">        &#125; else l = mid + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    return cross(ch[line-1], p, ch[line]) &lt; eps;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/NLP-hw1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/10/25/lesson/NLP-hw1/" class="article-date">
+  <time datetime="2014-10-25T12:59:20.000Z" itemprop="datePublished">2014-10-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/自然語言/">自然語言</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/25/lesson/NLP-hw1/">自然語言處理 - HW01</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/10/25/lesson/NLP-hw1/" data-id="cipz12udu0272t1xcqwjqjbwy" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/10/25/lesson/NLP-hw1/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/自然語言/">自然語言</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="編譯環境"><a href="#編譯環境" class="headerlink" title="編譯環境"></a>編譯環境</h2><p>Dev-C++ 5.6.3</p>
+<h2 id="Language-model-implementation"><a href="#Language-model-implementation" class="headerlink" title="Language model implementation"></a>Language model implementation</h2><p>實作語言處理模型，要求讀入一連串的英文語句做為基底，接著詢問一句的正確性為多少，也就是這句話是正確拼讀的機率為何，算是一個可用的句子嗎？</p>
+<span>$$P(w_{i}) = \frac{Count(w_{i})}{\sum_{j} Count(w_{j})} \\
+P(w_{i}, w_{i+1}) = \frac{Count(w_{i}, w_{i+1})}{\sum_{j} Count(w_{j}, w_{j+1})} \\
+P(w_{i+1}|w_{i}) = \frac{P(w_{i}, w_{i+1})}{P(w_{i})}$$</span><!-- Has MathJax -->
+<p>上述分別是一個單詞的機率，以及計算相鄰兩個單詞的機率，最後推估在這個單詞下，它們相鄰的機率。請查閱 <strong> 貝氏定理 </strong>。</p>
+<blockquote><ul>
+<li>P(A)是A的先驗機率或邊緣機率。之所以稱為”先驗”是因為它不考慮任何B方面的因素。</li>
+<li>P(A|B)是已知B發生後A的條件機率，也由於得自B的取值而被稱作A的後驗機率。</li>
+<li>P(B|A)是已知A發生後B的條件機率，也由於得自A的取值而被稱作B的後驗機率。</li>
+<li>P(B)是B的先驗機率或邊緣機率，也作標准化常量（normalizing constant）.</li>
+</ul>
+<footer><strong>貝氏定理（Bayes' theorem）</strong><cite><a href="http://zh.wikipedia.org/wiki/%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%AE%9A%E7%90%86" target="_blank" rel="external">zh.wikipedia.org/wiki/%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%AE%9A%E7%90%86</a></cite></footer></blockquote>
+<span>$P(s) = P(w_{0}) \times P(w_{1}|w_{0}) \times ... \times P(w_{n-1}|w_{n-2})$</span><!-- Has MathJax -->
+<p>上述為一個句子的機率，一個句子可以表示成一個序列單詞，利用連乘積將機率算出。當句子越常時，很容易發現機率陡降的速度相當快，就算是數個字詞，機率大約也是在<span>$10^{-3}$</span><!-- Has MathJax --> 左右。因此這麼算下去，長句子的正確性就會大幅減少，但是在邏輯上，如果句子都是短短幾個單詞也是相當奇怪的，口語上也許是，文章判讀上就難說。至於要不要取<span>$\sqrt[n]{x}$</span><!-- Has MathJax --> 值得思考。</p>
+<span>$$\begin{cases}
+Count^{*}(w_{i}) = (Count(w_{i})+1) \times \frac{N_{Count(w_{i})+1}}{N_{Count(w_{i})}} &amp; \text{ if } Count(w_{i}) &lt; k \\ 
+Count^{*}(w_{i}) = Count(w_{i}) &amp; \text{ if } Count(w_{i}) \geq k 
+\end{cases} \\
+\text{unigram } N_{0} = 80000$$</span><!-- Has MathJax -->
+<p>當我們去計算一個單詞的機率時，必須相對於其他單詞的出現機率，然而像介係詞、助詞等，出現次數是相對高出取多，必須取一個閥值，來忽略過高無用的機率，以免將其他的單詞的機率過低不均。</p>
+<span>$$\begin{cases}
+Count^{*}(w_{i}, w_{i+1}) = (Count(w_{i}, w_{i+1})+1) \times \frac{N_{Count(w_{i}, w_{i+1})+1}}{N_{Count(w_{i}, w_{i+1})}} &amp; \text{ if } Count(w_{i}, w_{i+1}) &lt; k \\ 
+Count^{*}(w_{i}, w_{i+1}) = Count(w_{i}, w_{i+1}) &amp; \text{ if } Count(w_{i}, w_{i+1}) \geq k
+\end{cases} \\
+\text{bigram } N_{0} = 80000 \times 80000$$</span><!-- Has MathJax -->
+<p>在計算相鄰兩個單詞的出現次數時，一樣會遇到這種情況。既然在計算次數上需要做 smoothing 的調整，在機率處理上也是一樣動作。</p>
+<span>$$\begin{cases}
+ P(w_{i}) = \frac{N_{1}}{N} &amp; \text{ if } Count(w_{i}) = 0 \\ 
+ P(w_{i}) = \frac{Count^{*}(w_{i})}{N} &amp; \text{ if } Count(w_{i}) &lt; K \\ 
+ P(w_{i}) = \frac{Count(w_{i})}{N} &amp; \text{ if } Count(w_{i}) \geq K
+\end{cases}$$</span><!-- Has MathJax -->
+<span>$$\begin{cases}
+ P(w_{i}, w_{i+1}) = \frac{Count^{*}(w_{i}, w_{i+1})}{N} &amp; \text{ if } Count(w_{i}, w_{i+1}) &lt; K \\ 
+ P(w_{i}, w_{i+1}) = \frac{Count(w_{i}, w_{i+1})}{N} &amp; \text{ if } Count(w_{i}, w_{i+1}) \geq K
+\end{cases}$$</span><!-- Has MathJax -->
+<p>在單詞出現次數很少時，就必須使用 smoothing，因為出現 1 次、2 次、3 次 … 的單詞次數，之間大小關係不保證嚴格遞增或遞減，</p>
+<h2 id="實作細節"><a href="#實作細節" class="headerlink" title="實作細節"></a>實作細節</h2><ul>
+<li>公式都已經給定，基本上麻煩就是在於資料紀錄而已，其他就照著流程跑。</li>
+<li>雖然沒有規定語言，以下代碼在 Dev-C++ 下編過，別問 VS 到底行不行。</li>
+</ul>
+<p>原則上，讀檔案，建立模型可以在 1.4 秒內完成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">processing dataset.txt ...</span><br><span class="line">read file end. Start prepare language model ...</span><br><span class="line">input a sentence in a line :</span><br><span class="line">  </span><br><span class="line">--------------------------------</span><br><span class="line">Process exited after 1.493 seconds with return value 0</span><br></pre></td></tr></table></figure>
+<h2 id="測試輸入"><a href="#測試輸入" class="headerlink" title="測試輸入"></a>測試輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">causes AIDS and is associated with AIDS cases primarily in West Africa</span><br><span class="line">AIDS cases primarily in West Africa</span><br><span class="line">AIDS cases primarily at West Africa</span><br><span class="line">AIDS cases primarily AIDS West Africa</span><br><span class="line">morris</span><br><span class="line">West Africa</span><br><span class="line">East Africa</span><br><span class="line">Taiwan Africa</span><br></pre></td></tr></table></figure>
+<h2 id="測式輸出"><a href="#測式輸出" class="headerlink" title="測式輸出"></a>測式輸出</h2><p>考量長句子的機率，採用 log 平均結果，輸出應該為負值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-4.597715</span><br><span class="line">-4.796396</span><br><span class="line">-5.992288</span><br><span class="line">-7.245960</span><br><span class="line">-1.857392</span><br><span class="line">-4.639120</span><br><span class="line">-8.003706</span><br><span class="line">-8.003706</span><br></pre></td></tr></table></figure>
+<p>原始版本，直接輸出 P(s)，這裡採用科學記號表示法。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">1.101764e-026</span><br><span class="line">2.622182e-015</span><br><span class="line">6.068425e-019</span><br><span class="line">9.372080e-023</span><br><span class="line">2.436068e-002</span><br><span class="line">9.031667e-007</span><br><span class="line">3.733396e-011</span><br><span class="line">3.733396e-011</span><br></pre></td></tr></table></figure>
+<h2 id="結語"><a href="#結語" class="headerlink" title="結語"></a>結語</h2><p>有 STL library，代碼不用太長，跑得時間也不會太久。想到插手別學校的自然語言處理，玩了一下他們作業，把同學的代碼效率修得好一點，其實也不錯玩得，只是在公式計算上比較沒有，但是要求高效率的搜索結構，讀檔案進來後，依據什麼建表、該用什麼順序完成是很重要的。</p>
+<p>切記，在寫這種程式時，發現跑的速度太久，一部分是因為使用太多的標準輸出，也就是用太多 <code>printf()</code>、<code>cout &lt;&lt;</code> 或 <code>System.out.println()</code> 之類的在進行流程監控。輸出的效率必須將檔案寫到螢幕顯示的 memory buffer，因此 context-switch 什麼，消耗時間太大，盡可能不要輸出，要不然就是按比例輸出，速度可以快個數百倍。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;map&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ctype.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG</span></span><br><span class="line"><span class="keyword">class</span> Model &#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; Count;</span><br><span class="line">    <span class="built_in">map</span>&lt;pair&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt;, <span class="keyword">int</span>&gt; Count2;</span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; Ni;</span><br><span class="line">    <span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt; Ni2;</span><br><span class="line">    <span class="keyword">int</span> totalCountWord, totalCount2Word;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> K;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> V;</span><br><span class="line">    <span class="function"><span class="built_in">string</span> <span class="title">str2lower</span><span class="params">(<span class="built_in">string</span> s)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; s.length(); i++)</span><br><span class="line">            s[i] = <span class="built_in">tolower</span>(s[i]);</span><br><span class="line">        <span class="keyword">return</span> s;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">prepare</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        totalCountWord = totalCount2Word = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt;::iterator it = Count.begin();</span><br><span class="line">            it != Count.end(); it++) &#123;</span><br><span class="line">            Ni[it-&gt;second]++;</span><br><span class="line">            totalCountWord += it-&gt;second;</span><br><span class="line"><span class="comment">//#ifdef DEBUG</span></span><br><span class="line"><span class="comment">//			if (it-&gt;second &gt; 1000)</span></span><br><span class="line"><span class="comment">//			printf("Count(%s) = %d\n", it-&gt;first.c_str(), it-&gt;second);</span></span><br><span class="line"><span class="comment">//#endif</span></span><br><span class="line">        &#125;	</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">map</span>&lt;pair&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt;, <span class="keyword">int</span>&gt;::iterator it = Count2.begin();</span><br><span class="line">            it != Count2.end(); it++) &#123;</span><br><span class="line">            Ni2[it-&gt;second]++;</span><br><span class="line">            totalCount2Word += it-&gt;second;</span><br><span class="line">        &#125;		</span><br><span class="line">        <span class="keyword">int</span> smooth = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt;::iterator it = Ni.begin();</span><br><span class="line">            it != Ni.end(); it++) &#123;</span><br><span class="line"><span class="comment">//			smooth = min(smooth, it-&gt;second);</span></span><br><span class="line"><span class="comment">//			it-&gt;second = smooth;</span></span><br><span class="line"><span class="comment">//#ifdef DEBUG</span></span><br><span class="line"><span class="comment">//			printf("N(%d) = %d\n", it-&gt;first, it-&gt;second);</span></span><br><span class="line"><span class="comment">//			getchar();</span></span><br><span class="line"><span class="comment">//#endif</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getN</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123; <span class="comment">// N_&#123;Count(w)&#125;</span></span><br><span class="line">        <span class="keyword">if</span> (i == <span class="number">0</span>)	<span class="keyword">return</span> <span class="number">80000</span>;</span><br><span class="line">        <span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt;::iterator it = Ni.lower_bound(i), jt;</span><br><span class="line">        <span class="keyword">if</span> (it == Ni.begin())	<span class="keyword">return</span> it == Ni.end() ? <span class="number">1</span> : it-&gt;second;</span><br><span class="line">        jt = it, jt--;</span><br><span class="line">        <span class="keyword">double</span> sx = jt-&gt;first, sy = jt-&gt;second, ex = it-&gt;first, ey = it-&gt;second;</span><br><span class="line">        <span class="keyword">return</span> sy + (ey - sy) / (ex - sx) * (i - sx);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getN2</span><span class="params">(<span class="keyword">int</span> i)</span> </span>&#123; <span class="comment">// N_&#123;Count(w_&#123;i&#125;, w_&#123;i+1&#125;)&#125;</span></span><br><span class="line">        <span class="keyword">if</span> (i == <span class="number">0</span>)	<span class="keyword">return</span> <span class="number">80000.0</span> * <span class="number">80000.0</span>;</span><br><span class="line">        <span class="built_in">map</span>&lt;<span class="keyword">int</span>, <span class="keyword">int</span>&gt;::iterator it = Ni2.lower_bound(i), jt;</span><br><span class="line">        <span class="keyword">if</span> (it == Ni2.begin())	<span class="keyword">return</span> it == Ni2.end() ? <span class="number">1</span> : it-&gt;second;</span><br><span class="line">        jt = it, jt--;</span><br><span class="line">        <span class="keyword">double</span> sx = jt-&gt;first, sy = jt-&gt;second, ex = it-&gt;first, ey = it-&gt;second;</span><br><span class="line">        <span class="keyword">return</span> sy + (ey - sy) / (ex - sx) * (i - sx);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getCountStar</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;w)</span> </span>&#123; <span class="comment">// Count^&#123;*&#125;(w_&#123;i&#125;)</span></span><br><span class="line">        <span class="keyword">int</span> n = Count[w];</span><br><span class="line">        <span class="keyword">if</span> (n &lt; K) &#123;</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) (n + <span class="number">1</span>) * (getN(n + <span class="number">1</span>) / getN(n));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getCountStar2</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;w1, <span class="keyword">const</span> <span class="built_in">string</span> &amp;w2)</span> </span>&#123; <span class="comment">// Count^&#123;*&#125;(w_&#123;i&#125;, w_&#123;i+1&#125;)</span></span><br><span class="line">        <span class="keyword">int</span> n = Count2[make_pair(w1, w2)];</span><br><span class="line">        <span class="keyword">if</span> (n &lt; K) &#123;</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) (n + <span class="number">1</span>) * (getN2(n + <span class="number">1</span>) / getN2(n));</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> n;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getPofW1</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;w)</span> </span>&#123; <span class="comment">// P(w_&#123;i&#125;) = \frac&#123;Count(w_&#123;i&#125;)&#125;&#123;\sum_&#123;j&#125; Count(w_&#123;j&#125;)&#125;</span></span><br><span class="line">        <span class="built_in">map</span>&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt;::iterator it = Count.find(w);</span><br><span class="line">        <span class="keyword">if</span> (it == Count.end() || it-&gt;second == <span class="number">0</span>) &#123; <span class="comment">// Count(w_&#123;i&#125;) = 0</span></span><br><span class="line">            <span class="keyword">double</span> Nu0 = V - Count.size();</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) getN(<span class="number">1</span>) / Nu0 / totalCountWord; <span class="comment">// \frac&#123;N_&#123;1&#125;&#125;&#123;N&#125;</span></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (it-&gt;second &lt; K) &#123; <span class="comment">// 0 &lt; Count(w_&#123;i&#125;) &lt; K</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) getCountStar(w) / totalCountWord; <span class="comment">// \frac&#123;Count^&#123;*&#125;(w_&#123;i&#125;)&#125;&#123;N&#125;</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// Count(w_&#123;i&#125;) \geq K</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) it-&gt;second / totalCountWord; <span class="comment">// \frac&#123;Count(w_&#123;i&#125;)&#125;&#123;N&#125;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getPofW2</span><span class="params">(<span class="keyword">const</span> <span class="built_in">string</span> &amp;w1, <span class="keyword">const</span> <span class="built_in">string</span> &amp;w2)</span> </span>&#123; <span class="comment">// P(w_&#123;i&#125;, w_&#123;i+1&#125;)</span></span><br><span class="line">        <span class="built_in">map</span>&lt; pair&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt;, <span class="keyword">int</span>&gt;::iterator it = Count2.find(make_pair(w1, w2));</span><br><span class="line">        <span class="keyword">if</span> (it == Count2.end() || it-&gt;second == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">double</span> Nb0 = (<span class="keyword">double</span>) V * V - Count2.size();</span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) getN2(<span class="number">1</span>) / Nb0 / totalCount2Word;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (it-&gt;second &lt; K) &#123; <span class="comment">// Count(w_&#123;i&#125;, w_&#123;i+1&#125;) &lt; K</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) getCountStar2(w1, w2) / totalCount2Word; <span class="comment">// \frac&#123;Count^&#123;*&#125;(w_&#123;i&#125;, w_&#123;i+1&#125;)&#125;&#123;N&#125;</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// Count(w_&#123;i&#125;, w_&#123;i+1&#125;) \geq K</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">double</span>) it-&gt;second / totalCount2Word; <span class="comment">// \frac&#123;Count(w_&#123;i&#125;, w_&#123;i+1&#125;)&#125;&#123;N&#125;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">parseStmt</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; &amp;stmt)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; stmt.size(); i++) &#123;</span><br><span class="line">            stmt[i] = str2lower(stmt[i]);</span><br><span class="line">            Count[stmt[i]]++;</span><br><span class="line">            <span class="keyword">if</span> (i)</span><br><span class="line">                Count2[make_pair(stmt[i<span class="number">-1</span>], stmt[i])]++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">double</span> <span class="title">getPs</span><span class="params">(<span class="built_in">string</span> in)</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="built_in">stringstream</span> <span class="title">sin</span><span class="params">(in)</span></span>;</span><br><span class="line">        <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; stmt;</span><br><span class="line">        <span class="built_in">string</span> token;</span><br><span class="line">        <span class="keyword">while</span> (<span class="built_in">sin</span> &gt;&gt; token)</span><br><span class="line">            stmt.push_back(str2lower(token));</span><br><span class="line">        <span class="comment">// P(s) = P(w_&#123;0&#125;) \times P(w_&#123;1&#125;|w_&#123;0&#125;) \times ... \times P(w_&#123;n-1&#125;|w_&#123;n-2&#125;)</span></span><br><span class="line">        <span class="keyword">double</span> p = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (stmt.size() &gt; <span class="number">0</span>)</span><br><span class="line">            p = getPofW1(stmt[<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; stmt.size(); i++ ) &#123;</span><br><span class="line">            p *= getPofW2(stmt[i<span class="number">-1</span>], stmt[i]) / getPofW1(stmt[i<span class="number">-1</span>]);</span><br><span class="line"><span class="comment">//			printf("%lf\n", getPofW2(stmt[i-1], stmt[i]) / getPofW1(stmt[i-1]));</span></span><br><span class="line"><span class="comment">//			cout &lt;&lt; stmt[i-1] &lt;&lt; " "  &lt;&lt; stmt[i]  &lt;&lt; endl; </span></span><br><span class="line"><span class="comment">//			printf("%lf\n", getPofW2(stmt[i-1], stmt[i]));</span></span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> p;</span><br><span class="line">    &#125;</span><br><span class="line">&#125; tool;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> Model::K = <span class="number">10</span>, Model::V = <span class="number">80000</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function">ifstream <span class="title">fin</span><span class="params">(<span class="string">"dataset.txt"</span>)</span></span>;</span><br><span class="line"><span class="comment">//	freopen("tmp.txt", "w+t", stdout); </span></span><br><span class="line">    <span class="built_in">string</span> token, line;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; stmt;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"processing dataset.txt ..."</span>);</span><br><span class="line">    <span class="keyword">while</span> (getline(fin, line)) &#123;</span><br><span class="line">        <span class="function"><span class="built_in">stringstream</span> <span class="title">sin</span><span class="params">(line)</span></span>;</span><br><span class="line">        stmt.clear();</span><br><span class="line">        <span class="keyword">while</span> (<span class="built_in">sin</span> &gt;&gt; token) &#123;</span><br><span class="line">            stmt.push_back(token);</span><br><span class="line">        &#125;</span><br><span class="line">        tool.parseStmt(stmt);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"read file end. Start prepare language model ..."</span>);</span><br><span class="line">    tool.prepare();</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">"input a sentence in a line :"</span>);</span><br><span class="line">    <span class="keyword">while</span> (getline(<span class="built_in">cin</span>, line)) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"P*('%s') : %.10e\n"</span>, line.c_str(), tool.getPs(line));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">causes AIDS and is associated with AIDS cases primarily in West Africa</span><br><span class="line">AIDS cases primarily in West Africa</span><br><span class="line">AIDS cases primarily at West Africa</span><br><span class="line">AIDS cases primarily AIDS West Africa</span><br><span class="line">morris</span><br><span class="line">IL-2 is a gene .</span><br><span class="line">IL-2 is an gene .</span><br><span class="line">*/</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/civilization-w5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/10/25/lesson/civilization-w5/" class="article-date">
+  <time datetime="2014-10-25T01:28:47.000Z" itemprop="datePublished">2014-10-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/25/lesson/civilization-w5/">[通識] 文明的進程 Week 5</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/10/25/lesson/civilization-w5/" data-id="cipz12ufq0280t1xc21pdhi9w" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/10/25/lesson/civilization-w5/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <blockquote>
+<p>文明化的過程，有可能整個記憶封鎖在過去的盒子中。</p>
+</blockquote>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本周上課講述的內容為 <strong> 痰盂 </strong>，在 18 世紀時，這盆子可說是相當受到歡迎，當我們發現吐痰這事衛生上有所疑慮，找了一個盆子還裝，就跟尿壺類似。但是問別人痰盂是何物時，大概也沒幾個人見過。</p>
+<p>為什麼經過了 2 個世紀，痰盂就不見了，應該說是不被需要，<strong> 吐痰 </strong> 這件事從正常行為，到不需要吐痰，當然還是有人或在某個狀態下會吐痰 (生病)，由於環境的改善，尤其是空氣汙染的關係，痰並沒有必要性。</p>
+<h2 id="談吐痰行為"><a href="#談吐痰行為" class="headerlink" title="談吐痰行為"></a>談吐痰行為</h2><p>早期到處可見吐痰，可說是隨地大小便的程度，吐痰在地上踏踏輾輾即可，中間開始注意到衛生，不管東方西方都曾出現過 <strong> 痰盂 </strong>，甚至在大大小小的照片中還一起入鏡呢，外觀上與一般花盆無異，只是裡面裝的東西不同罷了。</p>
+<p>後來開始用法規、法款來制止人們隨地吐痰，從不吐在室內開始，也許允許往外吐是件很可笑的事情，但是在過度時期也算個進步，至少人們還知道吐痰這個行為需要被約束。到了二十世紀仍然會有使用罰款的方式來告誡人們，那為什麼現在根本沒有看過這些警告標語呢？「<strong> 請不要隨地吐痰 </strong>」</p>
+<blockquote>
+<p>他制到自制：外部或他人而遵守戒律 → 內化到自我強制</p>
+</blockquote>
+<h2 id="談約束禮儀"><a href="#談約束禮儀" class="headerlink" title="談約束禮儀"></a>談約束禮儀</h2><blockquote>
+<p>任何一個爛事，找一個 powerful 的理由，也能昇華！</p>
+</blockquote>
+<p>在一個民主平等的社會中，才能用衛生健康的理由來約束人們。如果在那種貧富不均，又有階級高低之分的社會，物質分配不均，光是活著就有困擾，遵守禮儀這件事情何止奢侈可說。</p>
+<p>如果看看在傳統菜市場買賣的人，用呼喊的方式叫賣，那樣的行為舉止，在有限的資源下，你還說什麼禮儀嗎，能賣出去就好，下次還要搶攤位賣呢。</p>
+<p>社會組織的方式將會影響心理生活的可塑性，根據國情不同、情操與行為的主旨不同，心理上要適應新的規則模式，反應上也會有所不同。基於什麼樣的條件，接受某些事情的難易度不同。 (文理組織差，相互學習對方領域的可塑性也會有差別)</p>
+<h2 id="談我們"><a href="#談我們" class="headerlink" title="談我們"></a>談我們</h2><p>美當我們成長，越來越會覺得小孩子很吵，那我們還能這麼吵嗎？兇不起來的人類？越來越退化了嗎？接受禮儀的約束，在何種環境下，才能拿回被約束的習慣。</p>
+<p>「當我們不只遵守禮儀，也會開始要求別人遵守禮儀」這必須看看台灣最強的人肉搜索，不外乎一個人做錯事情，馬上就會被人肉出來，必且大眾強力苛責這個人的行為，可見我們多麼要求別人遵守禮儀。在某些條件下，例如家裡、年紀之差，容忍不禮貌的程度也會不同。</p>
+<h2 id="幾件趣事"><a href="#幾件趣事" class="headerlink" title="幾件趣事"></a>幾件趣事</h2><p>結合民族自尊心推動宣傳，當我們厭惡、崇尚其他民族時，它們活生生的例子就會是很好的宣傳，例如：西方人多麼高雅、韓國人常在體育賽事作弊 … 等，約束力相當好。</p>
+<p>在早期哪有什麼裸體抗議，大家都是赤裸裸地睡覺、洗澡，不赤裸睡覺必有身體上的缺陷，不想引人猜疑，那時都是安妥妥地赤裸。而現在卻不同，赤裸居然可以拿來做為抗議手段，用一個羞恥力來擊倒敵人！</p>
+<p>在人來人往的地方生活，就會不由自主地意識到他人的存在，任何行為不管是否被他人看見，都會論及自己是否會 <strong> 貶值 </strong> 的行為，做了某件事情，我是否就貶值了呢？因此焦慮心情在城市中也常在人們身上發現。</p>
+<p>成人與小孩的衝突有時只是世代的價值衝突，而非禮儀上的學習多寡，當沒有過去世代的記憶，沒有那些曾經被拋下的某些行為經驗，不知道不做的原因，為何不做？</p>
+<p>為什麼常有人不碰別人用過的東西？人際關係的 <strong> 獨立 </strong> 與 <strong> 疏離 </strong>，總覺得人越來越不是人了，說是昆蟲也不為過，之後就各自獨立生存，最終進化呢。</p>
+<blockquote>
+<p>沒有一個時代的狀態可以做為 <strong> 絕對化標準 </strong></p>
+</blockquote>
+<p>少在那邊自己為是，可以說自己不夠好，但是絕不能批評別人太差，看到別人用你不曾使用的行為模式活著，才是訝異敬佩的地方－「<strong> 原來還可以這麼活著！ </strong>」</p>
+<blockquote>
+<p>用範例教育成人該做、不該做的事情，也就是說什麼都能說，何必忌諱任何一個汙穢的事情。</p>
+</blockquote>
+<p>越要說明一個真理，請拋開羞恥心去描述它吧。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-lesson/geometry-hw2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/10/17/lesson/geometry-hw2/" class="article-date">
@@ -114,7 +539,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/17/lesson/geometry-hw2/" data-id="cipyvzx4a027ao9xcvltfly05" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/17/lesson/geometry-hw2/" data-id="cipz12uhn0299t1xcr7052rge" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/17/lesson/geometry-hw2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -205,7 +630,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/17/lesson/civilization-w4/" data-id="cipyvzx2m0268o9xcd56nrbw8" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/17/lesson/civilization-w4/" data-id="cipz12ug40289t1xc66wr7mmj" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/17/lesson/civilization-w4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -278,7 +703,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/FqAaFBz.png" rel="gallery_cipyvzx280262o9xcnswyh5gm">
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/FqAaFBz.png" rel="gallery_cipz12uff027ut1xc5t0swizx">
         <img src="http://i.imgur.com/FqAaFBz.png" itemprop="image">
       </a>
     
@@ -297,7 +722,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/11/lesson/civilization-w3/" data-id="cipyvzx280262o9xcnswyh5gm" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/11/lesson/civilization-w3/" data-id="cipz12uff027ut1xc5t0swizx" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/11/lesson/civilization-w3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -370,7 +795,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/10/05/lesson/geometry-hw1/" data-id="cipyvzx4k027eo9xc7iw7jegh" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/10/05/lesson/geometry-hw1/" data-id="cipz12uhh0295t1xcwvrco8df" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/10/05/lesson/geometry-hw1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -519,7 +944,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/09/24/front-of-the-class/" data-id="cipyvzvnc002no9xcx3uctt9g" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/09/24/front-of-the-class/" data-id="cipz12syh002lt1xckbgo35l4" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/09/24/front-of-the-class/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -592,7 +1017,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/07/11/lesson/visual-lesson-note/" data-id="cipyvzx770292o9xca8c16tvm" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/07/11/lesson/visual-lesson-note/" data-id="cipz12uk602avt1xck0hib3a2" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/07/11/lesson/visual-lesson-note/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -676,526 +1101,6 @@
 
 
   
-    <article id="post-lesson/operating-system-notes-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/06/15/lesson/operating-system-notes-2/" class="article-date">
-  <time datetime="2014-06-15T01:35:35.000Z" itemprop="datePublished">2014-06-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/作業系統/">作業系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/06/15/lesson/operating-system-notes-2/">作業系統 筆記 (2)</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/06/15/lesson/operating-system-notes-2/" data-id="cipyvzx6n028so9xc627yncv3" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/06/15/lesson/operating-system-notes-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/作業系統/">作業系統</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote>
-<p>精簡</p>
-</blockquote>
-<h2 id="Page-replacement-algorithm"><a href="#Page-replacement-algorithm" class="headerlink" title="Page-replacement algorithm"></a>Page-replacement algorithm</h2><ul>
-<li>FIFO Algorithm<br>最先載入的 Page (即：Loading Time最小者)，優先視為 Victim Page。</li>
-<li>Optimal Algorithm(OPT)<br>以 “將來長期不會使用的 Page Page” 視為Victim Page。</li>
-<li>Least Recently Used Algorithm (LRU)<br>以 “最近不常使用的 Page Page” 視為Victim Page。<ul>
-<li>緣由：LRU製作成本過高</li>
-<li>作法：<ul>
-<li>Second econd Chance ( 二次機會法則 )</li>
-<li>Enhance nhance Second Chance ( 加強式二次機會法則 )</li>
-</ul>
-</li>
-<li>有可能退化成 FIFO FIFO，會遇到 Belady 異常情況</li>
-</ul>
-</li>
-<li>Second Chance (二次機會法則)<br>以 FIFO 法則為基礎，搭配 Reference Bit 使用，參照過兩次以上的 page 將不會被置換出去，除非全部都是參照兩次以上，將會退化成 FIFO。</li>
-<li>Enhance Second Chance (加強式二次機會法則)<br>使用(Reference Bit Bit, Modification Bit Bit) 配對值作為挑選 Victim Page 的依據。對於沒有沒修改的 page 優先被置換，減少置換的成本。</li>
-<li>Belady’s anomaly 當 Process 分配到較多的 Frame 數量，有時其 Page Fault Ratio 卻不降反升。</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Rank</th>
-<th>Algorithm</th>
-<th>Suffer from Belady’s anomaly</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Optimal</td>
-<td>no</td>
-</tr>
-<tr>
-<td>2</td>
-<td>LRU</td>
-<td>no</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Second-chance</td>
-<td>yes</td>
-</tr>
-<tr>
-<td>4</td>
-<td>FIFO</td>
-<td>yes</td>
-</tr>
-</tbody>
-</table>
-<h2 id="Thrashing-振盪"><a href="#Thrashing-振盪" class="headerlink" title="Thrashing(振盪)"></a>Thrashing(振盪)</h2><p>當 CPU 效能低時，系統會想引入更多的 process 讓 CPU 盡可能地工作。但當存有太多 process 時，大部分的工作將會花費在 page fault 造成的 Page Replacement，致使 CPU 效率下降，最後造成 CPU 的效能越來越低。</p>
-<h3 id="解決方法"><a href="#解決方法" class="headerlink" title="解決方法"></a>解決方法</h3><ul>
-<li>[方法 1]<br>降低 Multiprogramming Degree。</li>
-<li>[方法 2]<br>利用 Page Fault Frequency (Ratio) 控制來防止 Thrashing。</li>
-<li>[方法 3]<br>利用 Working Set Model “預估 ” 各 Process 在不同執行時期所需的頁框數，並依此提供足夠的頁框數，以防止 Thrashing。<ul>
-<li>作法<br>OS 設定一個Working Set Window (工作集視窗；Δ) 大小，以Δ 次記憶體存取中，所存取到的不同Page之集合，此一集合稱為 Working Set 。而Working Set中的Process個數，稱為 Working Set Size ( 工作集大小； WSS) 。</li>
-</ul>
-</li>
-</ul>
-<h2 id="Page"><a href="#Page" class="headerlink" title="Page"></a>Page</h2><ul>
-<li>Page Size 愈小<ul>
-<li>缺點<ul>
-<li>Page fault ratio愈高</li>
-<li>Page Table Size愈大</li>
-<li>I/O Time (執行整個Process的I/O Time) 愈大</li>
-</ul>
-</li>
-<li>優點<ul>
-<li>內部碎裂愈小</li>
-<li>Total I/O Time (單一Page的Transfer Time) 愈小</li>
-<li>Locality愈集中</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="Fragmentation"><a href="#Fragmentation" class="headerlink" title="Fragmentation"></a>Fragmentation</h2><p>分成外部和內部碎裂 External &amp; Internal Fragmentation</p>
-<h2 id="Deadlock-死結"><a href="#Deadlock-死結" class="headerlink" title="Deadlock(死結)"></a>Deadlock(死結)</h2><ul>
-<li>成因<ol>
-<li>mutual exclusion 資源互斥<br>一個資源只能分配給一個 process，不能同時分配給多個 process 同時使用。</li>
-<li>hold-and-wait 擁有並等待<br>擁有部分請求的資源，同時等待別的 process 所擁有資源</li>
-<li>no preemption 不可搶先<br>不可搶奪別的 process 已經擁有的資源</li>
-<li>circular wait 循環等待<br>存有循環等待的情況  </li>
-</ol>
-</li>
-</ul>
-<h3 id="解決方法-1"><a href="#解決方法-1" class="headerlink" title="解決方法"></a>解決方法</h3><ul>
-<li>Dead Lock Prevention<br>不會存有死結成因四條中的任何一條。</li>
-<li>Dead Lock Avoidance<br>對運行的情況做模擬，找一個簡單的算法查看是否有解死結，但這算法可能會導致可解的情況，歸屬在不可解的情況。<ul>
-<li>Use a. to get: <span>$\sum Need + \sum Allocation &lt; m + n$</span><!-- Has MathJax -->  </li>
-<li>Use c. to get: <span>$\sum Need_{i} + m &lt; m + n$</span><!-- Has MathJax --> </li>
-<li>Rewrite to get: <span>$\sum Need_{i} &lt; n$</span><!-- Has MathJax --> </li>
-</ul>
-</li>
-<li>Dead Lock Detection &amp; Recovery<br>Recovery 成本太高</li>
-</ul>
-<h2 id="小問題"><a href="#小問題" class="headerlink" title="小問題"></a>小問題</h2><ul>
-<li><blockquote>
-<p>Propose two approaches to protect files in a file system.<br>檔案系統如何保護檔案？請提供兩種方式。</p>
-</blockquote>
-<p>  對檔案做加密動作，或者將檔案藏起－不可讀取。</p>
-</li>
-<li><blockquote>
-<p>The system will enter deadlock if you cannot find a safe sequence for<br>  it, YES or NO? Please draw a diagram to explain your answer.<br>  如果找不到一個安全序列，是否就代表系統進入死結？</p>
-</blockquote>
-<p>  不會，因為找尋安全序列的方式通常是精心設計的通則，也就是說每個程序要求資源的方式都是可預期的運作，但實際上並不是如此，而且順序和運作都是各自獨立且不可預期，有可能途中就會釋放資源。</p>
-</li>
-<li><blockquote>
-<p>spinlock mutex semaphore 三者的區分？</p>
-</blockquote>
-<p>  spinlock(自旋鎖)是一種佔有 CPU 效能的一種 busy waiting，而 mutex 和 semaphore 是一種根據一個資料物件來達到互斥的效果。</p>
-<p>  就以 spinlock 來說，比較適合鎖較短的指令。相反地，mutex 和 semaphore 用於鎖住區域 (critical section) 的指令代碼。</p>
-<p>  回過頭看 mutex 和 semaphore，mutex 只能限制單一程序進入 critical section，而 semaphore 可以自訂有多少程序可以進度 critical section，就以 binary semaphore 來說，其功能效應等同於 mutex。</p>
-</li>
-</ul>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/consumption-final" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/06/10/lesson/consumption-final/" class="article-date">
-  <time datetime="2014-06-10T00:31:53.000Z" itemprop="datePublished">2014-06-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/通識課程/">通識課程</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="/img/1402224448094.jpg" rel="gallery_cipyvzx34026ko9xcq6h6t88n">
-        <img src="/img/1402224448094.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/06/10/lesson/consumption-final/">當代消費文化與社會 (3)</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/06/10/lesson/consumption-final/" data-id="cipyvzx34026ko9xcq6h6t88n" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/06/10/lesson/consumption-final/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/通識/">通識</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <blockquote><p>作文本文：</p>
-<p>看到今年作文的題目：人只有站著世界才屬於他，這使我突然想起一個中國的近代作家的墓誌銘：我死後請將我站著埋葬，因為我活著的時候一直都跪著。</p>
-<p>這是一個生在新中國，長在紅旗下的作家，他直到臨死的時候才發出這樣的哀鳴，可見他還是人性未泯，知道跪著的屈辱和站著的不宜。的確，半個世紀以來，中國 人中並不缺少想站著活的人，但他們無一例外成為了“杯具”，我記得其中幾個人的名字：林紹，為了站著說出真理，她被子彈打爆了纖弱的頭顱，並且，他的親人 還要再花上5毛錢來購買奪取親人生命的那顆子彈。楊佳，為了站著討要一個說法，他同樣是被子彈打碎了心臟，唯一和林紹不同的是，他的親人不需要再花錢購買 那顆子彈，這也算是一種時代的進步吧。夏俊峰，僅僅為了站著擺個養家糊口的小攤，他被注射執行了死刑，留了個全屍，感謝黨國的恩典啊！</p>
-<p>襯托著以上想站著活著的許多“悲劇”，許多跪著活著的“喜劇”卻不斷挑逗著我們的神經：余秋雨，一個本來才氣橫溢的文化人，為了幾斗米而折腰，留下了“含 淚勸告災民書”這樣的令所有文化人蒙羞的文章。王兆山，一個高居省作協主席的所謂詩人，一首“黨疼國愛，縱做鬼也幸福”的神詩，創造了馬屁文章的又一個巔 峰。胡錫進，環球時報總編，一個堅持論證屎比肉香的報人。他們雖然拋棄了站著活的尊嚴，卻換來了榮華富貴。</p>
-<p>今日之中國，“夢”是一個牛逼的不能再牛逼的字詞了，本來最最簡單的站著活著，怎麼就成為了中國人最遙不可及的夢想了呢？如果不是，今天的作文題目就不可 能是這樣的一個題目，在一個正常的社會，站著活著是一個再正常不過的事情了，能夠站著，這個世界上沒有人願意跪著。出題的老師想必也為此困惑，本來是教書 育人的老師，現在成了應試教育這輛戰車上的一個道具或者說是幫兇，學習的目的早已經不是學習知識造福人類這麼單純了，老師的榮譽與收入都和升學率捆綁在了 一起，為了升學率與收入，老師都跪下了，跪在了現實的利益與權力面前。但是，你們既然已經跪下了，為什麼還用這種趙構指鹿為馬的二逼遊戲來挑逗你們的學生 們呢？學生如果站著寫這篇作文，零分估計是跑不掉的，但是，跪著寫站著的讚歌，你們不覺得這樣很殘忍嗎？</p>
-<p>我深深地知道，我今天坐在這裡來作這樣一篇作文，我所背負的責任，這是我十二年的寒窗苦讀的艱辛，這是我農民工父母縮衣節食，望子成龍的殷切期盼。這是我 的未來是在工地上搬磚頭還是坐到有空調的寫字樓裡瀟灑最關鍵的時刻。以我的文采，如果你們出一道風花雪月的文章，我劃拉幾筆就對付了，可是，既然你們出了 這樣一個嚴肅的題目，我今天就豁出去得零分大聲地對全世界說：在今天的中國，站著相比於跪著，意味著高考作文得零分，未來只有去搬磚頭。意味著活著艱難甚 至失去生命，如夏俊峰。老師如果站著教書育人，就會失去心愛的講堂，因為這樣會影響升學率。醫生如果站著救死扶傷，他就會被其他收受醫藥廠家回扣的醫生排 擠而失去醫生的工作。員警如果站著執法如山，他就會被貪贓枉法的上司“休假式治療”。在中國，站著不但不能擁有整個世界，恰恰相反，你將失去整個世界，包 括愛你的親人和朋友</p>
-<p>也許在很久以後的未來，我們的孩子的孩子們的時代了，那時候自由之光普照大地，每一個站著的人們，或面朝大海，或面朝松濤，能夠大聲地發出沒有強權脅迫的聲音，這聲音，比擁有整個世界還令人期待，令人嚮往！！！</p>
-<p>老師：有站著的自由，難道不比擁有整個世界更重要嗎？</p>
-<footer><strong>中國高考傳出零分作文︰「自由比擁有世界更重要」</strong><cite><a href="http://news.ltn.com.tw/news/world/breakingnews/1026779" target="_blank" rel="external">news.ltn.com.tw/news/world/breakingnews/1026779</a></cite></footer></blockquote>
-<h1 id="此篇要點"><a href="#此篇要點" class="headerlink" title="此篇要點"></a>此篇要點</h1><ul>
-<li>期末要繳交本課程學期心得，採以小組繳交。</li>
-<li>詳細不明，所以可以個別心得知後彙整？還是著手類似報告書的方式進行？</li>
-<li>講得再多、心得再多，通通只不過是理論、理想層面。這些對於我們的反思並沒有任何意義，充其量就是知道，然仍不會去實踐的現實，處事圓滑就是這麼回事。</li>
-<li>乃屬反社會化一派</li>
-</ul>
-<h1 id="課程收錄"><a href="#課程收錄" class="headerlink" title="課程收錄"></a>課程收錄</h1><h2 id="第-1-週-課程簡介簡報"><a href="#第-1-週-課程簡介簡報" class="headerlink" title="第 1 週 課程簡介簡報"></a>第 1 週 課程簡介簡報</h2><blockquote>
-<p>所有企業都是誘拐犯，</p>
-</blockquote>
-<p>企業製造商品，開始讓我們這些生活在這個世代的人不知不覺地習慣它，不知不覺地在任何情況下被催眠去購買。在這樣的情況下，很多文化節日中，什麼節日要過什麼樣的活動、要買什麼樣的禮物早已是商人們的目標所在，很多項目早已「被消費」而我們對於發自自己的想法就越來越少，接受商人們的建議，忘了自己想要做得事情，最後就認為自己根本沒有必要去做那些事情。</p>
-<blockquote>
-<p>「便利即是一切，大家都這麼做，為什麼要與他人相異？」</p>
-</blockquote>
-<h2 id="第-2-週-當代消費社會的來臨簡報"><a href="#第-2-週-當代消費社會的來臨簡報" class="headerlink" title="第 2 週 當代消費社會的來臨簡報"></a>第 2 週 當代消費社會的來臨簡報</h2><p>在我眼前所見，這一切都是在催眠，「正因為我們更容易見到彼此，使得我們更在乎彼此。」這一個弱點被商人們抓得死死，逐漸地商品不只有生活基礎所需，需要一個突顯自我的代號，而效果最為顯著的就是使用的物品。</p>
-<p>一個人使用什麼商品、習慣參與或在哪一個環境，將成為一個人的特徵，如果沒有這些特徵，對於自我存在的認同就會迷失。在過往的人類中，忙碌使得他們少有時間去思考這些問題，因此將會自然地演化出他們的特徵，而在現今就不同，我們具有額外的時間來裝扮自己，但是裝扮則是由別人來決定，而我們則是選擇消費。這表示著什麼？－將不具有特徵，只是個複製。</p>
-<blockquote>
-<p>即使包裝地再好，但我們卻沒有擁有自己。</p>
-</blockquote>
-<h2 id="第-3-週-消費社會學的理論介紹簡報"><a href="#第-3-週-消費社會學的理論介紹簡報" class="headerlink" title="第 3 週 消費社會學的理論介紹簡報"></a>第 3 週 消費社會學的理論介紹簡報</h2><p>「認同」是行為的最終目標，消費則是在行為過程中的描述，而消費使否能體現於現實？這並不全然。如果為追求理想而產出的理念，中間歷經的辛苦算是消費嗎？我們的理念也是需要被認同的！但是這卻不算是消費行為，「努力」一詞難道就是在消費以外的存在。</p>
-<blockquote>
-<p>我就是那麼一個異教徒，因為堅信別人不認同的理念。</p>
-</blockquote>
-<p>炫耀性消費這的確令人討厭，這一切的價值觀全都錯亂，「擁有的確令人忌妒，沒有仍可令人輕鬆。」但是我們都是受虐狂，不斷地想要擁有，更增添了自己的憂愁。天生沒有憂愁感測器的人也是存在於世的，這與生長背景有關，通常是生活富裕或者沒有經歷過巨大挫折者。</p>
-<h2 id="第-4-週-商品、符號象徵與廣告簡報"><a href="#第-4-週-商品、符號象徵與廣告簡報" class="headerlink" title="第 4 週 商品、符號象徵與廣告簡報"></a>第 4 週 商品、符號象徵與廣告簡報</h2><p>對於一個人的第一印象，如果從「他/她個性很好、思考很機靈 …」到「他/她有 XXX 商品、用什麼、穿什麼 …」那明顯地，我們將開始利用商品來聯想到一個人。</p>
-<p>廣告是企業推銷產品的唯一手法，即使是老字號的商品，雖然不用多新奇的廣告內容，但仍需要一段時間就出來宣傳一下 (通常是很長一段時間)。因為廣告效果在世代繼承方面沒有顯著的效果，在每一個世代所偏好的內容不同，因此廣告也必須跟著世代掛勾，這也是為什麼廣告層不窮地想要抓住新的世代來購買他們的商品。</p>
-<p>廣告面相不斷地針對年輕族群，甚至對小孩下手，這些在短時間內看不出影響所在，但是長期對於價值觀培養是有一定影響，這可怕之處只有成年人才明白，新的廣告便對成年人的影響力並不高，但是只要從小還是培養 (調教) 將可以終生受用，這是一場可怕的催眠實驗。</p>
-<blockquote>
-<p>如果人類是有智慧的生物，那小孩到底算不算人類。</p>
-</blockquote>
-<h2 id="第-5-週-消費者、文化資本與生活風格簡報"><a href="#第-5-週-消費者、文化資本與生活風格簡報" class="headerlink" title="第 5 週 消費者、文化資本與生活風格簡報"></a>第 5 週 消費者、文化資本與生活風格簡報</h2><p>講到情感消費，可謂是情有獨鍾，又或者是曾經因為人生歷史事件而去接觸商品，讓人流連忘返的回憶，而標記物恰好是商品。那種浪漫的事情是多麼崇高啊！一生所追尋得就是這一類型的事情，當然指得並不是黑歷史。</p>
-<p>一個人的品味到底有多重要？品味將會反映在生活周遭，買什麼用什麼、會交到什麼朋友 … 等，這一切會從品味著手，而也會有想要轉移目標而改變自己品味的情況，那種契機同時也是消費手段，因此企業也會嘗試將大眾的願景改變，來達到商品推銷。</p>
-<h2 id="第-6-週-日本-kawaii-流行文化與消費簡報李世暉"><a href="#第-6-週-日本-kawaii-流行文化與消費簡報李世暉" class="headerlink" title="第 6 週 日本 kawaii 流行文化與消費簡報李世暉"></a>第 6 週 日本 kawaii 流行文化與消費簡報李世暉</h2><h2 id="第-7-週-全球化、跨國公司與消費簡報"><a href="#第-7-週-全球化、跨國公司與消費簡報" class="headerlink" title="第 7 週 全球化、跨國公司與消費簡報"></a>第 7 週 全球化、跨國公司與消費簡報</h2><h2 id="對課程的心得反思"><a href="#對課程的心得反思" class="headerlink" title="對課程的心得反思"></a>對課程的心得反思</h2><p>以上只是部分的課堂筆記，看著其他人寫的心得，我想這應該是要寫對於這門課的心得。我選這門課的原因既不是因為學分不夠，也不是提升學期排名推研究所用途。如果事實如此，這門課就成為被消費的對象，無緣無故地，我們被學校催眠要修這些課程，學校企業也是很可怕的象徵。會有這樣的想法是在修這門課之前就有，而在修這門課又有更加地加深信心，這一切的看法只是單純來自於一個反社會化的怪人，不能大聲說出任何課程的好壞，但增加的是經驗與觀感，必須保有自己的看法，增加思考突變性，否則就只是被世間催眠的對象。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/hw-ci-paper" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/06/09/lesson/hw-ci-paper/" class="article-date">
-  <time datetime="2014-06-09T00:58:48.000Z" itemprop="datePublished">2014-06-09</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="/img/1402224682465.jpg" rel="gallery_cipyvzx5i0281o9xc8p9p6f4e">
-        <img src="/img/1402224682465.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/06/09/lesson/hw-ci-paper/">論文選讀 Building optimal regression tree by ant colony system ...</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/06/09/lesson/hw-ci-paper/" data-id="cipyvzx5i0281o9xc8p9p6f4e" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/06/09/lesson/hw-ci-paper/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/螞蟻算法/">螞蟻算法</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="前文"><a href="#前文" class="headerlink" title="前文"></a>前文</h1><p>課程 <strong> 計算型智慧 </strong> 報告，這是一門碩班課程，因此聽了許多學長的報告，雖然有難有易，牽扯的領域相當繁雜且艱深，例如影像分析、電機、醫學領域 … 等，很多都是有聽沒有懂，但是多少能明白一些些道理，即使後來挑選幾個進行實作，發現自己根本沒有理解，或者只是單純實作能力不足。</p>
-<p>其中最常見到的報告內容是 B*-tree with floor plan，對於電子電路的配置擺放，要求最小化面積的操作。當然其中也有幾個跟我報告的預測性有關。對於影響分析就不多述了，其中也有幾個電費電流調控也挺有意思的，總之報告內容相當多元。</p>
-<p>報告的時候，教授就在台下緊盯，而我剛好是在教授開會的時候報告，這學期僅我一個在教授不在的情況下報告。</p>
-<ul>
-<li>One Exam: 30%<br>只有一次期中考，而且還是人腦仿電腦考試，但是題目沒有講清楚，考炸了不少，題目理解上把常數搞錯意思，但是這不影響廣義型算法，希望助教給點分！例如：在基因算法中交配的兩兩交配，難道就不能與自己交配嗎？而在粒子算法中，只給兩個參數，難道就不能只模仿全局最佳點和自己嗎？如果只有兩個參數，而且加總為一，您叫我如何模仿鄰居和自己，看來只能二選一。</li>
-<li>Homework: 40% (3 programs)</li>
-<li>Presentation: 30%<br>教授不在的情況下仍可以報告，所以成績是由助教評定嗎？</li>
-<li>Questions: 3<br>本課程一定要問三個問題，否則視如無效修課，但是問題我總是在課堂中發問，對於學長報告的內容有點作噁不明白。</li>
-</ul>
-<p>論文挑選為「Building optimal regression tree by ant colony system – genetic algorithm Application to modeling of melting points」這是一篇化學期刊上的運用，不是在計算機領域的論文。</p>
-<h1 id="開始"><a href="#開始" class="headerlink" title="開始"></a>開始</h1><h2 id="從一個最簡單的應用開始"><a href="#從一個最簡單的應用開始" class="headerlink" title="從一個最簡單的應用開始"></a>從一個最簡單的應用開始</h2><p>在二十個問題內，能猜出心中想的目標角色。這一類的遊戲相當多，在很多遊戲或者是心理測驗中都會用到，用來預測你大概會是哪一種類型的人、或者正在想什麼。<br><a href="http://en.akinator.com/" target="_blank" rel="external">http://en.akinator.com/</a></p>
-<h2 id="決策樹"><a href="#決策樹" class="headerlink" title="決策樹"></a>決策樹</h2><p>決策樹的分類</p>
-<ul>
-<li>Classification Tree：分類樹<br>分類，輸出 “類型”</li>
-<li>Regression Tree：回歸樹<br>關係程度，輸出 “數值”</li>
-<li>CART (Classification And Regression Tree) 即上述兩個的總稱</li>
-</ul>
-<h3 id="關於-CART"><a href="#關於-CART" class="headerlink" title="關於 CART"></a>關於 CART</h3><ul>
-<li>大量數據可以快速算出結果</li>
-<li>易於理解 和 解釋</li>
-<li>可以用統計數據驗證模型</li>
-<li>最優 CART 是 NP 問題。</li>
-<li>能力有限，只能對有限數據屬性操作</li>
-<li>機器學習 Machine Learning 領域常用</li>
-</ul>
-<h2 id="論文實驗資料"><a href="#論文實驗資料" class="headerlink" title="論文實驗資料"></a>論文實驗資料</h2><ul>
-<li>4173 種化合物，分類屬性有 202 種描述方式。在 4173 種化合物中，3000 種用來訓練，1173 種用來驗證。</li>
-<li>與另外一組經由 277 種藥物進行熔點預測的 CART 相比。(另外一篇論文做的結果)</li>
-<li>目標預測更加準確。</li>
-</ul>
-<h2 id="CART–ACS–GA-理論"><a href="#CART–ACS–GA-理論" class="headerlink" title="CART–ACS–GA 理論"></a>CART–ACS–GA 理論</h2><ul>
-<li>將 ACS – GA 算法，套用在 CART 的建造上。</li>
-<li>先說說 <a href="#ACS-GA" title="蟻群遺傳混合算法">ACS – GA</a> 算法運作</li>
-</ul>
-<h2 id="ACS-GA"><a href="#ACS-GA" class="headerlink" title="ACS-GA"></a>ACS-GA</h2><p>ACS–GA 算法 (蟻群遺傳混合算法)，基於 ACS 的缺點 – 收斂慢，加入 GA 算法來加快。</p>
-<ul>
-<li>為什麼不單純使用 GA 算法就好？</li>
-<li>對問題編碼的困難 (轉 DNA 的問題)，突變效果可能不好</li>
-</ul>
-<p>螞蟻基因也有好壞問題</p>
-<ul>
-<li>如何反應基因好壞</li>
-<li>對費洛蒙決策的方式</li>
-<li>對費洛蒙的敏感度 … 等</li>
-</ul>
-<p>換句話說，將螞蟻的能力也各自數據化，對於產生較好解的螞蟻，繁殖、交配、突變，接著談論如何運用在 CART！</p>
-<h2 id="CART-建造"><a href="#CART-建造" class="headerlink" title="CART 建造"></a>CART 建造</h2><p>假解亂做前，如何隨機？CART 是一棵二分樹<br>How we do ?</p>
-<ul>
-<li>基於深度優先的方式，直到某個葉節點的分類種數 &lt; 30 或深度大於某個值，就退回。</li>
-<li>每一層必須決定 “依據哪個屬性分類” Age ? Gender ? Last R ?</li>
-<li>分類時，又要按照什麼 數值 進行分割。&lt; 30 ? &gt; 30 ? = 30 ?</li>
-</ul>
-<p>假設 CART 有 m 個節點，n 個分類描述。在此篇中，化合物有 202 種描述，即 n = 202。</p>
-<ul>
-<li>為了表示螞蟻的判斷能力，到達某個節點 i 時，採用下一個分類方式 k 的費洛蒙 M[i][k]<br>i &lt; m, k &lt; n</li>
-<li>這樣可以決定分類方式。對於某個節點 i，i 可以是目前累計完成的節點個數，或者是其他。</li>
-</ul>
-<p>上面決定了分類方式，但沒決定分割點 ( cut point ) 的選擇方式。</p>
-<ul>
-<li>假設用 10 種決策方式，來對應分類到節點內有的所有項目屬性，進行統計分類。<ul>
-<li>決策方式 1：平均、眾數、權重、 ID3、C4.5 (熵理論和訊息增益) … 等分割策略</li>
-<li>決策方式 2 : 用 10 個常數對於屬性最大最小值 <code>f(min, max) = x0 * min + x1 * max + x2 * min * max</code></li>
-<li>決策方式 3：最大最小值之間切 10 等分。</li>
-</ul>
-</li>
-<li>費洛蒙將會有 10 × n × m，即 M[10][n][m]。</li>
-</ul>
-<h2 id="關於適應函數"><a href="#關於適應函數" class="headerlink" title="關於適應函數"></a>關於適應函數</h2><h3 id="對於葉節點"><a href="#對於葉節點" class="headerlink" title="對於葉節點"></a>對於葉節點</h3><p>Partial least squares method 不同於 “最小平方法”</p>
-<ul>
-<li>多因變數 對 多自變數 的回歸建模方法</li>
-<li>對於每一個葉節點的所有資料分別做偏最小二乘法，會得到分類的相聯性，也就是 相關係數 (correlation coefficient)</li>
-<li>相關係數總和大小 與 適應力高低 成正比，用 驗證集 找到相關係數。</li>
-</ul>
-<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><ul>
-<li>對於下次迭代，偏向於好的切割屬性</li>
-<li>對於切割屬性，可以得到好的分割點</li>
-<li>排除單一分割策略的形式</li>
-</ul>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/hw-nachos4-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/30/lesson/hw-nachos4-2/" class="article-date">
-  <time datetime="2014-05-30T05:34:19.000Z" itemprop="datePublished">2014-05-30</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/作業系統/">作業系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/30/lesson/hw-nachos4-2/">向 NachOS 4.0 作業進發 (2)</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/30/lesson/hw-nachos4-2/" data-id="cipyvzx5z028co9xc6uirpzr2" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/30/lesson/hw-nachos4-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/NachOS/">NachOS</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/作業系統/">作業系統</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="接續"><a href="#接續" class="headerlink" title="接續"></a>接續</h1><p>接續上一篇的 <a href="http://morris821028.github.io/2014/05/24/hw-nachos4/">向 NachOS 4.0 作業進發 (1)</a>，我們繼續完成排程處理，在原始的 NachOS 4.0 中，基礎排程是 Round-robin，它的運作方式藉由定時呼叫 <code>threads/alarm.h</code> 中的 <code>Alarm::CallBack()</code>，而呼叫的時脈來源設定為 <code>machine/stats.h</code> 中的 <code>const int TimerTicks = 100;</code> 決定，數值越小表示呼叫頻率越高，置換的次數就會上升。</p>
-<h1 id="目標-Scheduler"><a href="#目標-Scheduler" class="headerlink" title="目標 Scheduler"></a>目標 Scheduler</h1><ul>
-<li>FIFO (FCFS) 先來先服務</li>
-<li>SJF     最短工作優先</li>
-<li>Priority 最小優先權優先</li>
-<li>RR    (Round-robin)</li>
-<li>multi-level queue <strong> 最後的大魔王 </strong></li>
-</ul>
-<h1 id="開始"><a href="#開始" class="headerlink" title="開始"></a>開始</h1><h2 id="第一步-測試"><a href="#第一步-測試" class="headerlink" title="第一步 - 測試"></a>第一步 - 測試</h2><p>先來說說怎麼測試自己的寫的代碼正確性，不然怎麼寫都只是理論腦補，雖然會動，但是不知道是否寫對。</p>
-<ul>
-<li><p>第一種方式為下達 </p>
-<pre><code>$ ./nachos -e ../test/test1 -e ../test/test2 ... 多個
-</code></pre><p>  這樣必須自己設置優先權、Burst Time，這方面撰寫方式有兩種，其一是來亂，其二是較為正式，而在 Burst Time 的計算又分成兩種，一是執行前已知、二是執行時猜測。</p>
-<ul>
-<li><p>其一來亂寫法，</p>
-<pre><code>$ ./nachos -e ../test/test1 -e ../test/test2 ... 多個
-</code></pre><p>  不改變原本的的執行方式，直接在代碼中決策 thread fork 出來時所擁有的優先權和 Burst Time。<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> testPriority = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">void</span> </span><br><span class="line">Thread::Fork(VoidFunctionPtr func, <span class="keyword">void</span> *arg)</span><br><span class="line">&#123;</span><br><span class="line"><span class="comment">// morris add</span></span><br><span class="line">    testPriority++;</span><br><span class="line">    <span class="keyword">if</span>(testPriority == <span class="number">1</span>)</span><br><span class="line">        setPriority(<span class="number">64</span>);</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(testPriority == <span class="number">2</span>)</span><br><span class="line">        setPriority(<span class="number">128</span>);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        setPriority(<span class="number">64</span>);</span><br><span class="line"><span class="comment">// end morris add</span></span><br></pre></td></tr></table></figure><br>  因此，您可能會寫出以上的代碼，當然我不建議這麼寫，雖然是一種測試方式，但這並不好，一開始就這麼錯得相當離譜。</p>
-</li>
-<li><p>其二寫法，增加下達參數，不過這些參數格式要去查閱一下他們的參數傳遞建造，我想會寫成大概的樣子為</p>
-<pre><code>$ ./nachos -e ../test/test1 -pw 64 -e ../test/test2  -pw 128 ... 
-</code></pre><p>  多個為了不增加工作量，這裡就沒有親自去實作。某方面來說，可能要寫很多 small program 進行測試，並且撰寫時還要預測會跑多久，這難度會稍微提高。</p>
-</li>
-</ul>
-</li>
-<li><p>第二種方式按照軟工的寫法<br>  來寫 test code 吧！如果細心一點，就會看到相關的 <code>Class::SelfTest()</code> 在很多 class 都有的，因此我們需要把 test code 寫到 SelfTest 中被呼叫。因此，不需要有實體的 process 運行，只是單純地測試我們寫的 scheduler 的排程順序是否正確。<figure class="highlight cpp"><figcaption><span>threads/thread.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span></span><br><span class="line"><span class="title">threadBody</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Thread *thread = kernel-&gt;currentThread;</span><br><span class="line">    <span class="keyword">while</span> (thread-&gt;getBurstTime() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        thread-&gt;setBurstTime(thread-&gt;getBurstTime() - <span class="number">1</span>);</span><br><span class="line">        kernel-&gt;interrupt-&gt;OneTick();</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s: remaining %d\n"</span>, kernel-&gt;currentThread-&gt;getName(), kernel-&gt;currentThread-&gt;getBurstTime());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">Thread::SchedulingTest()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">int</span> thread_num = <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">char</span> *name[thread_num] = &#123;<span class="string">"A"</span>, <span class="string">"B"</span>, <span class="string">"C"</span>, <span class="string">"D"</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> thread_priority[thread_num] = &#123;<span class="number">5</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">2</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> thread_burst[thread_num] = &#123;<span class="number">3</span>, <span class="number">9</span>, <span class="number">7</span>, <span class="number">3</span>&#125;;</span><br><span class="line">    </span><br><span class="line">    Thread *t;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; thread_num; i ++) &#123;</span><br><span class="line">        t = <span class="keyword">new</span> Thread(name[i]);</span><br><span class="line">        t-&gt;setPriority(thread_priority[i]);</span><br><span class="line">        t-&gt;setBurstTime(thread_burst[i]);</span><br><span class="line">        t-&gt;Fork((VoidFunctionPtr) threadBody, (<span class="keyword">void</span> *)<span class="literal">NULL</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    kernel-&gt;currentThread-&gt;Yield();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>  請自行在 <code>class Thread</code> 增加 <code>setPriority()</code>, <code>setBurstTime()</code>, <code>SchedulingTest()</code> … 等 method header and body。<figure class="highlight cpp"><figcaption><span>threads/thread.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> Thread &#123;</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">   ...</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">   ...</span><br><span class="line">    <span class="comment">// morris add</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setBurstTime</span><span class="params">(<span class="keyword">int</span> t)</span>	</span>&#123;burstTime = t;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getBurstTime</span><span class="params">()</span>		</span>&#123;<span class="keyword">return</span> burstTime;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setStartTime</span><span class="params">(<span class="keyword">int</span> t)</span>	</span>&#123;startTime = t;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getStartTime</span><span class="params">()</span>		</span>&#123;<span class="keyword">return</span> startTime;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setPriority</span><span class="params">(<span class="keyword">int</span> t)</span>	</span>&#123;execPriority = t;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getPriority</span><span class="params">()</span>		</span>&#123;<span class="keyword">return</span> execPriority;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">SchedulingTest</span><span class="params">()</span></span>;</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// some of the private data for this class is listed above</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// morris add</span></span><br><span class="line">    <span class="keyword">int</span> burstTime;	<span class="comment">// predicted burst time</span></span><br><span class="line">    <span class="keyword">int</span> startTime;	<span class="comment">// the start time of the thread</span></span><br><span class="line">    <span class="keyword">int</span> execPriority;	<span class="comment">// the execute priority of the thread</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><br>  接著是需要 call testcode 加入到 ThreadedKernel 中。<figure class="highlight cpp"><figcaption><span>threads/kernel.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">ThreadedKernel::SelfTest() &#123;</span><br><span class="line">   Semaphore *semaphore;</span><br><span class="line">   SynchList&lt;<span class="keyword">int</span>&gt; *synchList;</span><br><span class="line">   </span><br><span class="line">   LibSelfTest();		<span class="comment">// test library routines</span></span><br><span class="line">   </span><br><span class="line">   currentThread-&gt;SelfTest();	<span class="comment">// test thread switching</span></span><br><span class="line">   Thread::SchedulingTest();   </span><br><span class="line">   				<span class="comment">// test semaphore operation</span></span><br><span class="line">   semaphore = <span class="keyword">new</span> Semaphore(<span class="string">"test"</span>, <span class="number">0</span>);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>  因此我們可以利用單一 module 就能進行檢查。</p>
-<pre><code>$ cd code/threads
-$ ./nachos
-</code></pre><p>  但是這種方式，並沒有決定我們要測試哪一種類型的 scheduler，額外需要設定參數，讓其選擇建造哪一種的 <code>readyList(Thread*)</code></p>
-<pre><code>$ cd code/threads
-$ ./nachos FCFS
-$ ./nachos SJF
-$ ./nachos Priority
-$ ./nachos RR
-</code></pre><p>  預計要修成如上述的測試方式。<figure class="highlight cpp"><figcaption><span>threads/main.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span></span><br><span class="line"><span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    debug = <span class="keyword">new</span> Debug(debugArg);</span><br><span class="line">    </span><br><span class="line">    DEBUG(dbgThread, <span class="string">"Entering main"</span>);</span><br><span class="line"><span class="comment">//</span></span><br><span class="line">    SchedulerType type = RR;</span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"FCFS"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">    type = FIFO;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"SJF"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">    type = SJF;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"PRIORITY"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">    type = Priority;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">strcmp</span>(argv[<span class="number">1</span>], <span class="string">"RR"</span>) == <span class="number">0</span>) &#123;</span><br><span class="line">    type = RR;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="comment">//</span></span><br><span class="line">    kernel = <span class="keyword">new</span> KernelType(argc, argv);</span><br><span class="line">    kernel-&gt;Initialize(type);</span><br><span class="line">    </span><br><span class="line">    CallOnUserAbort(Cleanup);		<span class="comment">// if user hits ctl-C</span></span><br><span class="line"></span><br><span class="line">    kernel-&gt;SelfTest();</span><br><span class="line">    kernel-&gt;Run();</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-</li>
-</ul>
-<blockquote>
-<p>第一步測試撰寫就這麼結束，比起撰寫新的 code，不會進行測試也是徒勞。</p>
-<p>雖然這麼說，實際運作也是先寫 code 再寫 test code，因為當時還不太懂這些，所以如果已經先寫了一些也不用難過，大家都是這麼走過來的。</p>
-<p>如果不知道怎麼執行，哪還有什麼撰寫的欲望，如果不知道怎麼測試，那就是在黑暗中漫步。</p>
-</blockquote>
-<h2 id="第二步-撰寫"><a href="#第二步-撰寫" class="headerlink" title="第二步 - 撰寫"></a>第二步 - 撰寫</h2><p>在撰寫開始前，如果使用走第一種測試方式的人，需要將實體記憶體用大一點，否則需要實作虛擬記憶體的 context-swith。</p>
-<figure class="highlight cpp"><figcaption><span>machine/machine.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> NumPhysPages = <span class="number">64</span>;  <span class="comment">// morris modify, old value=32</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> MemorySize = (NumPhysPages * PageSize);</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> TLBSize = <span class="number">4</span>;			<span class="comment">// if there is a TLB, make it small</span></span><br></pre></td></tr></table></figure>
-<p>若完成以上的修改，在 <code>/userprog</code> 下，執行<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./nachos -e ../test/test1 -e ../test/test2 -e ../test/test1</span><br></pre></td></tr></table></figure></p>
-<p>就不會跑出 segment fault 。<br><figure class="highlight cpp"><figcaption><span>threads/scheduler.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> SchedulerType &#123;</span><br><span class="line">        RR,     <span class="comment">// Round Robin</span></span><br><span class="line">        SJF,</span><br><span class="line">        Priority,</span><br><span class="line">        FIFO</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">class</span> Scheduler &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    Scheduler();</span><br><span class="line">    Scheduler(SchedulerType type);		<span class="comment">// Initialize list of ready threads </span></span><br><span class="line">    ...</span><br><span class="line">    	<span class="comment">// morris add</span></span><br><span class="line">    <span class="function">SchedulerType <span class="title">getSchedulerType</span><span class="params">()</span> </span>&#123;<span class="keyword">return</span> schedulerType;&#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setSchedulerType</span><span class="params">(SchedulerType t)</span> </span>&#123;schedulerType = t;&#125;</span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><br>如果有機會查閱其他代碼，很常見會把 <code>List&lt;Thread *&gt; *readyList;</code> 改成 <code>SortedList&lt;Thread *&gt; *readyList;</code> 但是其實不用的，可以利用多形來完成，畢竟 <code>SortedList</code> 繼承 <code>List</code>。因此是不需要更動的。</p>
-<p>接著，我們使用多形，在建構子中決定要用哪一種類型的排程，並且宣告相對應的 <code>compare function</code>，參照如下。<br><figure class="highlight cpp"><figcaption><span>threads/scheduler.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">SJFCompare</span><span class="params">(Thread *a, Thread *b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a-&gt;getBurstTime() == b-&gt;getBurstTime())</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> a-&gt;getBurstTime() &gt; b-&gt;getBurstTime() ? <span class="number">1</span> : <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">PriorityCompare</span><span class="params">(Thread *a, Thread *b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a-&gt;getPriority() == b-&gt;getPriority())</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">return</span> a-&gt;getPriority() &gt; b-&gt;getPriority() ? <span class="number">1</span> : <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">FIFOCompare</span><span class="params">(Thread *a, Thread *b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//----------------------------------------------------------------------</span></span><br><span class="line"><span class="comment">// Scheduler::Scheduler</span></span><br><span class="line"><span class="comment">// 	Initialize the list of ready but not running threads.</span></span><br><span class="line"><span class="comment">//	Initially, no ready threads.</span></span><br><span class="line"><span class="comment">//----------------------------------------------------------------------</span></span><br><span class="line">Scheduler::Scheduler() &#123;</span><br><span class="line">    Scheduler(RR);</span><br><span class="line">&#125;</span><br><span class="line">Scheduler::Scheduler(SchedulerType type)</span><br><span class="line">&#123;</span><br><span class="line">    schedulerType = type;</span><br><span class="line">    <span class="keyword">switch</span>(schedulerType) &#123;</span><br><span class="line">    <span class="keyword">case</span> RR:</span><br><span class="line">        readyList = <span class="keyword">new</span> List&lt;Thread *&gt;;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> SJF:</span><br><span class="line">        readyList = <span class="keyword">new</span> SortedList&lt;Thread *&gt;(SJFCompare);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> Priority:</span><br><span class="line">        readyList = <span class="keyword">new</span> SortedList&lt;Thread *&gt;(PriorityCompare);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> FIFO:</span><br><span class="line">        readyList = <span class="keyword">new</span> SortedList&lt;Thread *&gt;(FIFOCompare);</span><br><span class="line">    &#125;</span><br><span class="line">    toBeDestroyed = <span class="literal">NULL</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure><br>上述的寫法是因為沒有辦法宣告 default argument value for class。</p>
-<p>如果需要搶先 (Preemptive) 設計，則在 <code>Alarm::CallBack()</code> 決定是否要呼叫 <code>interrupt-&gt;YieldOnReturn()</code> 查看是否有更需要優先的 process 要執行。<br><figure class="highlight cpp"><figcaption><span>threads/alarm.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> </span><br><span class="line">Alarm::CallBack() </span><br><span class="line">&#123;</span><br><span class="line">    Interrupt *interrupt = kernel-&gt;interrupt;</span><br><span class="line">    MachineStatus status = interrupt-&gt;getStatus();</span><br><span class="line">    <span class="keyword">bool</span> woken = _bedroom.MorningCall();</span><br><span class="line"></span><br><span class="line">    kernel-&gt;currentThread-&gt;setPriority(kernel-&gt;currentThread-&gt;getPriority() - <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (status == IdleMode &amp;&amp; !woken &amp;&amp; _bedroom.IsEmpty()) &#123;<span class="comment">// is it time to quit?</span></span><br><span class="line">        <span class="keyword">if</span> (!interrupt-&gt;AnyFutureInterrupts()) &#123;</span><br><span class="line">        timer-&gt;Disable();	<span class="comment">// turn off the timer</span></span><br><span class="line">    &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;			<span class="comment">// there's someone to preempt</span></span><br><span class="line">    <span class="keyword">if</span>(kernel-&gt;scheduler-&gt;getSchedulerType() == RR ||</span><br><span class="line">        kernel-&gt;scheduler-&gt;getSchedulerType() == Priority ) &#123;</span><br><span class="line"><span class="comment">//		interrupt-&gt;YieldOnReturn();</span></span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"=== interrupt-&gt;YieldOnReturn ==="</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">        interrupt-&gt;YieldOnReturn();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在 Burst Time 計算上，如果採用運行時估計，可以在以下代碼中進行計算。<code>kernel-&gt;stats-&gt;userTicks</code> 是執行 user program 的時間累加器 (也存有一個 system program 的時間累加器，運行 thread context-free, thread scheduling … 等時間用途。)<br><figure class="highlight cpp"><figcaption><span>threads/alarm.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> </span><br><span class="line">Alarm::WaitUntil(<span class="keyword">int</span> x) &#123;</span><br><span class="line">    IntStatus oldLevel = kernel-&gt;interrupt-&gt;SetLevel(IntOff);</span><br><span class="line">    Thread* t = kernel-&gt;currentThread;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// burst time</span></span><br><span class="line">    <span class="keyword">int</span> worktime = kernel-&gt;stats-&gt;userTicks - t-&gt;getStartTime();</span><br><span class="line">    t-&gt;setBurstTime(t-&gt;getBurstTime() + worktime);</span><br><span class="line">    t-&gt;setStartTime(kernel-&gt;stats-&gt;userTicks);</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"Alarm::WaitUntil go sleep"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    _bedroom.PutToBed(t, x);</span><br><span class="line">    kernel-&gt;interrupt-&gt;SetLevel(oldLevel);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>其實到這裡已經完成，接下來就放幾張測試結果。</p>
-<p><img src="/img/multiprogramming.png" alt="multi-programming"></p>
-<p><img src="/img/FCFS-1.png" alt="FCFS(1)"><br><img src="/img/FCFS-2.png" alt="FCFS(2)"></p>
-<p><img src="/img/RR-1.png" alt="RR(1)"><br><img src="/img/RR-2.png" alt="RR(2)"></p>
-<p><img src="/img/SJF-1.png" alt="SJF(1)"><br><img src="/img/SJF-2.png" alt="SJF(2)"></p>
-<p><img src="/img/Priority-1.png" alt="Priority(1)"><br><img src="/img/Priority-2.png" alt="Priority(1)"></p>
-<h1 id="最後"><a href="#最後" class="headerlink" title="最後"></a>最後</h1><p>如果在<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd code</span><br><span class="line">$ make</span><br></pre></td></tr></table></figure></p>
-<p>編譯時發生錯誤，想必是兩個地方的 <code>Initialize()</code> 發生錯誤，所以請參照以下代碼進行修改。這問題是發生於我們在 <code>/threads</code> 下修改 main.cc 的關係，所以必須在每一個 kernel 宣告地方都給一個決定 scheduler 類型的參數。</p>
-<p>其一,<br><figure class="highlight cpp"><figcaption><span>userprog/userkernel.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"../threads/scheduler.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> SynchDisk;</span><br><span class="line"><span class="keyword">class</span> UserProgKernel : <span class="keyword">public</span> ThreadedKernel &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">  	...</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Initialize</span><span class="params">()</span></span>;		<span class="comment">// initialize the kernel </span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Initialize</span><span class="params">(SchedulerType type)</span></span>;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure><br>其二,<br><figure class="highlight cpp"><figcaption><span>userprog/userkernel.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">UserProgKernel::Initialize()</span><br><span class="line">&#123;</span><br><span class="line">    Initialize(RR);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">UserProgKernel::Initialize(SchedulerType type)</span><br><span class="line">&#123;</span><br><span class="line">    ThreadedKernel::Initialize(type);	<span class="comment">// init multithreading</span></span><br><span class="line"></span><br><span class="line">    machine = <span class="keyword">new</span> Machine(debugUserProg);</span><br><span class="line">    fileSystem = <span class="keyword">new</span> FileSystem();</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> FILESYS</span></span><br><span class="line">    synchDisk = <span class="keyword">new</span> SynchDisk(<span class="string">"New SynchDisk"</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span> <span class="comment">// FILESYS</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>其三,<br><figure class="highlight cpp"><figcaption><span>network/netkernel.h</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"../threads/scheduler.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> PostOfficeInput;</span><br><span class="line"><span class="keyword">class</span> PostOfficeOutput;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> NetKernel : <span class="keyword">public</span> UserProgKernel &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Initialize</span><span class="params">()</span></span>;		<span class="comment">// initialize the kernel </span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Initialize</span><span class="params">(SchedulerType)</span></span>;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure><br>其四,<br><figure class="highlight cpp"><figcaption><span>network/netkernel.cc</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> </span><br><span class="line">NetKernel::Initialize() &#123;</span><br><span class="line">    Initialize(RR);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">NetKernel::Initialize(SchedulerType type)</span><br><span class="line">&#123;</span><br><span class="line">    UserProgKernel::Initialize(type);	<span class="comment">// init other kernel data structs</span></span><br><span class="line"></span><br><span class="line">    postOfficeIn = <span class="keyword">new</span> PostOfficeInput(<span class="number">10</span>);</span><br><span class="line">    postOfficeOut = <span class="keyword">new</span> PostOfficeOutput(reliability, <span class="number">10</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h1 id="致網路資源"><a href="#致網路資源" class="headerlink" title="致網路資源"></a>致網路資源</h1><p>感謝網路上前人們所遺留的遺產。雖然在看不懂的文字中摸索，但仍抓到了一點線索。</p>
-<blockquote>
-<p>我一無所有，直到見到了你們。</p>
-</blockquote>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/8/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/7/">7</a><a class="page-number" href="/categories/學校課程/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/categories/學校課程/page/10/">10</a><a class="page-number" href="/categories/學校課程/page/11/">11</a><a class="extend next" rel="next" href="/categories/學校課程/page/10/">Next &raquo;</a>
@@ -1210,7 +1115,7 @@ $ ./nachos RR
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">103</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">107</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">37</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1220,6 +1125,38 @@ $ ./nachos RR
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10113/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10113. Longest Common Subsequence II (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10112/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10112. Longest Common Subsequence (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10111/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10111. Longest Common Subsequence II (OpenMP)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10110/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10110. Longest Common Subsequence (OpenMP)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/28/jg-10109/">
@@ -1267,38 +1204,6 @@ $ ./nachos RR
                 <i class="icon-file-o"></i> 
               
             批改娘 10103. Advanced Matrix Calculator (CUDA)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/28/jg-10102/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10102. Matrix Calculator (CUDA)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/28/jg-10101/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10101. Fast Game of Life (CUDA)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/28/jg-10100/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10100. Fast Matrix Multiplication (CUDA)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/28/jg-10099/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10099. Dot Product (CUDA)</a>
           </li>
         
       </ul>
