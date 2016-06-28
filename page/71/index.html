@@ -89,6 +89,411 @@
         
           <section id="main">
   
+    <article id="post-note/hardware-interview" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/22/note/hardware-interview/" class="article-date">
+  <time datetime="2014-05-22T00:26:37.000Z" itemprop="datePublished">2014-05-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/雜言筆記/">雜言筆記</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="/img/1400100597593.jpg" rel="gallery_cipys6k8x0287joxcdpxkrupl">
+        <img src="/img/1400100597593.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/22/note/hardware-interview/">大神面試紀錄 Hardware Interview</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/22/note/hardware-interview/" data-id="cipys6k8x0287joxcdpxkrupl" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/22/note/hardware-interview/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/硬體/">硬體</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/面試/">面試</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="序"><a href="#序" class="headerlink" title="序"></a>序</h1><p>本篇文章記錄身邊大神去面試時所遇到的神祕問題，對於現在大三的我只能旁觀，雖然在計算機組織這一類的硬體課程修完不久，但是看到這些問題，還真的不知所措。</p>
+<p>面試的時候，可以帶上會協助您的小夥伴們一起面試，這一點相當地奇特，面試不再是單打獨鬥。當然，小夥伴有事也沒有關係，將可以使用線上 call out。</p>
+<p>也是這些原因，才有機會參與這些問題的討論。</p>
+<h1 id="面試題目"><a href="#面試題目" class="headerlink" title="面試題目"></a>面試題目</h1><blockquote>
+<p>以下附錄僅為討論，不代表正確答案。</p>
+</blockquote>
+<p>面試採用漸進式，由高階至低階開始追問，同時也會問到 <code>Hardware Algorithm</code>。</p>
+<ul>
+<li><p>用 <code>C/C++</code> 寫一個九九乘法表</p>
+<p>  這邊就不多加以描述，通常採用兩層迴圈的寫法和一個 <code>printf</code></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= <span class="number">9</span>; i++)</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">1</span>; j &lt;= <span class="number">9</span>; j++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d x %d = %d\n"</span>, i, j, i * j);</span><br></pre></td></tr></table></figure></li>
+<li><p><code>printf(format, arg)</code> 怎麼實作的？</p>
+<p>  請準備 <code>stdio.h</code> 開始查閱，不過當下要想出來還真的挺難的，不過在 linux 下，stdin, stderr, stdout 都是一個檔案形式，這是在呼叫 <code>printf</code>後會去導入的目標所在。但如何解決 <code>arg</code>，要查閱一下 <code>va_start</code> 怎麼運作的，若上網搜尋得到。</p>
+<figure class="highlight cpp"><figcaption><span>printf</span><a href="https://sourceware.org/git/?p=glibc.git;a=blob;f=stdio-common/printf.c;h=9bf28949cb0f9968dead004e7d6aea38513d6db6;hb=HEAD" target="_blank" rel="external">link</a></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;libioP.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdarg.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> printf</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Write formatted output to stdout from the format string FORMAT.  */</span></span><br><span class="line"><span class="comment">/* VARARGS1 */</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">__printf (<span class="keyword">const</span> <span class="keyword">char</span> *format, ...)</span><br><span class="line">&#123;</span><br><span class="line">  va_list arg;</span><br><span class="line">  <span class="keyword">int</span> done;</span><br><span class="line"></span><br><span class="line">  va_start (arg, format);</span><br><span class="line">  done = <span class="built_in">vfprintf</span> (<span class="built_in">stdout</span>, format, arg);</span><br><span class="line">  va_end (arg);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> done;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> _IO_printf</span></span><br><span class="line">ldbl_strong_alias (__printf, <span class="built_in">printf</span>);</span><br><span class="line"><span class="comment">/* This is for libg++.  */</span></span><br><span class="line">ldbl_strong_alias (__printf, _IO_printf);</span><br></pre></td></tr></table></figure>
+<p>  多變數到底是如何在這裡實作的，這一點要去考量 <code>va_start</code>，他會將參數位置丟入 <code>va_list arg</code> 中，但是如果參數個數或者是型態不符合 format，則運行的時候指針會指到錯誤的地方而噴出 RE，嘗試所及就到這裡了。</p>
+</li>
+<li><p>CPU 怎麼實作這些？</p>
+<p>  CPU 的 pipeline 的五個階段和實作，IF, ID, EX, MEM, WB<br>  擷取指令、指定解析、執行運算、寫入記憶體、寫回暫存器。<br>  然後如何 pipeline，如果有類型的不同的時候，pipeline 會猜測到底要不要 branch，如果真的要 branch，要將 branch 之後的指令清掉 … 計組忘得一乾二淨。</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li><p>實作一個 n bits 加法器 adder，在平行的情況下，最多能多快。</p>
+<p>  一般而言，要在 n 個 clock 後才能得到，這麼做就太慢了，之前上課有提到 carry lookahead adder, carry saved adder, … 等，這些雖然能在比一般時間更快得到是否要進位，但問題是要怎麼知道加完之後的結果！</p>
+<p>  所以通常是切塊，然後賭前一塊到底會不會進位過來，把兩個答案都先算出，最後再利用 selector 去選擇正確的那個結果。</p>
+<p>  如果單純是要得到是否會 overflow，最快可以在 <code>O(log n)</code> 時間內得到，採用分治的方式去考慮進位問題。</p>
+<p>  分治算法看起來很接近線段樹的做法，藉由上一步，把兩種可能的答案都先算出，我們已經在 <code>O(log n)</code> 時間內把線段樹建出，接著對每一個元素做前綴的區間查詢，全部并行可以在 <code>O(log n)</code> 時間內完成，然後調用 selector 決定我們的答案。</p>
+<blockquote>
+<p>太多平行，平行處理的效能分析和處理資料的優先順序，很少在 ACM 使用，只好在此刻 yy 了。</p>
+</blockquote>
+</li>
+<li><p>給很多區間 <code>[l, r]</code>，接著詢問某個點 <code>x</code> 被多少區間覆蓋。</p>
+<p>  線段樹處理，搭配區間的懶操作，直接對區間 <code>[l, r]</code> 所有元素 + 1 即可，在 <code>O(n log n)</code> 時間內建表，然後單點查詢 <code>A[x]</code> 的值為何，這種做法可以動態支持。</p>
+</li>
+<li><p>給一般圖進行匹配，假設不使用標準的帶花樹算法，使用自己的算法，請問誤差為多少。</p>
+<p>  貪婪策略：<br>  每次對一個鄰居最少的點，找到其鄰居 (他的鄰居也最少) 進行匹配，然後把這些點都拿掉，繼續遞迴匹配。</p>
+<p>  至於誤差－只能想辦法找到一個反例，來確定誤差一定大於某個值，要詳細證明什麼的，大概可以順便報一篇論文了。</p>
+<p>  <img src="/img/snakeooxx.png" alt="天祥反例"></p>
+<p>  一群人在思考反例，想了很久都沒有結果，最後由天祥大神找到一個誤差有 <code>20%</code> 的反例，詳細如上圖所述，如果一開始拿到 AD 或者是 HI，則會把匹配數最多拿到 4 個，事實上為 5 個。</p>
+</li>
+</ul>
+<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>相當可怕，學得都忘得一乾二淨，無法精準回答。</p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-oj/uva/icpc-4020" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/22/oj/uva/icpc-4020/" class="article-date">
+  <time datetime="2014-05-22T00:14:25.000Z" itemprop="datePublished">2014-05-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/22/oj/uva/icpc-4020/">ICPC 4020 - Hard Rode</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/22/oj/uva/icpc-4020/" data-id="cipys6kkb02drjoxcx1b2n5fr" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/22/oj/uva/icpc-4020/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/窮舉/">窮舉</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>The road to Shu is hard, even harder than climbing to the blue sky. A poem by Li Po from Tang Dynasty 1,200 years ago described the difficulty in travelling into Sichuan.</p>
+<p>\epsfbox{p4020.eps}</p>
+<p>However the above old saying is no longer true as a convenient communication network of railway, highway, waterway and air transport has come into being. Railways cover a total mileage of 2,693 km, consisting of five trunk lines including the BaojiChengdu and Chengdu-Chongqing railways, eight feeder lines and four local railways. The total mileage of highways stretches to nearly 80,000 km, ranking at the forefront in China. Now a highway network with the provincial capital of Chengdu as the center radiating to all cities in the province has been formed. A total of 500 km of expressways have been built. It is very easy to transfer passengers and freights between Sichuan and other provinces. After a nationwide railway speed acceleration launched in last year, trains can be allowed to run at a speed above 120 km per hour. However, the average speed of a train depends on its make-up. There is only single railway track between stations from Baoji to Chengdu, A primary task for dispatchers is to arrange for trains to meet and pass each other. You are requested to write a program to make the arrangement for a series of trains of different speeds from one station to its next station in the least amount of time.</p>
+<p>What you should pay attention to while writing this program is that since there is a single railway track from Baoji to Chengdu, two trains are not allowed to pass the same spot at the same time, or they would be collision, and that because of the limited staff, there should be a fixed interval time between two trains out of the station, what’s more, the trains could pull into the station at the same time, but never get out at the same time.</p>
+<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input consists of several test cases. Each test case begins with a line containing 3 integers L (1 &lt;= L &lt;= 100000) , N (1 &lt;= N &lt;= 8) and T (1 &lt; T &lt; 10000) which indicate the distance between two stations (unit is meter), the number of trains, as well as the interval time of adjacent trains when trains leave the start (unit is second).</p>
+<p>The next N lines contain average speeds of N trains (unit is m/s).</p>
+<p>A single line with L = 0 indicates the end of input file and should not be processed by your program.</p>
+<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each test case, your output should be in one line with the minimum time(round to integer) needed by the trains pulling into the terminal as indicated in the sample output.</p>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">100000 6 300 </span><br><span class="line">3 </span><br><span class="line">4 </span><br><span class="line">5 </span><br><span class="line">6 </span><br><span class="line">2 </span><br><span class="line">1 </span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Case 1: 101500</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
+<p>從 陝西省寶雞市 到 四川省成都市 有一條鐵軌，而這一條鐵軌一次有好幾台火車在運行，但是不會發生追撞事件，然而每台火車的速度不一樣，而且站務人員會每隔固定時間發一班車，在不發生碰撞的情況下，最後一台火車到達成都市的最少時間為何？</p>
+<p><strong> 題目解法：</strong></p>
+<p>在這樣的情況，有可能慢車先出發，然在在 <code>T</code> 秒之後，快車恰好追到慢車，這樣的情況會更好。但是實際數據應該長成什麼樣子沒有仔細考慮。</p>
+<p>如果使用慢車最後出發，這樣能確保一定不會產生碰撞，但不確定是否是最佳解。</p>
+<p>所以使用 <code>O(n!)</code> 的窮舉來計算答案。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;math.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> L, N, T, cases = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> speed[<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">while</span>(<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;L, &amp;N, &amp;T) == <span class="number">3</span> &amp;&amp; L) &#123;</span><br><span class="line">        <span class="keyword">int</span> p[<span class="number">10</span>] = &#123;&#125;;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%lld"</span>, &amp;speed[i]);</span><br><span class="line">            p[i] = i;</span><br><span class="line">        &#125;</span><br><span class="line">        sort(speed, speed + N);</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> ret = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            <span class="keyword">double</span> start = T, lastTime = L / speed[p[<span class="number">0</span>]];</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; N; i++) &#123;</span><br><span class="line">                <span class="keyword">double</span> time = L / speed[p[i]] + start;</span><br><span class="line">                <span class="keyword">if</span>(time &gt;= lastTime) &#123;</span><br><span class="line">                    start += T;</span><br><span class="line">                    lastTime = time;</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    lastTime = <span class="number">0x3f3f3f3f</span>;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                    <span class="comment">// start += T + (lastTime - time);</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            ret = min(ret, (<span class="keyword">long</span> <span class="keyword">long</span>) <span class="built_in">ceil</span>(lastTime));</span><br><span class="line">        &#125; <span class="keyword">while</span> (next_permutation(p, p + N));</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Case %d: %lld\n"</span>, ++cases, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-oj/uva/uva-10320" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/21/oj/uva/uva-10320/" class="article-date">
+  <time datetime="2014-05-20T23:33:18.000Z" itemprop="datePublished">2014-05-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/21/oj/uva/uva-10320/">UVa 10320 - Cow Trouble! Help Please</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/21/oj/uva/uva-10320/" data-id="cipys6koi02fijoxcguzb7nea" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/21/oj/uva/uva-10320/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/幾何/">幾何</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>There are many classic problem with cows/goats and grass field in the world of mathematics. One of such problems is shown in the picture (left one) below. A goat is tied at point C which is on the edge of a round field with a rope of length R. One has to determine the length R when the cow can eat 50% grass of the round field. But in this problem we will consider a slightly different scenario which is shown in the second figure. In a field of infinite area there is a house ABDC. A cow is tied with pillar B of the house with a rope of length R. The length and width of the house is l and w. If the house was not there the cow could eat all the grass in the round green field (The round green field is a circle of radius R). But the presence of the house will certainly reduce his ability as the cow cannot enter the house nor can any part of the rope. You will have to determine the area the cow can now roam around and eat grass.</p>
+<p>Fig 1: A classic Problem with a Goat</p>
+<p>Fig 2: The Current Classic Problem with Cow</p>
+<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input file contains several lines of input. Each line contains three floating point numbers l, w and R as described in the problem statement. All numbers are less than 10000. Input is terminated by end of file.</p>
+<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each line of input produce one line of output. This output denotes the area that the cow can cover by not entering the house. This value should contain ten digits after the decimal point. Output will be checked with special judge. So you should not worry about very small precision errors.</p>
+<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">10 5 5</span><br><span class="line">10 4 8</span><br></pre></td></tr></table></figure>
+<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">58.9048622548</span><br><span class="line">163.3628179867</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong><br>有一頭牛被一根長度 R 的繩子拴在一棟建築物 ABCD 的 B 點上，草地的範圍為無限大，求牛可以吃到的草的範圍。Input 會給l, w 和 R 表示建築物長寬和繩長；l, w, R &lt; 10000。Output 要輸到小數點第 10 位。</p>
+<p><strong> 題目解法：</strong></p>
+<p>就是根據 R 的四種情況去討論，其中最麻煩的是對於 <code>R &gt; l + w</code>，這種情況會需要討論重疊的區域，算出三角形夾角然後分別算兩個扇形面積，再弄回重疊區域三角形中的哪一塊有草。</p>
+<p>其實這一題的題解網路上是有的，但是 PO 出來是因為自己卡在 WA，原因是這樣子的，假使 <code>A = 0.5 * B</code> 和 <code>A = B / 2</code>，這兩者寫法並無不同，但是後者的精準度比較好，很多次的 WA 都掛在這一點。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;math.h&gt;</span><br><span class="line">#include &lt;algorithm&gt;</span><br><span class="line">using namespace std;</span><br><span class="line"></span><br><span class="line">int main() &#123;</span><br><span class="line">    double w, l, r;</span><br><span class="line">    const double pi = acos(-1);</span><br><span class="line">    while(scanf("%lf %lf %lf", &amp;l, &amp;w, &amp;r) == 3) &#123;</span><br><span class="line">        if(w &gt; l)</span><br><span class="line">            swap(w, l);</span><br><span class="line">        double area;</span><br><span class="line">        if(r &lt;= w)</span><br><span class="line">            area = r * r * pi * 3 / 4.0;</span><br><span class="line">        else if(r &lt;= l)</span><br><span class="line">            area = r * r * pi * 3 / 4.0 + (r - w) * (r - w) * pi / 4.0;</span><br><span class="line">        else if(r &lt;= l + w)</span><br><span class="line">            area = r * r * pi * 3 / 4.0 + (r - w) * (r - w) * pi / 4.0 </span><br><span class="line">                    + (r - l) * (r - l) * pi / 4.0;</span><br><span class="line">        else &#123;</span><br><span class="line">            double a = atan2(l, w), b, c;</span><br><span class="line">            double la, lb, lc;</span><br><span class="line">            </span><br><span class="line">            la = hypot(w, l);</span><br><span class="line">            lb = r - w;</span><br><span class="line">            lc = r - l;</span><br><span class="line">            b = acos((la*la + lb*lb - lc*lc)/(2*la*lb)) + a;</span><br><span class="line">            c = acos((la*la + lc*lc - lb*lb)/(2*la*lc)) + (pi /2) - a;</span><br><span class="line">                        </span><br><span class="line">            area = r * r * pi * 3 / 4.0;</span><br><span class="line">            area += (r - w) * (r - w) * (pi - b) / 2;</span><br><span class="line">            area += (r - l) * (r - l) * (pi - c) / 2;</span><br><span class="line">            area += lb * la * sin(b - a) / 2;</span><br><span class="line">            area -= w * l / 2;</span><br><span class="line">        &#125;</span><br><span class="line">        printf("%0.10lf\n", area);			</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lesson/hw-computational-intelligence" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2014/05/19/lesson/hw-computational-intelligence/" class="article-date">
+  <time datetime="2014-05-19T11:47:28.000Z" itemprop="datePublished">2014-05-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/19/lesson/hw-computational-intelligence/">計算型智慧 程式作業</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2014/05/19/lesson/hw-computational-intelligence/" data-id="cipys6k4z0260joxcvlkkwam1" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2014/05/19/lesson/hw-computational-intelligence/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Fuzzy-System/">Fuzzy System</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GA/">GA</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PSO/">PSO</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h1 id="Computational-Intelligence-計算型智慧"><a href="#Computational-Intelligence-計算型智慧" class="headerlink" title="Computational Intelligence 計算型智慧"></a>Computational Intelligence 計算型智慧</h1><p>本課程將會有三階段程式，將三個算法依序加入程式中，為了要實作這些算法，必須先作出模擬器。</p>
+<h2 id="Lv-0-模擬器"><a href="#Lv-0-模擬器" class="headerlink" title="Lv. 0 模擬器"></a>Lv. 0 模擬器</h2><p>在一個 2D 平面中，以一個圓形當作車子，道路為線段的方式進行描述。為了在隨後的擴充，將地圖內容物分成可行區域多邊形和障礙物多邊形。</p>
+<ul>
+<li>要支持車子下一秒的擺角，並且按下推動鍵會根據方程式進行移動。</li>
+<li>可以將車子兩側的感測器進行角度調整，並且可以根據感測器角度進行距離計算。</li>
+<li>並且在呈現 2D 平面時，附加顯示座標軸的比例。</li>
+</ul>
+<p><img src="/img/hw-ci-0.PNG" alt="完成圖"></p>
+<p>由於私心，有一些額外產物。</p>
+<ul>
+<li>完成可以自動置中的設定</li>
+<li>提供地圖縮放和讀取操作</li>
+<li>製作地圖產生器 (other project)</li>
+<li>模擬器的彈木遊戲番外篇 (other project)</li>
+<li>提供運行欄位的縮起</li>
+</ul>
+<h2 id="Lv-1-模糊系統"><a href="#Lv-1-模糊系統" class="headerlink" title="Lv. 1 模糊系統"></a>Lv. 1 模糊系統</h2><p>車子運行公式</p>
+<p><img src="/img/hw-ci-1.PNG" alt="運行公式"></p>
+<p>其中 Φ(t) 是模型車與水平軸的角度，b 是模型車的長度，x 與 y 是模型車的座標位置， Θ(t) 是模型車方向盤所打的角度，我們對模擬的輸入輸出變數限制如下：</p>
+<p><code>-40 deg &lt;= Θ(t) &lt;= 40 deg</code></p>
+<p>寫一個程式使用模糊系統、理論模擬車子行徑，並且想辦法最佳化。</p>
+<ul>
+<li>考慮擴充性，以後車子的運行公式可能會替換，因此建造一個 <code>Engine class</code>。</li>
+<li>模糊系統的幾個特性拆分成數個 method，並且使用不同的數學計算採用繼承關係。</li>
+<li>最困難得地方在於計算函數交集，採用離散取點是最後的手段</li>
+</ul>
+<h3 id="函數實驗"><a href="#函數實驗" class="headerlink" title="函數實驗"></a>函數實驗</h3><ol>
+<li>經過實驗，三個感測器分別坐落於前方 (90度)、左右各偏轉 50 度左右的夾角比左右 90 度更好。用以應付多變的轉角彎度，防止模稜兩可的擺動。</li>
+<li>不管哪裡種去模糊化系統，由於題目限制擺角於 [-40, 40] 度之間，因此很容易在加權平均、質心、離散化而導致邊界擺角的機率甚低，當越多函數則稀釋程度越高。因此函數定義可以超過限制擺角，只需要在去模糊化時，約束至條件內即可。</li>
+<li>設計函數時，要討論向其中一個方向偏轉，也就是不能設計過於對稱的圖形，否則將會在死胡同裡打轉。</li>
+</ol>
+<h3 id="函數設計"><a href="#函數設計" class="headerlink" title="函數設計"></a>函數設計</h3><p>d1 為前方感測器，d2 為右方感測器，d3 為左方感測器。</p>
+<ol>
+<li>d1 歸屬函數為<br><img src="/img/hw-ci-2.PNG" alt="d1 歸屬函數"><br>d2, d3 歸屬函數為<br><img src="/img/hw-ci-3.PNG" alt="d2, d3 歸屬函數">    </li>
+<li>函數式加權平均<pre><code>If d3 large, θ = 55
+If d2 large, θ = -55
+If d2 medium, θ = -40
+If d3 medium, θ = 40
+If d1 large and d2 small, θ = -30
+If d1 large and d3 small, θ = 30
+If d1 small, θ = -60
+</code></pre>規則如上述七條，以最簡單的常數關係。測試結果還算不錯。<br><code>if condition, then statement</code>，statement 中的變數不存在於 condition 去做調整，後來發現由於太複雜去討論而一直失敗。</li>
+<li><p>重心法、最大平均法、修正型最大平均法、中心平均法<br>為了方便計算連續函數，採用離散取點，間隔 0.1 抓取 [-60, 60] 之間的點座標。對於以下四種方法討論於簡單彎道的過程記錄：<br><code>If d3 large</code><br><img src="/img/hw-ci-4.png" alt="If d3 large"><br>If d2 large<br><img src="/img/hw-ci-5.png" alt="If d2 large"><br>If d2 medium<br><img src="/img/hw-ci-6.png" alt="If d2 medium"><br>If d3 medium<br><img src="/img/hw-ci-7.png" alt="If d3 medium"><br>If d1 large and d2 small<br><img src="/img/hw-ci-8.png" alt="If d1 large and d2 small"><br>If d1 large and d3 small<br><img src="/img/hw-ci-9.png" alt="If d1 large and d3 small"><br>If d1 small, θ = -60<br><img src="/img/hw-ci-10.png" alt="If d1 small"></p>
+<ul>
+<li>重心法<br>當中表現最為穩健，而且路徑平滑。</li>
+<li>最大平均法<br>由於定義的函數較為簡單，而且大多都是以梯形的方式存在，雖然能在機率高的情況下走完全程，路徑中會呈現左右擺盪情況。並且大多都已極值的方式出現。</li>
+<li>修正型最大平均法<br>情況會稍微好一些，但是對於並沒有向重心法一樣的圓滑曲線，仍是因為原先的函數設計所惹的問題。</li>
+</ul>
+<p>對於某一種方法而去定義相關的函數進行測較好，而在最大平均法的部分，必須使用較具有變化性的曲線，否則很容易在極值狀況下擺動。</p>
+</li>
+</ol>
+<hr>
+<h2 id="Lv-2-GA"><a href="#Lv-2-GA" class="headerlink" title="Lv 2. GA"></a>Lv 2. GA</h2><p><img src="/img/hw-ci-RBF.PNG" alt="RBF"></p>
+<p>「放射狀基底函數網路 RBF」，基本上，其網路架構如圖1所示，為兩層的網路；假設輸入維度是p ，以及隱藏層類神經元的數目是J ，那麼網路的輸入可以表示成：<br><img src="/img/hw-ci-RBF-f1.PNG" alt=""><br>其中選用高斯型基底函數：<br><img src="/img/hw-ci-RBF-f2.PNG" alt=""><br>其中 x = (x1,x2,…,xp) 、mj = (mj1,mj2,…,mjp) 、||  || 代表向量絕對值<br>適應函數為：<br><img src="/img/hw-ci-RBF-f3.PNG" alt=""></p>
+<p>請用實數型基因演算法，找出wj , mj , σj，在不同的數字J下，最好的基因向量 (例如J為9、輸入x為3維向量，則表示基因向量是1+9+3x9+9=46維度的向量，請注意這裡不是指族群數；又例如J為7、輸入x為3維向量，則表示基因向量是1+7+3x7+7=36維度的向量)下，評估函數E(式1)為越小越好。其中基因向量維度公式為 1+J + p<em>J+J = (p+2)</em>J+1維向量( ,w1 , w2 ,.., wJ , m11, m12,.., m1p, m21, m22,.., m2p,.., mJ1, mJ2,…, mJp, σ1, σ2, …, σJ)。</p>
+<p>參數說明 : </p>
+<ul>
+<li>N 作業1產生的N筆成功到達目的訓練資料(換不同起始點)</li>
+<li>y<sub>n</sub> 表示訓練資料的方向盤期望輸出值 P.s.如果配合wj值的範圍為0~1之間，在此則必須把yn由-40~+40度正規化到 0~1之間；如果不想正規化  就必須把 wj的值範圍調整到 -40~40之間 範圍為0~1之間</li>
+<li>W<sub>j</sub> 範圍為 0~1 (或是-40~40)之間 P.s.此需配合訓練集的yn跟F(n)值範圍，所以皆需正規化到0~1之間；若不正規化，wj的值範圍為 -40~40之間</li>
+<li>m<sub>j</sub> 範圍跟X範圍一樣，如以提供的範例檔則為 0~30</li>
+<li>σ<sub>j</sub> 範圍為0~10之間；也可以設定更大的範圍做探討。</li>
+</ul>
+<blockquote>
+<p><strong> 實作概要 </strong>：<br>把參數編碼成 DNA，使用 GA 算法改變 DNA，然後用之前的模糊系統的結果，讓 RBF 接近之前定義的模糊系統。需要拿模糊系統的一些測資當作訓練資料，收集之後餵給 GA 做訓練。</p>
+</blockquote>
+<h3 id="實驗方法"><a href="#實驗方法" class="headerlink" title="實驗方法"></a>實驗方法</h3><ol>
+<li>核心代碼，對於每次迭代，著手適應、選擇、交配、突變。</li>
+<li>細部 “交配” 代碼，採用實數型的分離和聚集兩種情況。</li>
+<li>細部 “突變” 代碼，採用微量雜訊，唯一不同的地方在於，這個微量雜訊會根據當前數值的比例有關，為了避免大數字對於微量雜訊的干擾不夠強烈。</li>
+</ol>
+<h3 id="實驗結果"><a href="#實驗結果" class="headerlink" title="實驗結果"></a>實驗結果</h3><ol>
+<li>運行結果 J = 3, p = 3<br>( ,w1 , w2 ,.., wJ , m11, m12,.., m1p, m21, m22,.., m2p,.., mJ1, mJ2,…, mJp, σ1, σ2, …, σJ) = (0.163568 0.851471 1.594151 1.379580 13.092824 0.000505 12.611789 30.000000 0.000368 18.715240 0.000850 2.708967 30.000000 6.307677 7.584529 10.000000)</li>
+<li>訓練數據為 “map2” 走一圈的訓練資訊，約為 500 筆。因為 “map0” (即本次作業給的地圖) 的複雜度不夠以至於無法充分表達原本設計的模糊系統。也就是根據當初模糊系統設計，收集的數據的多樣性和連續性不足。</li>
+</ol>
+<h3 id="實驗分析"><a href="#實驗分析" class="headerlink" title="實驗分析"></a>實驗分析</h3><p>根據 RBF 的神經元，這裡可以越少越好，在程式中，神經元個數(J) 設置 3 個。運行時採用輪盤式選擇，讓適應能力好的，具有較高的機會繁殖，採用一個隨機變數去挑選。而在基因方面使用實數型基因的形式。</p>
+<ol>
+<li>運行時，突變機率和突變比例相當重要，由於相同適應能力好的物種量很多，只保留其中一部分即可，因此可以將突變機率0.5 左右，太低則會造成進化速度太慢，太高則容易失去原本適應好的物種，導致整體適應度的震盪。</li>
+<li>另外設置突變的比例，也就是該段實數值上下調整的比例。<br><code>g.getDNA()[i] = g.getDNA()[i] + ratio * Math.random() * g.getDNA()[i];</code><br>藉由上述的式子，將 ratio 設置成一個調變比例，來製造爆炸效應的規模。而在運行時，突變效果還能接受。</li>
+<li>原本運行時，只將 DNA 片段的值任意放置，並且約束在不會超出函數的定義域，在收斂速度上有明顯加速。但為了符合作業需求，將每個參數約束在指定範圍內，在收斂速度慢了一截，在預期結果並沒有很好。</li>
+<li>在不同地圖收集的預期資訊，會針對不同車子感測器的角度有所差異，因此不能拿不同型的感測數據，訓練出來的 RBF 不能給另外一台車子來使用，除非使用的感測器角度相當接近。</li>
+<li>對於死路的轉彎，在神經元個數(J) 等於 2 的時候，運行結果較為不佳，但是在本次作業中，並不會有這種數據的出現，也不用考慮這種情況。但是當神經元個數少時，GA 算法的運行速度是相當快的。</li>
+</ol>
+<hr>
+<h2 id="Lv-3-PSO"><a href="#Lv-3-PSO" class="headerlink" title="Lv. 3 PSO"></a>Lv. 3 PSO</h2><p>請利用Particle swarm optimization替換掉 GA 部分。</p>
+<ul>
+<li>AgentNum(粒子數)</li>
+<li>IterationNum(疊代數),</li>
+<li>MaxV(最大速度),</li>
+<li>MaxX(最大值範圍),</li>
+<li>Weights(兩個權重),</li>
+<li>Convergent_Error(停止條件)</li>
+<li>並畫出 fitness function 曲線變化 (每一次疊代的最佳fitness值)，最後訓練完成的F(x)當作規則 請跑出車子軌跡。</li>
+</ul>
+<h3 id="實驗分析-1"><a href="#實驗分析-1" class="headerlink" title="實驗分析"></a>實驗分析</h3><p>一開始參數為<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">int</span> sandSize = <span class="number">512</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">double</span> maxVelocity = <span class="number">0.5</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">double</span> maxXposition = <span class="number">0.5</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">double</span> weightOfCognition = <span class="number">0.5</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">double</span> weightOfSocial = <span class="number">0.5</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">double</span> nearRatio = <span class="number">0.5</span>;</span><br></pre></td></tr></table></figure></p>
+<p><img src="/img/hw-ci-11.png" alt="PSO 1"></p>
+<p><img src="/img/hw-ci-12.png" alt="PSO 2"></p>
+<ul>
+<li><p>基本上 <code>maxXposition</code> 沒有用到，調整其他比例可以發現端倪。</p>
+</li>
+<li><p>從圖 <code>PSO 2</code> 中可以發現到，PSO 與 GA 最大的不同在於，如果 GA 調用部分突變的情況下，很高的機率會發現適應曲線是嚴格遞減的，但是在 PSO 由於會飛來飛去，有可能會來回震盪。</p>
+</li>
+<li><p>當所有粒子逼近最佳解時，仍會以原本的速度繼續飛行，而原本屬於最佳位置的點也會開始模仿其他粒子飛行，如此一來就會造成震盪。</p>
+</li>
+</ul>
+<p><img src="/img/hw-ci-14.png" alt="PSO 3"></p>
+<ul>
+<li><p>其震盪的高低決定於鄰近模仿的權重，如果鄰近的粒子效果不好，模仿的權重高的時候，會導致整個最佳解有嚴重的偏離。由 <code>PSO 3</code> 中可以驗證這個震盪問題。</p>
+</li>
+<li><p>如果對於全局模仿權重調高，很容易造成處於群聚粒子不容易分離，也就是很難在早到其他的區域最佳解，會在很快的時間內進入某一個區域最佳解，從這一點中可以發現 PSO 真的具有快速收斂的性質。</p>
+</li>
+<li><p>設定 <code>maxVelocity</code> 是將整個向量長度 (歐幾里得距離) 壓縮，這將可以控制查找的精密度，如果設定太小會導致收斂速度明顯下降。將 <code>maxVelocity = 10</code> 時，適應函數看起來會有比較高的進展，由於會將每個參數約束，只要速度不是太小影響就不大。</p>
+</li>
+<li><p>當速度上限增加時，粒子碰到牆的機會也會上升，由於搜索範圍的可能性涵蓋邊界的情況增加，如果最佳解在邊界，在這樣的情況就會更好。</p>
+</li>
+<li><p>在代碼中，鄰近的定義為最近粒子中排名前 20% 的最佳解。如果採用對於常數長度，這種情況上不容易觀察，也就是說不能直接找到鄰近模仿的規模該定義在何處。</p>
+</li>
+<li><p>運行結果 J = 3, p = 3<br>( ,w1 , w2 ,.., wJ , m11, m12,.., m1p, m21, m22,.., m2p,.., mJ1, mJ2,…, mJp, σ1, σ2, …, σJ) = (0.117271 1.270048 0.000000 0.805823 15.845525 0.000000 21.613452 13.509075 0.000000 0.000000 30.000000 0.000000 10.505934 10.000000 10.000000 5.238101)</p>
+</li>
+</ul>
+<h1 id="Github-Download"><a href="#Github-Download" class="headerlink" title="Github Download"></a>Github Download</h1><p><a href="https://github.com/morris821028/hw-FuzzySystem" target="_blank" rel="external">Download</a></p>
+<p><a href="http://morris821028.github.io/2014/05/19/hw-computational-intelligence/">Blog</a></p>
+
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-oj/uva/uva-12717" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2014/05/19/oj/uva/uva-12717/" class="article-date">
@@ -114,7 +519,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/" data-id="cipwcqar502tj0rxcwlb4z612" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/" data-id="cipys6lsl02vijoxcnoaufabo" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/19/oj/uva/uva-12717/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -185,7 +590,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12716/" data-id="cipwcqaqx02tg0rxcggjyr7jc" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/19/oj/uva/uva-12716/" data-id="cipys6lrp02v6joxc3zo5z66y" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/19/oj/uva/uva-12716/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -241,11 +646,11 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="http://github.com/github.png" rel="gallery_cipwcq96j027a0rxca5t7d364">
+      <a class="article-gallery-img fancybox" href="http://github.com/github.png" rel="gallery_cipys6k9q028ojoxceyq4qh9n">
         <img src="http://github.com/github.png" itemprop="image">
       </a>
     
-      <a class="article-gallery-img fancybox" href="http://github.com/unicorn.png" rel="gallery_cipwcq96j027a0rxca5t7d364">
+      <a class="article-gallery-img fancybox" href="http://github.com/unicorn.png" rel="gallery_cipys6k9q028ojoxceyq4qh9n">
         <img src="http://github.com/unicorn.png" itemprop="image">
       </a>
     
@@ -264,7 +669,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/18/web/md-file-format/" data-id="cipwcq96j027a0rxca5t7d364" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/18/web/md-file-format/" data-id="cipys6k9q028ojoxceyq4qh9n" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/18/web/md-file-format/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -315,7 +720,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/18/lesson/operating-system-hw-thread/" data-id="cipwcq912024u0rxcnsth1cmv" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/18/lesson/operating-system-hw-thread/" data-id="cipys6k6c026qjoxcyhtuagy2" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/18/lesson/operating-system-hw-thread/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -394,7 +799,7 @@
 <div class="article-gallery">
   <div class="article-gallery-photos">
     
-      <a class="article-gallery-img fancybox" href="/img/1399146778408.gif" rel="gallery_cipwcq8zj02440rxcx4qudrvc">
+      <a class="article-gallery-img fancybox" href="/img/1399146778408.gif" rel="gallery_cipys6k4t025wjoxcyetxoncc">
         <img src="/img/1399146778408.gif" itemprop="image">
       </a>
     
@@ -413,7 +818,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/14/lesson/hw-agile-paper/" data-id="cipwcq8zj02440rxcx4qudrvc" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/14/lesson/hw-agile-paper/" data-id="cipys6k4t025wjoxcyetxoncc" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/14/lesson/hw-agile-paper/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -578,7 +983,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-11291-with-yacc/" data-id="cipwcq9vd02hk0rxc1o3ocaap" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-11291-with-yacc/" data-id="cipys6kx002jbjoxcy601wlb4" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-11291-with-yacc/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -632,355 +1037,6 @@
 
 
   
-    <article id="post-oj/uva/uva-1636" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/12/oj/uva/uva-1636/" class="article-date">
-  <time datetime="2014-05-12T01:15:24.000Z" itemprop="datePublished">2014-05-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/12/oj/uva/uva-1636/">UVa 1636 - Headshot</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-1636/" data-id="cipwcqb6v02zg0rxctvwaqwt0" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-1636/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/概率/">概率</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>You have a revolver gun with a cylinder that has n chambers. Chambers are located in a circle on a cylinder. Each chamber can be empty or can contain a round. One chamber is aligned with the gun’s barrel. When trigger of the gun is pulled, the gun’s cylinder rotates, aligning the next chamber with the barrel, hammer strikes the round, making a shot by firing a bullet through the barrel. If the chamber is empty when the hammer strikes it, then there is no shot but just a <code>click</code>.</p>
-<p>You have found a use for this gun. You are playing Russian Roulette with your friend. Your friend loads rounds into some chambers, randomly rotates the cylinder, aligning a random chamber with a gun’s barrel, puts the gun to his head and pulls the trigger. You hear <code>click</code> and nothing else – the chamber was empty and the gun did not shoot.</p>
-<p>Now it is your turn to put the gun to your head and pull the trigger. You have a choice. You can either pull the trigger right away or you can randomly rotate the gun’s cylinder and then pull the trigger. What should you choose to maximize the chances of your survival? </p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input file contains several datasets. A dataset contains a single line with a string of n digits <code>0</code> and <code>1</code> ( 2 &lt;= n &lt;= 100). This line of digits represents the pattern of rounds that were loaded into the gun’s chambers. <code>0</code> represent an empty chamber, <code>1</code> represent a loaded one. In this representation, when cylinder rotates before a shot, the next chamber to the right gets aligned with the barrel for a shot. Since the chambers are actually located on a circle, the first chamber in this string follows the last one. There is at least one <code>0</code> in this string.</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each dataset, write to the output file one of the following words (without quotes):</p>
-<ul>
-<li><code>SHOOT</code> – if pulling the trigger right away makes you less likely to be actually shot in the head with the bullet (more likely that the chamber will be empty).</li>
-<li><code>ROTATE</code> – if randomly rotating the cylinder before pulling the trigger makes you less likely to be actually shot in the head with the bullet (more likely that the chamber will be empty).</li>
-<li><code>EQUAL</code> – if both of the above choices are equal in terms of probability of being shot.</li>
-</ul>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0011</span><br><span class="line">0111</span><br><span class="line">000111</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">EQUAL</span><br><span class="line">ROTATE</span><br><span class="line">SHOOT</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
-<p>俄羅斯輪盤，現在與一位朋友一起玩這場遊戲，然而我們已經知道左輪手槍中的填彈資訊，剛聽到朋友按下扣板，但是沒有死。現在輪到你，請問要直接按？還是隨機轉一圈再按？</p>
-<p><strong> 題目解法：</strong></p>
-<p>不外乎地，我們要找到哪個機率高。</p>
-<p>由於朋友按下沒死，也就是要考慮連續 2 個 <code>0</code> 的情況，下一個是 <code>0</code> 的機率為 <code>czero / zero</code></p>
-<p>// 在前提為 0 的情況下，下一個為 0 的機率為何，也就是考慮 <code>00</code> 和 <code>01</code> 的情況下，<code>00</code> 的機率為何。<br>// czero 是連續為 0 的個數，zero 是 0 的個數 (同時也是 <code>00</code> <code>01</code> 的個數。)，n 是全部個數。</p>
-<p>隨機轉一圈得到 <code>0</code> 的概率為 <code>zero / n</code>。</p>
-<p>不小心把題目想太難，事實上這問題很簡單的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">int main()&#123;</span><br><span class="line">    char s[1024];</span><br><span class="line">    while(scanf(&quot;%s&quot;, s) == 1)&#123;</span><br><span class="line">        int n = strlen(s);</span><br><span class="line">        int zero = 0, one = 0, czero = 0;</span><br><span class="line">        for(int i = 0 ; i &lt; n ; i++ )&#123;</span><br><span class="line">            if(s[i] == &apos;1&apos;) </span><br><span class="line">                continue;</span><br><span class="line">            zero++;</span><br><span class="line">            if(s[(i+1)%n] == &apos;0&apos;) czero++;</span><br><span class="line">        &#125;</span><br><span class="line">        // czero - zero * (zero / n)</span><br><span class="line">        if(czero * n == zero * zero) </span><br><span class="line">            puts(&quot;EQUAL&quot;);</span><br><span class="line">        else if(czero * n &gt; zero * zero)</span><br><span class="line">            puts(&quot;SHOOT&quot;);</span><br><span class="line">        else </span><br><span class="line">            puts(&quot;ROTATE&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-oj/uva/uva-1644" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/12/oj/uva/uva-1644/" class="article-date">
-  <time datetime="2014-05-12T01:05:18.000Z" itemprop="datePublished">2014-05-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/12/oj/uva/uva-1644/">UVa 1644 - Prime Gap</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/12/oj/uva/uva-1644/" data-id="cipwcqb7d02zm0rxc782ctyv1" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/12/oj/uva/uva-1644/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sieve/">sieve</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p> The sequence of n - 1 consecutive composite numbers (positive integers that are not prime and not equal to 1) lying between two successive prime numbers p and p + n is called a prime gap of length n . For example, 〈24, 25, 26, 27, 28〉 between 23 and 29 is a prime gap of length 6.</p>
-<p>Your mission is to write a program to calculate, for a given positive integer k , the length of the prime gap that contains k . For convenience, the length is considered 0 in case no prime gap contains k .</p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input is a sequence of lines each of which contains a single positive integer. Each positive integer is greater than 1 and less than or equal to the 100000th prime number, which is 1299709. The end of the input is indicated by a line containing a single zero.</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>The output should be composed of lines each of which contains a single non-negative integer. It is the length of the prime gap that contains the corresponding positive integer in the input if it is a composite number, or `0’ otherwise. No other characters should occur in the output.</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">10 </span><br><span class="line">11 </span><br><span class="line">27 </span><br><span class="line">2 </span><br><span class="line">492170 </span><br><span class="line">0</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">4 </span><br><span class="line">0 </span><br><span class="line">6 </span><br><span class="line">0 </span><br><span class="line">114</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述：</strong></p>
-<p>找該數字左右相鄰的兩個質數差值。</p>
-<p><strong> 題目解法：</strong></p>
-<p>線性篩法 (sieve)。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#define LL long long</span><br><span class="line">#define maxL (1300000&gt;&gt;5)+1</span><br><span class="line">#define GET(x) (mark[x&gt;&gt;5]&gt;&gt;(x&amp;31)&amp;1)</span><br><span class="line">#define SET(x) (mark[x&gt;&gt;5] |= 1&lt;&lt;(x&amp;31))</span><br><span class="line">using namespace std;</span><br><span class="line">int mark[maxL];</span><br><span class="line">int anaP[30], at = 0;</span><br><span class="line">void sieve() &#123;</span><br><span class="line">    register int i, j, k;</span><br><span class="line">    SET(1);</span><br><span class="line">    int n = 1300000;</span><br><span class="line">    for(i = 2; i &lt; n; i++) &#123;</span><br><span class="line">        if(!GET(i)) &#123;</span><br><span class="line">            for(k = n/i, j = i*k; k &gt;= i; k--, j -= i)</span><br><span class="line">                SET(j);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">main() &#123;</span><br><span class="line">    sieve();</span><br><span class="line">    int n;</span><br><span class="line">    while(scanf(&quot;%d&quot;, &amp;n) == 1 &amp;&amp; n) &#123;</span><br><span class="line">    	int ret = 0;</span><br><span class="line">    	for(int i = n; GET(i); i++, ret++);</span><br><span class="line">    	for(int i = n; GET(i) &amp;&amp; i &gt; 0; i--, ret++);</span><br><span class="line">    	printf(&quot;%d\n&quot;, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lesson/compiler-clg-ll(1)" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/11/lesson/compiler-clg-ll(1)/" class="article-date">
-  <time datetime="2014-05-11T14:36:41.000Z" itemprop="datePublished">2014-05-11</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/編譯器/">編譯器</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/11/lesson/compiler-clg-ll(1)/">編譯器 Compiler CFG LL(1)</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/11/lesson/compiler-clg-ll(1)/" data-id="cipwcq8w7022h0rxcjwq739sz" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/11/lesson/compiler-clg-ll(1)/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CFG/">CFG</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/First-Set/">First Set</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Follow-Set/">Follow Set</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/LL-1/">LL(1)</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/編譯器/">編譯器</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h1 id="序文"><a href="#序文" class="headerlink" title="序文"></a>序文</h1><p>相較於其他技術而言，編譯器的確不是什麼有趣的課程，在這一門領域專研的人也變少了，所以專精的人越少，將會越有機會。易見地，也越來越少大學開設這門編譯器的課程，不過在一些公司，編譯器的技術將成為私囊秘寶，如何將代碼更加地優化快速，這就是相當令人感到為之一驚的地方。</p>
-<h1 id="DFA-NFA-Regular-expression"><a href="#DFA-NFA-Regular-expression" class="headerlink" title="DFA, NFA, Regular expression"></a>DFA, NFA, Regular expression</h1><p>在討論所有語法前，要明白正規表達式 ( Regular expression = RegExp ) 的運作，RegExp 運作上涵蓋的語法集合是最小的，對於一個 RegExp 來說，可以轉換成具有 n 個狀態的 NFA，而這台 NFA 可以轉換成 2<sup>n</sup> 狀態的 DFA。</p>
-<p>NFA 和 DFA 最大的不同在於轉移狀態時，考慮的路徑情況，NFA 可以在不考慮輸入進行轉移，或者在相同情況下可以有很多轉移選擇。 DFA 則必須在一個輸入唯一一個轉移情況下運作。</p>
-<img src="/img/500px-DFAexample.svg.png" title="DFA">
-<p>如上圖 DFA 所示，邊上的內容就是根據輸入的情況進行轉移。</p>
-<img src="/img/423px-NFASimpleExample.svg.png" title="NFA">
-<p>如上圖 NFA 所示，會發現狀態 <code>p</code> 對於輸入 <code>1</code> 有 2 種轉移可能 (<code>p-&gt;p</code> or <code>p-&gt;q</code>)。</p>
-<p>最後可以得到一個 RegExp 一定會有一台 DFA 辨識它。而一台 DFA 也一定會有一個 RegExp，這句話的含意將可以在 <code>計算理論</code> 這門課中學到如何藉由類似 <code>Floyd Algorithm</code> 內點性質依序推出 DFA 對應的 RegExp。</p>
-<h1 id="CFG-Context-free-grammar"><a href="#CFG-Context-free-grammar" class="headerlink" title="CFG (Context-free grammar)"></a>CFG (Context-free grammar)</h1><p>A context-free grammar is a formal system that describes a language by specifying how any legal string (i.e., sequence of tokens) can be derived from a start symbol. It consists of a set of productions, each of which states that a given symbol can be replaced by a given sequence of symbols. </p>
-<p>另一個類似的語言是 <code>Context-sensitive grammar</code>，等價性質的兄弟是 <code>Chomsky normal form</code>。</p>
-<ul>
-<li><p>CFG <code>G = (Vt, Vn, S, P)</code></p>
-<ul>
-<li>Vt: 有限的 terminal 字符集</li>
-<li>Vn: 有限的 nonterminal 字符集</li>
-<li>S: 一開始出發的 start symbol</li>
-<li>P: 轉換的規則 (production)</li>
-<li><p>來個例子</p>
-<pre><code>LHS (left-hand side) -&gt; RHS (right-hand side)
-
-&lt;E&gt;         -&gt; &lt;Prefix&gt; ( &lt;E&gt; )
-&lt;E&gt;         -&gt; V &lt;Tail&gt;
-&lt;Prefix&gt;    -&gt; F
-&lt;Prefix&gt;    -&gt; l
-&lt;Tail&gt;      -&gt; + &lt;E&gt;
-&lt;Tail&gt;      -&gt; l
-</code></pre><p>明顯地</p>
-<ul>
-<li><code>Vt = {(, ), V, F, l, +}</code></li>
-<li><code>Vn = {&lt;E&gt;, &lt;Prefix&gt;, &lt;Tail&gt;}</code></li>
-<li><code>S = &lt;E&gt;</code></li>
-<li><code>P</code> 就是給定那六條規規則</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>名詞<ul>
-<li><em>Sentential form</em><br>  If S =&gt;<sup>*</sup> β, β then is said to be <em>sentential form</em> of the CFG<br>  簡單來說，所有從 start symbol 過程中替換出來的句子都稱為 sentential form。</li>
-<li><em>Handle</em> of a sentential form<br>  The handle of a sentential form is the left-most simple phrase.<br>  <img src="/img/ch07-tree-1.png" alt="img"><br>  簡單來說，就是將一個 nonterminal 根據 production 轉換成 RHS (right-hand side) 的一個步驟。</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li>什麼是 CFG (上下文無關語法)？<br>  簡單來說，還真的是上下文無關，例如 <code>S -&gt; AB</code> 可以見到 S 轉換時，不會因為前文或後文是什麼內容而影響，而在 <code>Context-sensitive grammar</code> (上下文敏感) 可以見到 <code>aSb -&gt; AB</code> 會因為前面跟後面所受到的影響。</li>
-</ul>
-<blockquote>
-<p>這裡使用大寫為 nontermainl，其他字符為 terminal。</p>
-</blockquote>
-<h2 id="First-Set"><a href="#First-Set" class="headerlink" title="First Set"></a>First Set</h2><ul>
-<li>First(A)<ul>
-<li>The set of all the <em>terminal</em> symbols that can <em>begin</em> a sentential form <em>derivable from</em> A. <code>A =&gt;* aB</code><pre><code>First(A) = {
-    a in Vt | A =&gt;* aB, and
-    Λ in Vt | A =&gt;* Λ
-}
-</code></pre></li>
-<li>簡單地說，從這個 nonterminal 開始，第一個不能被替換的 terminal 就會在 First set 中。</li>
-</ul>
-</li>
-<li>計算 <code>First(A)</code> 前，必須先建出這個 nonterminal 有沒有可能推出 Λ，即 <code>A =&gt;* Λ</code>。<br>這邊相當有意思，使用迭代更新，如果發現 <code>B =&gt;* Λ</code> 和 <code>C =&gt;* Λ</code> 則對於 Production <code>A =&gt; BC</code> 來說，可以得到 <code>A =&gt;* Λ</code> 就這麼依序推出所有情況，時間複雜度應該在 <code>O(n^2)</code>。</li>
-<li>計算 <code>First(A)</code> 時，掃描規則 <code>LHS =&gt; RHS</code>，找到 <code>First(RHS)</code> 並且 <code>First(LHS).insert(First(RHS))</code>，依樣使用迭代更新推出所有情況，時間複雜度應該在 <code>O(n^2)</code>。</li>
-</ul>
-<h2 id="Follow-Set"><a href="#Follow-Set" class="headerlink" title="Follow Set"></a>Follow Set</h2><ul>
-<li>Follow(A)<ul>
-<li><em>A</em> is any nonterminal</li>
-<li>Follow(A) is <em>the set of terminals</em> that may follow <em>A</em> in some sentential form. <code>S =&gt;* ... Aabc ...</code>follow set。<pre><code>Follow(A) = {
-    a in Vt | S =&gt;* ... Aa ..., and
-    Λ in Vt | S =&gt;* aA
-}
-</code></pre></li>
-<li>請切記，一定要從 start symbol 開始替換的所有句子，而在這個 nonterminal 隨後可能跟著的 termainl 就會屬於它的。</li>
-</ul>
-</li>
-<li>計算 <code>Follow(A)</code> 前，請先把 First set 都算完，接著也是用迭代更新，掃描規則 <code>A -&gt; a B b</code><br>對於 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">if Λ not in First(b)</span><br><span class="line">    Follow(B).insert(First(b))</span><br><span class="line">else</span><br><span class="line">    Follow(B).insert(First(b) - Λ)</span><br><span class="line">    Follow(B).insert(Follow(A))</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">## Predict Set ##</span><br><span class="line"></span><br><span class="line">* Given the productions</span><br><span class="line">* During a (leftmost) derivation, Deciding which production to match, Using lookahead symbols</span><br><span class="line">* 相較於 First set 和 Follow set，Predict Set 是根據 Production 產生的，也就是說一條 production 會有一個對應的 predict set，而 First set 和 Follow set 都是根據 nonterminal 產生一對一對應的集合，用來預測這一條規則的第一個 terminal 會有哪些。</span><br><span class="line"></span><br><span class="line">對於 production : `A -&gt; X1 X2 ... Xm`</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>if Λ in First(X1 X2 … Xm)<br>    Predict(A -&gt; X1 X2 … Xm).insert(First(X1 X2 … Xm) - Λ);<br>    Predict(A -&gt; X1 X2 … Xm).insert(Follow(A));<br>else<br>    Predict(A -&gt; X1 X2 … Xm).insert(First(X1 X2 … Xm));<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">對於第一判斷情況在于 `... AE = ... X1 X2 ... Xm E`，明顯地可以從 `Follow(A)` 得到第一個字符為何。</span><br><span class="line"></span><br><span class="line">## LL(1) Table ##</span><br><span class="line">&gt; 尚未撰寫</span><br><span class="line"></span><br><span class="line">C++ code</span><br><span class="line">=====</span><br><span class="line"></span><br><span class="line">## 資料規格 ##</span><br><span class="line"></span><br><span class="line">以下代碼實作 CFG 的 First Set, Follow Set, Predict Set 和 LL(1) Table。</span><br><span class="line"></span><br><span class="line">用字符 `l` 代替 lambda</span><br><span class="line"></span><br><span class="line">## 資料範例 ##</span><br><span class="line"></span><br><span class="line">* 本課程簡易範例輸入</span><br></pre></td></tr></table></figure></p>
-<p>S-&gt;aSe<br>S-&gt;B<br>B-&gt;bBe<br>B-&gt;C<br>C-&gt;cCe<br>C-&gt;d</p>
-<p>A-&gt;BaAb<br>A-&gt;cC<br>B-&gt;d<br>B-&gt;l<br>C-&gt;eA<br>C-&gt;l</p>
-<p>A-&gt;aAd<br>A-&gt;B<br>B-&gt;bBd<br>B-&gt;C<br>C-&gt;cCd<br>C-&gt;l</p>
-<p>E-&gt;TX<br>X-&gt;+E<br>X-&gt;#<br>T-&gt;(E)<br>T-&gt;intY<br>Y-&gt;*T<br>Y-&gt;#</p>
-<p>E-&gt;P(E)<br>E-&gt;vT<br>P-&gt;f<br>P-&gt;l<br>T-&gt;+E<br>T-&gt;l</p>
-<p>S-&gt;aSe<br>S-&gt;B<br>B-&gt;bBe<br>B-&gt;C<br>C-&gt;cCe<br>C-&gt;d</p>
-<p>S-&gt;ABc<br>A-&gt;a<br>A-&gt;l<br>B-&gt;b<br>B-&gt;l</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">* 本課程簡易範例輸出</span><br></pre></td></tr></table></figure>
-<p>B:b,c,d<br>C:c,d<br>S:a,b,c,d<br>a:a<br>b:b<br>c:c<br>d:d<br>e:e<br>A:a,c,d<br>B:d,l<br>C:e,l<br>a:a<br>b:b<br>c:c<br>d:d<br>e:e<br>A:a,b,c,l<br>B:b,c,l<br>C:c,l<br>a:a<br>b:b<br>c:c<br>d:d</p>
-<p>#:#<br>(:(<br>):)<br><em>:</em><br>+:+<br>E:(,i<br>T:(,i<br>X:#,+<br>Y:#,*<br>i:i<br>n:n<br>t:t<br>(:(<br>):)<br>+:+<br>E:(,f,v<br>P:f,l<br>T:+,l<br>f:f<br>v:v<br>B:b,c,d<br>C:c,d<br>S:a,b,c,d<br>a:a<br>b:b<br>c:c<br>d:d<br>e:e<br>A:a,l<br>B:b,l<br>S:a,b,c<br>a:a<br>b:b<br>c:c<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- - - - -</span><br><span class="line"></span><br><span class="line">* HTML 格式範例輸入</span><br></pre></td></tr></table></figure></p>
-<p> <program>            -&gt; begin <statement_list> end<br> <statement_list>    -&gt; <statement> <statement_tail><br> <statement_tail>    -&gt; <statement> <statement_tail><br> <statement_tail>    -&gt; l<br> <statement>        -&gt; ID := <expression> ;<br> <statement>        -&gt; read ( <id_list> ) ;<br> <statement>        -&gt; write ( <expr_list> ) ;<br> <id_list>            -&gt; ID <id_tail><br> <id_tail>            -&gt; , ID <id_tail><br> <id_tail>            -&gt; l<br> <expr_list>        -&gt; <expression> <expr_tail><br> <expr_tail>        -&gt; , <expression> <expr_tail><br> <expr_tail>        -&gt; l<br> <expression>        -&gt; <primary> <primary_tail><br> <primary_tail>        -&gt; <add_op>    <primary> <primary_tail><br> <primary_tail>        -&gt; l<br> <primary>            -&gt; ( <expression> )<br> <primary>            -&gt; ID<br> <primary>            -&gt; INTLIT<br> <add_op>            -&gt; +<br> <add_op>            -&gt; -<br> <system_goal>        -&gt; <program> $</program></system_goal></add_op></add_op></primary></primary></expression></primary></primary_tail></primary_tail></primary></add_op></primary_tail></primary_tail></primary></expression></expr_tail></expr_tail></expression></expr_tail></expr_tail></expression></expr_list></id_tail></id_tail></id_tail></id_tail></id_list></expr_list></statement></id_list></statement></expression></statement></statement_tail></statement_tail></statement></statement_tail></statement_tail></statement></statement_list></statement_list></program></p>
-<p> begin ID := ID - INTLIT + ID ; end $<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* HTML 格式範例輸出</span><br></pre></td></tr></table></figure></p>
-<p>+—————-+—– First set —–+<br>|$               | { $ }<br>|(               | { ( }<br>|)               | { ) }<br>|+               | { + }<br>|,               | { , }<br>|-               | { - }<br>|:=              | { := }<br>|;               | { ; }<br>|<add_op>        | { + - }<br>|<expr_list>     | { ( ID INTLIT }<br>|<expr_tail>     | { , l }<br>|<expression>    | { ( ID INTLIT }<br>|<id_list>       | { ID }<br>|<id_tail>       | { , l }<br>|<primary>       | { ( ID INTLIT }<br>|<primary_tail>  | { + - l }<br>|<program>       | { begin }<br>|<statement>     | { ID read write }<br>|<statement_list>| { ID read write }<br>|<statement_tail>| { ID l read write }<br>|<system_goal>   | { begin }<br>|ID              | { ID }<br>|INTLIT          | { INTLIT }<br>|begin           | { begin }<br>|end             | { end }<br>|read            | { read }<br>|write           | { write }<br>+—————-+———————+</system_goal></statement_tail></statement_list></statement></program></primary_tail></primary></id_tail></id_list></expression></expr_tail></expr_list></add_op></p>
-<p>+—————-+—– Follow set —–+<br>|<add_op>        | { ( ID INTLIT }<br>|<expr_list>     | { ) }<br>|<expr_tail>     | { ) }<br>|<expression>    | { ) , ; }<br>|<id_list>       | { ) }<br>|<id_tail>       | { ) }<br>|<primary>       | { ) + , - ; }<br>|<primary_tail>  | { ) , ; }<br>|<program>       | { $ }<br>|<statement>     | { ID end read write }<br>|<statement_list>| { end }<br>|<statement_tail>| { end }<br>|<system_goal>   | { l }<br>+—————-+———————+</system_goal></statement_tail></statement_list></statement></program></primary_tail></primary></id_tail></id_list></expression></expr_tail></expr_list></add_op></p>
-<p>+—————-+—– LL(1) table —–+<br>|                |     $|     (|     )|     +|     ,|     -|    :=|     ;|    ID|INTLIT| begin|   end|  read| write|<br>|<add_op>        |      |      |      |    20|      |    21|      |      |      |      |      |      |      |      |<br>|<expr_list>     |      |    11|      |      |      |      |      |      |    11|    11|      |      |      |      |<br>|<expr_tail>     |      |      |    13|      |    12|      |      |      |      |      |      |      |      |      |<br>|<expression>    |      |    14|      |      |      |      |      |      |    14|    14|      |      |      |      |<br>|<id_list>       |      |      |      |      |      |      |      |      |     8|      |      |      |      |      |<br>|<id_tail>       |      |      |    10|      |     9|      |      |      |      |      |      |      |      |      |<br>|<primary>       |      |    17|      |      |      |      |      |      |    18|    19|      |      |      |      |<br>|<primary_tail>  |      |      |    16|    15|    16|    15|      |    16|      |      |      |      |      |      |<br>|<program>       |      |      |      |      |      |      |      |      |      |      |     1|      |      |      |<br>|<statement>     |      |      |      |      |      |      |      |      |     5|      |      |      |     6|     7|<br>|<statement_list>|      |      |      |      |      |      |      |      |     2|      |      |      |     2|     2|<br>|<statement_tail>|      |      |      |      |      |      |      |      |     3|      |      |     4|     3|     3|<br>|<system_goal>   |      |      |      |      |      |      |      |      |      |      |    22|      |      |      |<br>+—————-+———————+</system_goal></statement_tail></statement_list></statement></program></primary_tail></primary></id_tail></id_list></expression></expr_tail></expr_list></add_op></p>
-<p>Process syntax accept</p>
-<p>```</p>
-<h2 id="代碼"><a href="#代碼" class="headerlink" title="代碼"></a>代碼</h2><p>2014/6/1 修正 parsing 時的 lambda 問題。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br><span class="line">304</span><br><span class="line">305</span><br><span class="line">306</span><br><span class="line">307</span><br><span class="line">308</span><br><span class="line">309</span><br><span class="line">310</span><br><span class="line">311</span><br><span class="line">312</span><br><span class="line">313</span><br><span class="line">314</span><br><span class="line">315</span><br><span class="line">316</span><br><span class="line">317</span><br><span class="line">318</span><br><span class="line">319</span><br><span class="line">320</span><br><span class="line">321</span><br><span class="line">322</span><br><span class="line">323</span><br><span class="line">324</span><br><span class="line">325</span><br><span class="line">326</span><br><span class="line">327</span><br><span class="line">328</span><br><span class="line">329</span><br><span class="line">330</span><br><span class="line">331</span><br><span class="line">332</span><br><span class="line">333</span><br><span class="line">334</span><br><span class="line">335</span><br><span class="line">336</span><br><span class="line">337</span><br><span class="line">338</span><br><span class="line">339</span><br><span class="line">340</span><br><span class="line">341</span><br><span class="line">342</span><br><span class="line">343</span><br><span class="line">344</span><br><span class="line">345</span><br><span class="line">346</span><br><span class="line">347</span><br><span class="line">348</span><br><span class="line">349</span><br><span class="line">350</span><br><span class="line">351</span><br><span class="line">352</span><br><span class="line">353</span><br><span class="line">354</span><br><span class="line">355</span><br><span class="line">356</span><br><span class="line">357</span><br><span class="line">358</span><br><span class="line">359</span><br><span class="line">360</span><br><span class="line">361</span><br><span class="line">362</span><br><span class="line">363</span><br><span class="line">364</span><br><span class="line">365</span><br><span class="line">366</span><br><span class="line">367</span><br><span class="line">368</span><br><span class="line">369</span><br><span class="line">370</span><br><span class="line">371</span><br><span class="line">372</span><br><span class="line">373</span><br><span class="line">374</span><br><span class="line">375</span><br><span class="line">376</span><br><span class="line">377</span><br><span class="line">378</span><br><span class="line">379</span><br><span class="line">380</span><br><span class="line">381</span><br><span class="line">382</span><br><span class="line">383</span><br><span class="line">384</span><br><span class="line">385</span><br><span class="line">386</span><br><span class="line">387</span><br><span class="line">388</span><br><span class="line">389</span><br><span class="line">390</span><br><span class="line">391</span><br><span class="line">392</span><br><span class="line">393</span><br><span class="line">394</span><br><span class="line">395</span><br><span class="line">396</span><br><span class="line">397</span><br><span class="line">398</span><br><span class="line">399</span><br><span class="line">400</span><br><span class="line">401</span><br><span class="line">402</span><br><span class="line">403</span><br><span class="line">404</span><br><span class="line">405</span><br><span class="line">406</span><br><span class="line">407</span><br><span class="line">408</span><br><span class="line">409</span><br><span class="line">410</span><br><span class="line">411</span><br><span class="line">412</span><br><span class="line">413</span><br><span class="line">414</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;vector&gt;</span><br><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include &lt;sstream&gt;</span><br><span class="line">#include &lt;string&gt;</span><br><span class="line">#include &lt;map&gt;</span><br><span class="line">#include &lt;set&gt;</span><br><span class="line">#include &lt;queue&gt;</span><br><span class="line">#include &lt;stack&gt;</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line">#include &lt;assert.h&gt;</span><br><span class="line">using namespace std;</span><br><span class="line"></span><br><span class="line">#define HTMLProduction</span><br><span class="line"></span><br><span class="line">class Production &#123;</span><br><span class="line">    public:</span><br><span class="line">        string 			LHS;</span><br><span class="line">        vector&lt;string&gt; 	RHS;</span><br><span class="line">        int 			label;</span><br><span class="line">        </span><br><span class="line">        Production(string L = "", vector&lt;string&gt; R = vector&lt;string&gt;()) &#123;</span><br><span class="line">            LHS = L;</span><br><span class="line">            RHS = R;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        void print() &#123;</span><br><span class="line">            printf("%s -&gt; ", LHS.c_str());</span><br><span class="line">            for(size_t i = 0; i &lt; RHS.size(); i++)</span><br><span class="line">                printf("%s", RHS[i].c_str());</span><br><span class="line">        &#125;</span><br><span class="line">&#125;;</span><br><span class="line">class Grammar &#123;</span><br><span class="line">    public:</span><br><span class="line">        static const string 		lambda;</span><br><span class="line">        string 						start_symbol;</span><br><span class="line">        vector&lt;Production&gt; 			rules;</span><br><span class="line">        map&lt;string, set&lt;string&gt; &gt; 	first_set;</span><br><span class="line">        map&lt;string, set&lt;string&gt; &gt; 	follow_set;</span><br><span class="line">        map&lt;string, bool&gt; 			derives_lambda;</span><br><span class="line">        map&lt;string, map&lt;string, Production&gt; &gt;	lltable;</span><br><span class="line">        </span><br><span class="line">        map&lt;string, bool&gt; mark_lambda();</span><br><span class="line">        void fill_first_set();</span><br><span class="line">        void fill_follow_set();</span><br><span class="line">        bool isNonterminal(string token);</span><br><span class="line">        set&lt;string&gt; compute_first(vector&lt;string&gt; rhs);</span><br><span class="line">        set&lt;string&gt; get_predict_set(Production p);</span><br><span class="line">        void fill_lltable();</span><br><span class="line">        void lldriver(queue&lt;string&gt; tokens);</span><br><span class="line">&#125;;</span><br><span class="line">const string Grammar::lambda("l");</span><br><span class="line"></span><br><span class="line">set&lt;string&gt; Grammar::compute_first(vector&lt;string&gt; rhs) &#123;</span><br><span class="line">    set&lt;string&gt; result;</span><br><span class="line">    size_t i;</span><br><span class="line">    </span><br><span class="line">    if(rhs.size() == 0 || rhs[0] == Grammar::lambda) &#123;</span><br><span class="line">        result.insert(Grammar::lambda);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        result = first_set[rhs[0]];</span><br><span class="line">        for(i = 1; i &lt; rhs.size() &amp;&amp; </span><br><span class="line">            first_set[rhs[i-1]].find(Grammar::lambda) != first_set[rhs[i-1]].end(); i++) &#123;</span><br><span class="line">            set&lt;string&gt; f = first_set[rhs[i]];</span><br><span class="line">            f.erase(Grammar::lambda);</span><br><span class="line">            result.insert(f.begin(), f.end());	</span><br><span class="line">        &#125;</span><br><span class="line">        if(i == rhs.size() </span><br><span class="line">            &amp;&amp; first_set[rhs[i-1]].find(Grammar::lambda) != first_set[rhs[i-1]].end()) &#123;</span><br><span class="line">            result.insert(Grammar::lambda);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            result.erase(Grammar::lambda);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    return result;</span><br><span class="line">&#125; </span><br><span class="line">/*</span><br><span class="line"> * please call get_predict_set() after fill_follow_set() and fill_first_set()</span><br><span class="line"> */</span><br><span class="line">set&lt;string&gt; Grammar::get_predict_set(Production p) &#123;</span><br><span class="line">    set&lt;string&gt; result;</span><br><span class="line">    set&lt;string&gt; rfirst;</span><br><span class="line">    </span><br><span class="line">    rfirst = compute_first(p.RHS);</span><br><span class="line">    if(rfirst.find(Grammar::lambda) != rfirst.end()) &#123;</span><br><span class="line">        rfirst.erase(Grammar::lambda);</span><br><span class="line">        result.insert(rfirst.begin(), rfirst.end());</span><br><span class="line">        rfirst = follow_set[p.LHS];</span><br><span class="line">        result.insert(rfirst.begin(), rfirst.end());</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        result.insert(rfirst.begin(), rfirst.end());</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br><span class="line">/*</span><br><span class="line"> * </span><br><span class="line"> */</span><br><span class="line">void Grammar::fill_lltable() &#123;</span><br><span class="line">    string		A; // nonterminal</span><br><span class="line">    Production 	p;</span><br><span class="line">    </span><br><span class="line">    for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">        p = rules[i];</span><br><span class="line">        A = p.LHS;</span><br><span class="line">        set&lt;string&gt; predict_set = get_predict_set(p);</span><br><span class="line">        </span><br><span class="line">        for(set&lt;string&gt;::iterator it = predict_set.begin();</span><br><span class="line">            it != predict_set.end(); it++) &#123;</span><br><span class="line">            assert(lltable[A].find(*it) == lltable[A].end());</span><br><span class="line">            lltable[A][*it] = p;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line">bool Grammar::isNonterminal(string token) &#123;</span><br><span class="line"></span><br><span class="line">#ifdef HTMLProduction</span><br><span class="line">    if(token == Grammar::lambda)</span><br><span class="line">        return false;</span><br><span class="line">    if(token[0] == '&lt;' &amp;&amp; token[token.length() - 1] == '&gt;')</span><br><span class="line">        return true;</span><br><span class="line">    return false;</span><br><span class="line">#else</span><br><span class="line">    if(token == Grammar::lambda)</span><br><span class="line">        return false;</span><br><span class="line">    for(size_t i = 0; i &lt; token.length(); i++) &#123;</span><br><span class="line">        if(isupper(token[i]))</span><br><span class="line">            return true;</span><br><span class="line">    &#125;</span><br><span class="line">    return false;</span><br><span class="line">#endif</span><br><span class="line">&#125;</span><br><span class="line">map&lt;string, bool&gt; Grammar::mark_lambda() &#123;</span><br><span class="line">    bool 				rhs_derives_lambda;</span><br><span class="line">    bool 				changes;</span><br><span class="line">    Production 			p;</span><br><span class="line">    </span><br><span class="line">    derives_lambda.clear();</span><br><span class="line">    </span><br><span class="line">    /* initially, nothing is marked. */</span><br><span class="line">    for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">        derives_lambda[rules[i].LHS] = false;</span><br><span class="line">    &#125;</span><br><span class="line">    do &#123;</span><br><span class="line">        changes = false;</span><br><span class="line">        for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">            p = rules[i];</span><br><span class="line">            if(!derives_lambda[p.LHS]) &#123;</span><br><span class="line">                if(p.RHS.size() == 0 || p.RHS[0] == Grammar::lambda) &#123;</span><br><span class="line">                    changes = derives_lambda[p.LHS] = true;</span><br><span class="line">                    continue;</span><br><span class="line">                &#125;</span><br><span class="line">                /* does each part of RHS derive lambda ? */</span><br><span class="line">                rhs_derives_lambda = derives_lambda[string(p.RHS[0])];</span><br><span class="line">                for(size_t j = 1; j &lt; p.RHS.size(); j++) &#123;</span><br><span class="line">                    rhs_derives_lambda &amp;= derives_lambda[p.RHS[j]];</span><br><span class="line">                &#125;</span><br><span class="line">                if(rhs_derives_lambda) &#123;</span><br><span class="line">                    changes = true;</span><br><span class="line">                    derives_lambda[p.LHS] = true;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while(changes);</span><br><span class="line">    return derives_lambda;</span><br><span class="line">&#125;</span><br><span class="line">void Grammar::fill_first_set() &#123;</span><br><span class="line">    </span><br><span class="line">    string 		A; // nonterminal</span><br><span class="line">    string 		a; // terminal</span><br><span class="line">    Production 	p;</span><br><span class="line">    bool 		changes;</span><br><span class="line">        </span><br><span class="line">    mark_lambda();</span><br><span class="line">    first_set.clear();</span><br><span class="line">    </span><br><span class="line">    for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">        A = rules[i].LHS;</span><br><span class="line">        if(derives_lambda[A])</span><br><span class="line">            first_set[A].insert(Grammar::lambda);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">        for(size_t j = 0; j &lt; rules[i].RHS.size(); j++) &#123;</span><br><span class="line">            a = rules[i].RHS[j];</span><br><span class="line">            if(!isNonterminal(a)) &#123;</span><br><span class="line">                if(a != Grammar::lambda)</span><br><span class="line">                    first_set[a].insert(a);</span><br><span class="line">                if(j == 0) &#123; // A -&gt; aXX</span><br><span class="line">                    first_set[rules[i].LHS].insert(a);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    do &#123;</span><br><span class="line">        changes = false;</span><br><span class="line">        for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">            p = rules[i];</span><br><span class="line">            set&lt;string&gt; rfirst = compute_first(p.RHS);</span><br><span class="line">            size_t oldsize = first_set[p.LHS].size();</span><br><span class="line">            first_set[p.LHS].insert(rfirst.begin(), rfirst.end());</span><br><span class="line">            size_t newsize = first_set[p.LHS].size();</span><br><span class="line">            if(oldsize != newsize)</span><br><span class="line">                changes = true;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while(changes);</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">void Grammar::fill_follow_set() &#123;</span><br><span class="line">    string 	A, B; // nonterminal</span><br><span class="line">    Production 	p;</span><br><span class="line">    bool 	changes;</span><br><span class="line">    </span><br><span class="line">    for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">        A = rules[i].LHS;</span><br><span class="line">        follow_set[A].clear();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    follow_set[start_symbol].insert(Grammar::lambda);</span><br><span class="line">        </span><br><span class="line">    do &#123;</span><br><span class="line">        changes = false;</span><br><span class="line">        for(size_t i = 0; i &lt; rules.size(); i++) &#123;</span><br><span class="line">            /* A -&gt; a B b</span><br><span class="line">             * I.e. for each production and each occurrence</span><br><span class="line">             * of a nonterminal in its right-hand side. </span><br><span class="line">             */</span><br><span class="line">            p = rules[i];</span><br><span class="line">            A = p.LHS;</span><br><span class="line">            for(size_t j = 0; j &lt; p.RHS.size(); j++) &#123;</span><br><span class="line">                B = p.RHS[j];</span><br><span class="line">                if(isNonterminal(B)) &#123;</span><br><span class="line">                    vector&lt;string&gt; beta(p.RHS.begin() + j + 1, p.RHS.end());</span><br><span class="line">                    set&lt;string&gt; rfirst = compute_first(beta);</span><br><span class="line">                    size_t oldsize = follow_set[B].size();</span><br><span class="line">                    </span><br><span class="line">                    if(rfirst.find(Grammar::lambda) == rfirst.end()) &#123;</span><br><span class="line">                        follow_set[B].insert(rfirst.begin(), rfirst.end());	</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        rfirst.erase(Grammar::lambda);</span><br><span class="line">                        follow_set[B].insert(rfirst.begin(), rfirst.end());	</span><br><span class="line">                        rfirst = follow_set[A];</span><br><span class="line">                        follow_set[B].insert(rfirst.begin(), rfirst.end());</span><br><span class="line">                    &#125;</span><br><span class="line">                    size_t newsize = follow_set[B].size();			</span><br><span class="line">                    if(oldsize != newsize)</span><br><span class="line">                        changes = true;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; while(changes);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void Grammar::lldriver(queue&lt;string&gt; tokens) &#123;</span><br><span class="line">    stack&lt;string&gt; 	stk;</span><br><span class="line">    string 			X;</span><br><span class="line">    string			a;</span><br><span class="line">    Production		p;</span><br><span class="line">    /* Push the Start Symbol onto an empty stack */</span><br><span class="line">    stk.push(start_symbol);</span><br><span class="line">    </span><br><span class="line">    while(!stk.empty() &amp;&amp; !tokens.empty()) &#123;</span><br><span class="line">        X = stk.top();</span><br><span class="line">        a = tokens.front();</span><br><span class="line">        // cout &lt;&lt; X &lt;&lt; " " &lt;&lt; a &lt;&lt; endl;</span><br><span class="line">        if(isNonterminal(X) &amp;&amp; lltable[X].find(a) != lltable[X].end()) &#123;</span><br><span class="line">            p = lltable[X][a];</span><br><span class="line">            stk.pop();</span><br><span class="line">            for(int i = p.RHS.size() - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">                if(p.RHS[i] == Grammar::lambda)</span><br><span class="line">                    continue;</span><br><span class="line">                stk.push(p.RHS[i]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else if(X == a) &#123;</span><br><span class="line">            stk.pop();</span><br><span class="line">            tokens.pop();</span><br><span class="line">        &#125; else if(lltable[X].find(Grammar::lambda) != lltable[X].end()) &#123;</span><br><span class="line">            stk.pop();</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            /* Process syntax error. */</span><br><span class="line">            puts("Bad!");</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    while(!stk.empty()) &#123;</span><br><span class="line">        X = stk.top();</span><br><span class="line">        if(lltable[X].find(Grammar::lambda) != lltable[X].end())</span><br><span class="line">            stk.pop();</span><br><span class="line">        else</span><br><span class="line">            break;</span><br><span class="line">    &#125;</span><br><span class="line">    if(tokens.size() == 0 &amp;&amp; stk.size() == 0)</span><br><span class="line">        puts("Good");</span><br><span class="line">    else</span><br><span class="line">        puts("Bad!");</span><br><span class="line">    return;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">queue&lt;string&gt; getTokens(char s[]) &#123;</span><br><span class="line">    stringstream 	sin(s);</span><br><span class="line">    queue&lt;string&gt; 	tokens;</span><br><span class="line">    string			token;</span><br><span class="line">    while(sin &gt;&gt; token)</span><br><span class="line">        tokens.push(token);</span><br><span class="line">    return tokens;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">void parsingProduction(string r, Grammar &amp;g) &#123;</span><br><span class="line">#ifdef HTMLProduction</span><br><span class="line">    static int 		production_label = 0;</span><br><span class="line">    stringstream 	sin(r);</span><br><span class="line">    string 			lhs, foo;</span><br><span class="line">    vector&lt;string&gt; 	tokens;</span><br><span class="line">    sin &gt;&gt; lhs &gt;&gt; foo;</span><br><span class="line">    while(sin &gt;&gt; foo)</span><br><span class="line">        tokens.push_back(foo);</span><br><span class="line">    Production p(lhs, tokens);</span><br><span class="line">    p.label = ++production_label;</span><br><span class="line">    g.rules.push_back(p);</span><br><span class="line">#else</span><br><span class="line">    string div("-&gt;");</span><br><span class="line">    size_t found = r.find(div);</span><br><span class="line">    if(found != std::string::npos) &#123;</span><br><span class="line">        string rhs = r.substr(found + div.length());</span><br><span class="line">        vector&lt;string&gt; tokens;</span><br><span class="line">        for(size_t i = 0; i &lt; rhs.size(); i++)</span><br><span class="line">            tokens.push_back(rhs.substr(i, 1));</span><br><span class="line">        Production p(r.substr(0, found), tokens);</span><br><span class="line">        g.rules.push_back(p);</span><br><span class="line">    &#125;</span><br><span class="line">#endif</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line">int main() &#123;</span><br><span class="line">    </span><br><span class="line">    //freopen("input.txt", "r+t", stdin);</span><br><span class="line">    //freopen("output.txt", "w+t", stdout); </span><br><span class="line">    </span><br><span class="line">    char in[1024];</span><br><span class="line">    while(gets(in)) &#123;</span><br><span class="line">        Grammar g;</span><br><span class="line">        parsingProduction(in, g);</span><br><span class="line">        while(gets(in) &amp;&amp; in[0] != '\0') &#123;</span><br><span class="line">            parsingProduction(in, g);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">#ifdef HTMLProduction</span><br><span class="line">        g.start_symbol = "&lt;system_goal&gt;";</span><br><span class="line">#else</span><br><span class="line">        g.start_symbol = "S";</span><br><span class="line">#endif</span><br><span class="line">        </span><br><span class="line">        g.fill_first_set();</span><br><span class="line">        g.fill_follow_set();</span><br><span class="line">        g.fill_lltable();</span><br><span class="line">        </span><br><span class="line">        puts("+----------------+----- First set -----+");</span><br><span class="line">        for(map&lt;string, set&lt;string&gt; &gt;::iterator it = g.first_set.begin();</span><br><span class="line">            it != g.first_set.end(); it++) &#123;</span><br><span class="line">            printf("|%-16s| &#123;", it-&gt;first.c_str());</span><br><span class="line">            for(set&lt;string&gt;::iterator jt = it-&gt;second.begin();</span><br><span class="line">                jt != it-&gt;second.end(); jt++) &#123;</span><br><span class="line">                cout &lt;&lt; " " &lt;&lt; *jt;</span><br><span class="line">            &#125;</span><br><span class="line">            puts(" &#125;");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("+----------------+---------------------+\n");</span><br><span class="line">        puts("+----------------+----- Follow set -----+");</span><br><span class="line">        for(map&lt;string, set&lt;string&gt; &gt;::iterator it = g.follow_set.begin();</span><br><span class="line">            it != g.follow_set.end(); it++) &#123;</span><br><span class="line">            printf("|%-16s| &#123;", it-&gt;first.c_str());</span><br><span class="line">            for(set&lt;string&gt;::iterator jt = it-&gt;second.begin();</span><br><span class="line">                jt != it-&gt;second.end(); jt++) &#123;</span><br><span class="line">                cout &lt;&lt; " " &lt;&lt; *jt;</span><br><span class="line">            &#125;</span><br><span class="line">            puts(" &#125;");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("+----------------+---------------------+\n");</span><br><span class="line">        puts("+----------------+----- LL(1) table -----+");</span><br><span class="line">        printf("|%-16s|", "");			</span><br><span class="line">        for(map&lt;string, set&lt;string&gt; &gt;::iterator jt = g.first_set.begin();</span><br><span class="line">                jt != g.first_set.end(); jt++) &#123;</span><br><span class="line">            string A = jt-&gt;first;</span><br><span class="line">            if(g.isNonterminal(A))</span><br><span class="line">                continue;</span><br><span class="line">            printf("%6s|", A.c_str());</span><br><span class="line">        &#125;</span><br><span class="line">        puts("");</span><br><span class="line">        for(map&lt;string, map&lt;string, Production&gt; &gt;::iterator it = g.lltable.begin();</span><br><span class="line">            it != g.lltable.end(); it++) &#123;</span><br><span class="line">            printf("|%-16s|", it-&gt;first.c_str());</span><br><span class="line">            for(map&lt;string, set&lt;string&gt; &gt;::iterator jt = g.first_set.begin();</span><br><span class="line">                jt != g.first_set.end(); jt++) &#123;</span><br><span class="line">                string A = jt-&gt;first;</span><br><span class="line">                if(g.isNonterminal(A))</span><br><span class="line">                    continue;</span><br><span class="line">                if(it-&gt;second.find(A) == it-&gt;second.end()) </span><br><span class="line">                    printf("%6s|", "");</span><br><span class="line">                else</span><br><span class="line">                    printf("%6d|", it-&gt;second[A].label);</span><br><span class="line">            &#125;</span><br><span class="line">            puts("");</span><br><span class="line">        &#125;</span><br><span class="line">        puts("+----------------+---------------------+\n");</span><br><span class="line">#ifdef HTMLProduction</span><br><span class="line">        gets(in);</span><br><span class="line">        g.lldriver(getTokens(in));</span><br><span class="line">#endif</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h1 id="備註"><a href="#備註" class="headerlink" title="備註"></a>備註</h1><p>要學會更多，請修 <code>計算理論</code> 這門課程。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-oj/uva/uva-10378" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2014/05/10/oj/uva/uva-10378/" class="article-date">
-  <time datetime="2014-05-10T06:28:27.000Z" itemprop="datePublished">2014-05-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/10/oj/uva/uva-10378/">UVa 10378 - Complex Numbers</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2014/05/10/oj/uva/uva-10378/" data-id="cipwcq9mf02e00rxcv61t1bbn" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2014/05/10/oj/uva/uva-10378/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/複數/">複數</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>Numbers of the form a±bi are called complex numbers (Where i = √(-1)). In this problem you will have to find all the values of (a±bi)<sup>1/n</sup>. </p>
-<h2 id="Input"><a href="#Input" class="headerlink" title="Input"></a>Input</h2><p>The input file contains several lines of input. Each line has two parts. The first part will contain a complex number of the form a±bi and the second part will contain an integer n (0 &lt; n &lt;=100). Here a and b are integer numbers and 0 &lt;= |a|, |b|&lt;100. Input is terminated by end of file.</p>
-<h2 id="Output"><a href="#Output" class="headerlink" title="Output"></a>Output</h2><p>For each line of input you should produce n+2 lines of output. The description of output for each line of input is given in the next paragraph:</p>
-<p>First line contains the case number as shown in the sample output. Next n lines should contain the n-th roots of the input complex number. The printed complex numbers should be of the form x±yi, where x and y are floating point numbers rounded upto three digits after the decimal point. Note that there is no space between the operators and operands. The roots are sorted according to descending order of their real part and then according to the descending order of their imaginary part. When the printed value of x or y is 0.000, it should be interpreted as positive zero. So you should never print something like “-0.000”. After all these outputs print a blank line. </p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">3+4i 2</span><br><span class="line">5-4i 3</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Case 1:</span><br><span class="line">2.000+1.000i</span><br><span class="line">-2.000-1.000i</span><br><span class="line"></span><br><span class="line">Case 2:</span><br><span class="line">1.810-0.414i</span><br><span class="line">-0.546+1.775i</span><br><span class="line">-1.264-1.361i</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p><strong> 題目描述： </strong></p>
-<p>問虛數 <code>a+bi</code> 的 n 次根號的結果，並且根據實數由大至小、虛數由大至小的字典順序輸出。</p>
-<p><strong> 題目解法： </strong></p>
-<p>先算出 <code>a+bi</code> 所占有的角度 <code>theta</code>，得到 <code>(theta + 2 * pi * i / n)</code> 是每一個根的角度，因為根據角度疊加原理得到 <code>(theta + 2 * pi * i / n) ^ n = theta + 2 * pi * i ＝ theta</code>，但是這題的困難是在於 如何避免 <code>-0.000</code> 的輸出。</p>
-<p>原本錯誤排序的寫法</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bool cmp(Point a, Point b) &#123;</span><br><span class="line">    if(fabs(a.x - b.x) &gt; eps)</span><br><span class="line">        return a.x &lt; b.x;</span><br><span class="line">    return a.y &lt; b.y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>應更正為如下代碼，如果要問我為什麼，現在還沒有仔細地理解，照理來說應該是差不多的。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">bool cmp(Point a, Point b) &#123;</span><br><span class="line">    if(fabs(a.x - b.x) &gt; eps)</span><br><span class="line">        return a.x &lt; b.x;</span><br><span class="line">    if(fabs(a.y - b.y) &gt; eps)</span><br><span class="line">        return a.y &lt; b.y;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>之前是想利用 <code>sprintf(buffer, &quot;%+.3lf%+.3lf&quot;, a, b);</code> 去檢查 <code>+0.000</code> 和 <code>-0.000</code>，這種寫法有點太過了，不過應該也是可行的。</p>
-<figure class="highlight plain"><figcaption><span>lang: cpp</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;math.h&gt;</span><br><span class="line">#include &lt;algorithm&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">#define eps 1e-6</span><br><span class="line">bool cmp(pair&lt;double, double&gt; a, pair&lt;double, double&gt; b) &#123;</span><br><span class="line">    if(fabs(a.first - b.first) &gt; eps)</span><br><span class="line">        return a.first &gt; b.first;</span><br><span class="line">    if(fabs(a.second - b.second) &lt; eps)</span><br><span class="line">        return false;</span><br><span class="line">    return a.second &gt; b.second;</span><br><span class="line">&#125;</span><br><span class="line">int main() &#123;</span><br><span class="line">    char s[50];</span><br><span class="line">    const double pi = acos(-1);</span><br><span class="line">    int n, i, cases = 0;</span><br><span class="line">    double a, b;</span><br><span class="line">    while(scanf(&quot;%s %d&quot;, s, &amp;n) == 2) &#123;</span><br><span class="line">        if(sscanf(s, &quot;%lf+%lfi&quot;, &amp;a, &amp;b) == 2)</span><br><span class="line">            &#123;&#125;</span><br><span class="line">        else</span><br><span class="line">            sscanf(s, &quot;%lf-%lfi&quot;, &amp;a, &amp;b), b = -b;</span><br><span class="line">        double theta = atan2(b, a);</span><br><span class="line">        double k = pow(sqrt(a*a+b*b), 1.0/n);</span><br><span class="line">        double px, py;</span><br><span class="line">        pair&lt;double, double&gt; D[128];</span><br><span class="line">        for(i = 0; i &lt; n; i++) &#123;</span><br><span class="line">            px = k*cos((theta + i*2*pi)/n);</span><br><span class="line">            py = k*sin((theta + i*2*pi)/n);</span><br><span class="line">            D[i] = make_pair(px, py);</span><br><span class="line">        &#125;</span><br><span class="line">        sort(D, D+n, cmp);</span><br><span class="line">        printf(&quot;Case %d:\n&quot;, ++cases);</span><br><span class="line">        for(i = 0; i &lt; n; i++) &#123;</span><br><span class="line">        	if(fabs(D[i].first) &lt; 0.0005)	D[i].first = 0;</span><br><span class="line">        	if(fabs(D[i].second) &lt; 0.0005)	D[i].second = 0;</span><br><span class="line">        	printf(&quot;%.3lf%+.3lfi\n&quot;, D[i].first, D[i].second);</span><br><span class="line">        &#125;</span><br><span class="line">        puts(&quot;&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/page/70/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/69/">69</a><a class="page-number" href="/page/70/">70</a><span class="page-number current">71</span><a class="page-number" href="/page/72/">72</a><a class="page-number" href="/page/73/">73</a><span class="space">&hellip;</span><a class="page-number" href="/page/76/">76</a><a class="extend next" rel="next" href="/page/72/">Next &raquo;</a>
@@ -995,7 +1051,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">92</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">96</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1005,6 +1061,38 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10101/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10101. Fast Game of Life (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10100/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10100. Fast Matrix Multiplication (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10099/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10099. Dot Product (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10098/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10098. Print Device Information (CUDA)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/26/jg-10105/">
@@ -1052,38 +1140,6 @@
                 <i class="icon-file-o"></i> 
               
             批改娘 10091. Fast Matrix Multiplication (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/jg-10090/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10090. Dot Product (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/jg-10089/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10089. Print Platform Information (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/uva-13100/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13100 - Painting the Wall</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/uva-13102/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13102 - Tobby Stones</a>
           </li>
         
       </ul>

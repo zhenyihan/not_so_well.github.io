@@ -89,6 +89,438 @@
         
           <section id="main">
   
+    <article id="post-jg-10022" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/20/jg-10022/" class="article-date">
+  <time datetime="2016-04-20T05:40:33.000Z" itemprop="datePublished">2016-04-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/20/jg-10022/">批改娘 10022. Fast Matrix Multiplication</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/04/20/jg-10022/" data-id="cipys6icd003cjoxc3mtx0xic" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/04/20/jg-10022/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenMP/">OpenMP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/優化/">優化</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/循環展開/">循環展開</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/批改娘/">批改娘</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/達夫裝置/">達夫裝置</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p><img src="http://i.imgur.com/67stm68.jpg" alt="飼料"></p>
+<h2 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h2><p>相信不少人都已經實作所謂的矩陣乘法，計算兩個方陣大小為 <span>$N \times N$</span><!-- Has MathJax --> 的矩陣 <span>$A, B$</span><!-- Has MathJax -->。為了方便起見，提供一個偽隨機數的生成，減少在輸入處理浪費的時間，同時也減少上傳測資的辛苦。</p>
+<p>根據種子 <span>$c = S1$</span><!-- Has MathJax --> 生成矩陣 <span>$A$</span><!-- Has MathJax -->，種子 <span>$c = S2$</span><!-- Has MathJax --> 生成矩陣 <span>$B$</span><!-- Has MathJax -->，計算矩陣相乘 <span>$A \times B$</span><!-- Has MathJax -->，為了方便起見，使用 hash 函數進行簽章，最後輸出一個值。由於會牽涉到 overflow 問題，此題作為快取實驗就不考慮這個，overflow 問題都會相同。</p>
+<h3 id="matrix-h"><a href="#matrix-h" class="headerlink" title="matrix.h"></a>matrix.h</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="matrix-c"><a href="#matrix-c" class="headerlink" title="matrix.c"></a>matrix.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> <span class="keyword">long</span> sum = <span class="number">0</span>;    <span class="comment">// overflow, let it go.</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; N; k++)</span><br><span class="line">                sum += A[i][k] * B[k][j];</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="main-c"><a href="#main-c" class="headerlink" title="main.c"></a>main.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// #define DEBUG</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UINT unsigned long </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 2048</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rand_gen</span><span class="params">(UINT c, <span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    UINT x = <span class="number">2</span>, n = N*N;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            x = (x * x + c + i + j)%n;</span><br><span class="line">            A[i][j] = x;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_matrix</span><span class="params">(<span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"["</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">" %u"</span>, A[i][j]);</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">" ]\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">UINT <span class="title">hash</span><span class="params">(UINT x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (x * <span class="number">2654435761L</span>U);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">UINT <span class="title">signature</span><span class="params">(<span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    UINT h = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">            h = hash(h + A[i][j]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br><span class="line">UINT A[MAXN][MAXN], B[MAXN][MAXN], C[MAXN][MAXN];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> N, S1, S2;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;N, &amp;S1, &amp;S2) == <span class="number">3</span>) &#123;</span><br><span class="line">        rand_gen(S1, N, A);</span><br><span class="line">        rand_gen(S2, N, B);</span><br><span class="line">        multiply(N, A, B, C);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> DEBUG</span></span><br><span class="line">        print_matrix(N, A);</span><br><span class="line">        print_matrix(N, B);</span><br><span class="line">        print_matrix(N, C);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%u\n"</span>, signature(N, C));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="輸入格式"><a href="#輸入格式" class="headerlink" title="輸入格式"></a>輸入格式</h2><p>多組測資，每組測資一行三個整數 <span>$N, S1, S2$</span><!-- Has MathJax -->。</p>
+<ul>
+<li><span>$1 \le N \le 1000$</span><!-- Has MathJax --></li>
+<li><span>$0 \le S1, S2 \le 65536$</span><!-- Has MathJax -->
+</li>
+</ul>
+<h2 id="輸出格式"><a href="#輸出格式" class="headerlink" title="輸出格式"></a>輸出格式</h2><p>每組測資輸出一行，一個整數 signature 的結果。</p>
+<h2 id="範例輸入"><a href="#範例輸入" class="headerlink" title="範例輸入"></a>範例輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2 2 5</span><br><span class="line">2 2 5</span><br></pre></td></tr></table></figure>
+<h2 id="範例輸出"><a href="#範例輸出" class="headerlink" title="範例輸出"></a>範例輸出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">573770929</span><br><span class="line">573770929</span><br></pre></td></tr></table></figure>
+<h2 id="解釋"><a href="#解釋" class="headerlink" title="解釋"></a>解釋</h2><p>範例輸入產生 <span>$2 \times 2$</span><!-- Has MathJax --> 的矩陣。</p>
+<span>$$A = \begin{bmatrix}
+2 &amp; 3\\ 
+0 &amp; 0
+\end{bmatrix}
+, B = \begin{bmatrix}
+1 &amp; 3\\ 
+3 &amp; 0
+\end{bmatrix}
+, A \times B = \begin{bmatrix}
+11 &amp; 6\\ 
+0 &amp; 0
+\end{bmatrix}$$</span><!-- Has MathJax -->
+<h2 id="備註"><a href="#備註" class="headerlink" title="備註"></a>備註</h2><ul>
+<li>2016/02/17 加入平行程式設計 OpenMP 部份，並增加時間限制！</li>
+</ul>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>解法跟 thread 寫法一樣，用 OpenMP 的好處在於不用處理那些 thread 的設定，用 OpenMP 提供的前處理完成執行緒的建造和移除操作。</p>
+<p>在這裡特別提供達夫裝置 (Duff’s device) 對於迴圈展開 loop unrolling 的撰寫方式，巧妙地運用 C 語言中的 switch，相比一般寫法需要兩次迴圈處理，最後一個迴圈必須處理剩餘不整除的部分。就實作看起來，在現在版本 4.8 gcc 編譯結果下，效能沒有明顯的差別。</p>
+<p>在高等編譯器課程中，聽說迴圈展開的數目最好不是 <span>$2^n$</span><!-- Has MathJax -->，某些情況會造成 alignment 的 cache miss 的嚴重影響，實際情況還是要看怎麼運用，在這裡就不多做嘗試。</p>
+<h3 id="matrix-h-1"><a href="#matrix-h-1" class="headerlink" title="matrix.h"></a>matrix.h</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UINT unsigned long </span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="matrix-c-達夫裝置"><a href="#matrix-c-達夫裝置" class="headerlink" title="matrix.c (達夫裝置)"></a>matrix.c (達夫裝置)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOOP_UNROLL 8</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">transpose</span><span class="params">(<span class="keyword">int</span> N, UINT A[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    UINT t;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = i+<span class="number">1</span>; j &lt; N; j++)</span><br><span class="line">            t = A[i][j], A[i][j] = A[j][i], A[j][i] = t;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, UINT A[][<span class="number">2048</span>], UINT B[][<span class="number">2048</span>], UINT C[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    transpose(N, B);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = N<span class="number">-1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = N<span class="number">-1</span>; j &gt;= <span class="number">0</span>; j--) &#123;</span><br><span class="line">            <span class="keyword">register</span> UINT sum = <span class="number">0</span>;</span><br><span class="line">            UINT *a = &amp;A[i][<span class="number">0</span>], *b = &amp;B[j][<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">int</span> k = N;</span><br><span class="line">            <span class="keyword">switch</span> (k % LOOP_UNROLL) &#123;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">do</span> &#123; sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">7</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">6</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">5</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">4</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">3</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">2</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                <span class="keyword">case</span> <span class="number">1</span>: sum += *a * *b, a++, b++;</span><br><span class="line">                &#125; <span class="keyword">while</span> ((k -= LOOP_UNROLL) &gt; <span class="number">0</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="matrix-c-迴圈展開"><a href="#matrix-c-迴圈展開" class="headerlink" title="matrix.c (迴圈展開)"></a>matrix.c (迴圈展開)</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOOP_UNROLL 8</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">transpose</span><span class="params">(<span class="keyword">int</span> N, UINT A[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> chunk = <span class="number">8</span>;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(dynamic, chunk)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = i+<span class="number">1</span>; j &lt; N; j++) &#123;</span><br><span class="line">            UINT t;    </span><br><span class="line">            t = A[i][j], A[i][j] = A[j][i], A[j][i] = t;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, UINT A[][<span class="number">2048</span>], UINT B[][<span class="number">2048</span>], UINT C[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    transpose(N, B);</span><br><span class="line">    <span class="keyword">int</span> chunk = <span class="number">8</span>;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(dynamic, chunk) shared(C)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            <span class="keyword">register</span> UINT sum = <span class="number">0</span>;</span><br><span class="line">            UINT *a = &amp;A[i][<span class="number">0</span>], *b = &amp;B[j][<span class="number">0</span>];</span><br><span class="line">            <span class="keyword">int</span> k;</span><br><span class="line">            <span class="keyword">for</span> (k = <span class="number">0</span>; k+LOOP_UNROLL &lt; N; k += LOOP_UNROLL) &#123;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">for</span> (; k &lt; N; k++)</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-jg-10080" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/20/jg-10080/" class="article-date">
+  <time datetime="2016-04-20T05:29:42.000Z" itemprop="datePublished">2016-04-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/20/jg-10080/">批改娘 10080. Fast Matrix Multiplication (pthread)</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/04/20/jg-10080/" data-id="cipys6icr003pjoxcbe8k3vh8" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/04/20/jg-10080/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/thread/">thread</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/批改娘/">批改娘</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h2><p>相信不少人都已經實作所謂的矩陣乘法，計算兩個方陣大小為 <span>$N \times N$</span><!-- Has MathJax --> 的矩陣 <span>$A, B$</span><!-- Has MathJax -->。為了方便起見，提供一個偽隨機數的生成，減少在輸入處理浪費的時間，同時也減少上傳測資的辛苦。</p>
+<p>根據種子 <span>$c = S1$</span><!-- Has MathJax --> 生成矩陣 <span>$A$</span><!-- Has MathJax -->，種子 <span>$c = S2$</span><!-- Has MathJax --> 生成矩陣 <span>$B$</span><!-- Has MathJax -->，計算矩陣相乘 <span>$A \times B$</span><!-- Has MathJax -->，為了方便起見，使用 hash 函數進行簽章，最後輸出一個值。由於會牽涉到 overflow 問題，此題作為快取實驗就不考慮這個，overflow 問題都會相同。</p>
+<h3 id="matrix-h"><a href="#matrix-h" class="headerlink" title="matrix.h"></a>matrix.h</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="matrix-c"><a href="#matrix-c" class="headerlink" title="matrix.c"></a>matrix.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> <span class="keyword">long</span> sum = <span class="number">0</span>;    <span class="comment">// overflow, let it go.</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">0</span>; k &lt; N; k++)</span><br><span class="line">                sum += A[i][k] * B[k][j];</span><br><span class="line">            C[i][j] = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="main-c"><a href="#main-c" class="headerlink" title="main.c"></a>main.c</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="string">"matrix.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// #define DEBUG</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UINT unsigned long </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 2048</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rand_gen</span><span class="params">(UINT c, <span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    UINT x = <span class="number">2</span>, n = N*N;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++) &#123;</span><br><span class="line">            x = (x * x + c + i + j)%n;</span><br><span class="line">            A[i][j] = x;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">print_matrix</span><span class="params">(<span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"["</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">            <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">" %u"</span>, A[i][j]);</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">" ]\n"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">UINT <span class="title">hash</span><span class="params">(UINT x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (x * <span class="number">2654435761L</span>U);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">UINT <span class="title">signature</span><span class="params">(<span class="keyword">int</span> N, UINT A[][MAXN])</span> </span>&#123;</span><br><span class="line">    UINT h = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; N; j++)</span><br><span class="line">            h = hash(h + A[i][j]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> h;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">static</span> UINT A[MAXN][MAXN], B[MAXN][MAXN], C[MAXN][MAXN];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> N, S1, S2;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d %d"</span>, &amp;N, &amp;S1, &amp;S2) == <span class="number">3</span>) &#123;</span><br><span class="line">        rand_gen(S1, N, A);</span><br><span class="line">        rand_gen(S2, N, B);</span><br><span class="line">        multiply(N, A, B, C);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> DEBUG</span></span><br><span class="line">        print_matrix(N, A);</span><br><span class="line">        print_matrix(N, B);</span><br><span class="line">        print_matrix(N, C);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%u\n"</span>, signature(N, C));</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="輸入格式"><a href="#輸入格式" class="headerlink" title="輸入格式"></a>輸入格式</h2><p>多組測資，每組測資一行三個整數 <span>$N, S1, S2$</span><!-- Has MathJax -->。</p>
+<ul>
+<li><span>$1 \le N \le 1000$</span><!-- Has MathJax --></li>
+<li><span>$0 \le S1, S2 \le 65536$</span><!-- Has MathJax -->
+</li>
+</ul>
+<h2 id="輸出格式"><a href="#輸出格式" class="headerlink" title="輸出格式"></a>輸出格式</h2><p>每組測資輸出一行，一個整數 signature 的結果。</p>
+<h2 id="範例輸入"><a href="#範例輸入" class="headerlink" title="範例輸入"></a>範例輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">2 2 5</span><br><span class="line">2 2 5</span><br></pre></td></tr></table></figure>
+<h2 id="範例輸出"><a href="#範例輸出" class="headerlink" title="範例輸出"></a>範例輸出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">573770929</span><br><span class="line">573770929</span><br></pre></td></tr></table></figure>
+<h2 id="解釋"><a href="#解釋" class="headerlink" title="解釋"></a>解釋</h2><p>範例輸入產生 <span>$2 \times 2$</span><!-- Has MathJax --> 的矩陣。</p>
+<span>$$A = \begin{bmatrix}
+2 &amp; 3\\ 
+0 &amp; 0
+\end{bmatrix}
+, B = \begin{bmatrix}
+1 &amp; 3\\ 
+3 &amp; 0
+\end{bmatrix}
+, A \times B = \begin{bmatrix}
+11 &amp; 6\\ 
+0 &amp; 0
+\end{bmatrix}$$</span><!-- Has MathJax -->
+<h2 id="Makefile"><a href="#Makefile" class="headerlink" title="Makefile"></a>Makefile</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">matrix.out: matrix.h matrix.c main.c</span><br><span class="line">    gcc -std=c99 -O2 matrix.h matrix.c main.c -o matrix -lpthread -lm</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>針對矩陣乘法平行很簡單，在 CPU 上由於需要搬運資料，不一定開的 thread 數量接近 core 數量就一定最好。而在平行的部分要把握資料局部性的加速，以下實作根據最終答案進行 row-based 策略切割，每一個 thread 計算那一個 row 的所有答案。</p>
+<h3 id="matrix-h-1"><a href="#matrix-h-1" class="headerlink" title="matrix.h"></a>matrix.h</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> UINT unsigned long </span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">multiply</span><span class="params">(<span class="keyword">int</span> N, <span class="keyword">unsigned</span> <span class="keyword">long</span> A[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> B[][<span class="number">2048</span>], <span class="keyword">unsigned</span> <span class="keyword">long</span> C[][<span class="number">2048</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="matrix-c-1"><a href="#matrix-c-1" class="headerlink" title="matrix.c"></a>matrix.c</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">#include "matrix.h"</span><br><span class="line">#include &lt;pthread.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#define LOOP_UNROLL 8</span><br><span class="line">#define MAXTHREAD 8</span><br><span class="line">#define MAXN 2048</span><br><span class="line">typedef struct Argu &#123;</span><br><span class="line">    int l, r, N;</span><br><span class="line">    UINT *A, *B, *C;</span><br><span class="line">&#125; Argu;</span><br><span class="line">static void transpose(int N, UINT A[][2048]) &#123;</span><br><span class="line">    UINT t;</span><br><span class="line">    for (int i = 0; i &lt; N; i++) &#123;</span><br><span class="line">        for (int j = i+1; j &lt; N; j++)</span><br><span class="line">                t = A[i][j], A[i][j] = A[j][i], A[j][i] = t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">void* thread_multiply(void *arg) &#123;</span><br><span class="line">    Argu data = * ((Argu *) arg);</span><br><span class="line">    int l = data.l, r = data.r;</span><br><span class="line">    int N = data.N;</span><br><span class="line">    UINT *A = data.A, *B = data.B, *C = data.C;</span><br><span class="line">    UINT stkA[MAXN];</span><br><span class="line">    for (int i = l; i &lt;= r; i++) &#123;</span><br><span class="line">        memcpy(stkA, A + (i * MAXN), sizeof(UINT) * N);</span><br><span class="line">        for (int j = 0; j &lt; N; j++) &#123;</span><br><span class="line">            UINT sum = 0;</span><br><span class="line">//            UINT *a = A + (i * MAXN), *b = B + (j *  MAXN);</span><br><span class="line">            UINT *a = stkA, *b = B + (j * MAXN);</span><br><span class="line">            int k;</span><br><span class="line">            for (k = 0; k+LOOP_UNROLL &lt; N; k += LOOP_UNROLL) &#123;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">            &#125;</span><br><span class="line">            for (; k &lt; N; k++)</span><br><span class="line">                sum += *a * *b, a++, b++;</span><br><span class="line">            *(C + (i * MAXN + j)) = sum;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br><span class="line">void multiply(int N, UINT A[][2048], UINT B[][2048], UINT C[][2048]) &#123;</span><br><span class="line">    transpose(N, B);</span><br><span class="line"> </span><br><span class="line">    pthread_t *threads;</span><br><span class="line">    threads = (pthread_t *) malloc(MAXTHREAD * sizeof(pthread_t));</span><br><span class="line"> </span><br><span class="line">    for (int i = 0; i &lt; MAXTHREAD; i++) &#123;</span><br><span class="line">        Argu *data = (Argu *) malloc(sizeof(Argu));</span><br><span class="line">        data-&gt;l = i * N / MAXTHREAD;</span><br><span class="line">        data-&gt;r = (i+1) * N / MAXTHREAD - 1;</span><br><span class="line">        data-&gt;N = N;</span><br><span class="line">        data-&gt;A = &amp;A[0][0], data-&gt;B = &amp;B[0][0], data-&gt;C = &amp;C[0][0];</span><br><span class="line">        pthread_create(&amp;threads[i], NULL, thread_multiply, (void *) (data));</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    for (int i = 0; i &lt; MAXTHREAD; i++) </span><br><span class="line">        pthread_join(threads[i], NULL);</span><br><span class="line">    return ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-jg-10086" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/20/jg-10086/" class="article-date">
+  <time datetime="2016-04-20T05:26:20.000Z" itemprop="datePublished">2016-04-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/20/jg-10086/">批改娘 10086. Red/Blue Computation</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/04/20/jg-10086/" data-id="cipys6idq004hjoxcty6dljrx" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/04/20/jg-10086/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenMP/">OpenMP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/批改娘/">批改娘</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h2><p>模擬工作流程，在一個 <span>$N \times N$</span><!-- Has MathJax --> 的網格 (左邊界可以通到右邊界，上邊界可以通到下邊界) 上有三種狀態紅 <span>$R$</span><!-- Has MathJax -->, 藍 <span>$B$</span><!-- Has MathJax -->, 空格 <span>$W$</span><!-- Has MathJax -->，每次模擬分成兩個步驟</p>
+<ul>
+<li>第一步，只有紅 <span>$R$</span><!-- Has MathJax --> 可移動，紅 <span>$R$</span><!-- Has MathJax --> 只能往右移動一格到空白 <span>$W$</span><!-- Has MathJax --> 的位置，否則仍在原處。</li>
+<li>第二步，只有藍 <span>$B$</span><!-- Has MathJax --> 可移動，藍 <span>$B$</span><!-- Has MathJax --> 只能往下移動一格到空白 <span>$W$</span><!-- Has MathJax --> 的位置，否則仍在原處。</li>
+</ul>
+<p>請問模擬 <span>$M$</span><!-- Has MathJax --> 次後盤面為何？</p>
+<h2 id="輸入格式"><a href="#輸入格式" class="headerlink" title="輸入格式"></a>輸入格式</h2><p>輸入只有一組測資，第一行有兩個整數 <span>$N, \; M$</span><!-- Has MathJax -->，分別為盤面大小以及模擬次數。接下來會有 <span>$N$</span><!-- Has MathJax --> 行，每一行上會有 <span>$N$</span><!-- Has MathJax --> 個字元。</p>
+<ul>
+<li><span>$1 \le N, M \le 1000$</span><!-- Has MathJax -->
+</li>
+</ul>
+<h2 id="輸出格式"><a href="#輸出格式" class="headerlink" title="輸出格式"></a>輸出格式</h2><p>輸出 <span>$N \times N$</span><!-- Has MathJax --> 盤面。</p>
+<h2 id="範例輸入"><a href="#範例輸入" class="headerlink" title="範例輸入"></a>範例輸入</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">4 1</span><br><span class="line">RRWR</span><br><span class="line">WWBW</span><br><span class="line">BWRW</span><br><span class="line">WWWW</span><br></pre></td></tr></table></figure>
+<h2 id="範例輸出"><a href="#範例輸出" class="headerlink" title="範例輸出"></a>範例輸出</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">RWRR</span><br><span class="line">WWWW</span><br><span class="line">WWBR</span><br><span class="line">BWWW</span><br></pre></td></tr></table></figure>
+<h2 id="備註"><a href="#備註" class="headerlink" title="備註"></a>備註</h2><p><canvas id="canvas" width="420px" height="200px" style="background: #fff; magrin:20px;"><br>    </canvas><br>    <form name="input" action="#" id="input"><br>        <textarea rows="10" cols="60" id="inputblock">1 1 0 1<br>0 0 2 0<br>2 0 1 0<br>0 0 0 0</textarea><br>        <button type="submit" name="submit" id="submit">Run</button><br>    </form></p>
+<script type="text/javascript" language="javascript">
+
+function Simulation(h, w, board) {
+    this.h = h;
+    this.w = w;
+    this.board = board;
+    this.gap = 40;
+    this.padding = 10;
+    this.draw = function(canvas) {
+        var context = canvas.getContext("2d");
+        for (var i = 0, dx = 0; i <= this.w; i++, dx += this.gap) {
+            context.moveTo(dx + this.padding, this.padding);
+            context.lineTo(dx + this.padding, this.padding + this.h * this.gap);
+        }
+        for (var i = 0, dy = 0; i <= this.h; i++, dy += this.gap) {
+            context.moveTo(this.padding, dy + this.padding);
+            context.lineTo(this.w * this.gap + this.padding, dy + this.padding);
+        }
+        context.strokeStyle = "black";
+        context.stroke();
+        function drawGird(color, x, y, gap, padding) {
+            var colors = ['white', 'red', 'blue'];
+            var lx, ly, line = 2;
+            lx = gap * x + padding + line;
+            ly = gap * y + padding + line;
+            context.fillStyle = colors[color];
+            context.fillRect(lx, ly, 
+                    gap - 2 * line, gap - 2 * line);
+        }
+
+        for (var i = 0; i < this.h; i++) {
+            for (var j = 0; j < this.w; j++)
+                drawGird(this.board[i][j], j, i, 
+                    this.gap, this.padding);
+        }
+    }
+    this.step = function() {
+        var next;
+        next = new Array();
+        for (var i = 0; i < this.h; i++) {
+            next[i] = new Array();
+            for (var j = 0; j < this.w; j++)
+                next[i][j] = 0;
+        }
+
+        // Red
+        for (var i = 0; i < this.h; i++) {
+            for (var j = 0; j < this.w; j++) {
+                if (this.board[i][j] == 1) {
+                    var pos = j+1;
+                    if (pos == this.w)    pos = 0;
+                    if (this.board[i][pos] == 0)
+                        next[i][pos] = 1;
+                    else
+                        next[i][j] = 1;
+                } else if (this.board[i][j] == 2) {
+                    next[i][j] = this.board[i][j];
+                }
+            }
+        }
+
+        this.board = next;
+        next = new Array();
+        for (var i = 0; i < this.h; i++) {
+            next[i] = new Array();
+            for (var j = 0; j < this.w; j++)
+                next[i][j] = 0;
+        }
+        // Blue
+        for (var i = 0; i < this.h; i++) {
+            for (var j = 0; j < this.w; j++) {
+                if (this.board[i][j] == 2) {
+                    var pos = i+1;
+                    if (pos == this.h)    pos = 0;
+                    if (this.board[pos][j] == 0)
+                        next[pos][j] = 2;
+                    else
+                        next[i][j] = 2;
+                } else if (this.board[i][j] == 1) {
+                    next[i][j] = this.board[i][j];
+                }
+            }
+        }
+        this.board = next;
+    }
+}
+
+var test, drawTimer;
+
+var inputForm = document.getElementById("input");
+inputForm.addEventListener("submit", function(event) {
+    var text = document.getElementById("inputblock").value;
+    var line = text.split('\n');
+    var H = 0, W = 0;
+    var board = new Array();
+    for (var i in line) {
+        var list = line[i].match(/\d+/g);
+        W = Math.max(W, list.length);
+        var numArr = new Array();
+        for (var j in list)
+            numArr[j] = parseInt(list[j]);
+        board[H] = numArr;
+        H++;
+    }
+    clearInterval(drawTimer);
+    test = new Simulation(H, W, board);    
+    test.draw(document.getElementById("canvas"));
+    drawTimer = setInterval(function() {
+            test.step();
+            test.draw(document.getElementById("canvas"));
+    }, 500);
+
+    event.preventDefault();
+});
+</script>
+
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>模擬工作流程，平行計算下一個狀態，利用兩個滾動數組的方式交替使用。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 1024</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> C_WHITE 0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> C_RED   1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> C_BLUE  2</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">char</span> g1[MAXN][MAXN], g2[MAXN][MAXN];</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">moveRed</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(static)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        <span class="built_in">memset</span>(g2[i], C_WHITE, <span class="keyword">sizeof</span>(<span class="keyword">char</span>) * n);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(static)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (g1[i][j] == C_BLUE) &#123;</span><br><span class="line">                g2[i][j] = C_BLUE;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (g1[i][j] == C_RED) &#123;</span><br><span class="line">                <span class="keyword">int</span> next = j+<span class="number">1</span> == n ? <span class="number">0</span> : j+<span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span> (g1[i][next] == C_WHITE)</span><br><span class="line">                    g2[i][next] = C_RED;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    g2[i][j] = C_RED;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">moveBlue</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(static)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        <span class="built_in">memset</span>(g1[i], C_WHITE, <span class="keyword">sizeof</span>(<span class="keyword">char</span>) * n);</span><br><span class="line">    <span class="meta">#<span class="meta-keyword">pragma</span> omp parallel for schedule(static)</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (g2[i][j] == C_RED) &#123;</span><br><span class="line">                g1[i][j] = C_RED;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (g2[i][j] == C_BLUE) &#123;</span><br><span class="line">                <span class="keyword">int</span> next = i+<span class="number">1</span> == n ? <span class="number">0</span> : i+<span class="number">1</span>;</span><br><span class="line">                <span class="keyword">if</span> (g2[next][j] == C_WHITE)</span><br><span class="line">                    g1[next][j] = C_BLUE;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    g1[i][j] = C_BLUE;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">int</span> <span class="title">toIndex</span><span class="params">(<span class="keyword">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="string">'W'</span>)    <span class="keyword">return</span> C_WHITE;</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="string">'R'</span>)    <span class="keyword">return</span> C_RED;</span><br><span class="line">    <span class="keyword">if</span> (c == <span class="string">'B'</span>)    <span class="keyword">return</span> C_BLUE;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"[WARNING] %s %d\n"</span>, __FILE__, __LINE__);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printBoard</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> color[<span class="number">4</span>] = <span class="string">"WRB"</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++)</span><br><span class="line">            <span class="built_in">putchar</span>(color[g1[i][j]]);</span><br><span class="line">        <span class="built_in">putchar</span>(<span class="string">'\n'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%s"</span>, &amp;g1[i]);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n; j++)</span><br><span class="line">                g1[i][j] = toIndex(g1[i][j]);</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> it = <span class="number">0</span>; it &lt; m; it++) &#123;</span><br><span class="line">            moveRed(n);</span><br><span class="line">            moveBlue(n);</span><br><span class="line">        &#125;</span><br><span class="line">        printBoard(n);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">4 1</span><br><span class="line">RRWR</span><br><span class="line">WWBW</span><br><span class="line">BWRW</span><br><span class="line">WWWW</span><br><span class="line">*/</span></span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-parallel-skill-interval-partitioning" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/23/parallel-skill-interval-partitioning/" class="article-date">
+  <time datetime="2016-03-23T02:20:28.000Z" itemprop="datePublished">2016-03-23</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+<div class="article-gallery">
+  <div class="article-gallery-photos">
+    
+      <a class="article-gallery-img fancybox" href="http://i.imgur.com/MPDeX8U.jpg" rel="gallery_cipys6igx0084joxc4856n1jz">
+        <img src="http://i.imgur.com/MPDeX8U.jpg" itemprop="image">
+      </a>
+    
+  </div>
+</div>
+
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/23/parallel-skill-interval-partitioning/">數據分割 區間分塊小技巧</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/03/23/parallel-skill-interval-partitioning/" data-id="cipys6igx0084joxc4856n1jz" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/03/23/parallel-skill-interval-partitioning/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/實作技巧/">實作技巧</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/數學/">數學</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>運行平行程式之前，要將資料切成很多塊，每一塊之間獨立。從邏輯上看來有 row-based, column-based, matrix-based, tree-based 等平行方法。在許多方法中，最容易入手的就是 row-based。</p>
+<p>假設有 <span>$n$</span><!-- Has MathJax --> 個元素，編號介於 <span>$[0, n-1]$</span><!-- Has MathJax --> 之間，要分成 <span>$m$</span><!-- Has MathJax --> 組。每一組得編號都要連續，以增加資料局部性 (data locality) 並且每一塊大小盡可能一樣，請問要怎麼分割才好？這樣的數學問題要做出來並不是件難事，但強迫症的人來說，在程式中零碎的判斷相當折騰。</p>
+<h2 id="數學分析"><a href="#數學分析" class="headerlink" title="數學分析"></a>數學分析</h2><h3 id="直觀"><a href="#直觀" class="headerlink" title="直觀"></a>直觀</h3><p>若有 <span>$n$</span><!-- Has MathJax --> 個元素分成 <span>$m$</span><!-- Has MathJax --> 組，每一個組至少有 <span>$\lfloor n / m \rfloor$</span><!-- Has MathJax --> 個元素，其中 <span>$n \mod m$</span><!-- Has MathJax --> 組會額外多一個元素。因此，對於第 <span>$i$</span><!-- Has MathJax --> 組滿足 <span>$i &lt; n \mod m$</span><!-- Has MathJax --> 都會多一個元素。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method0</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">int</span> bsz = n/m, rm = n%m, sz;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R; i &lt; m; i++) &#123;</span><br><span class="line">        sz = bsz + (i &lt; rm);</span><br><span class="line">        R = L + sz - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="程序流"><a href="#程序流" class="headerlink" title="程序流"></a>程序流</h3><p>這方式屬於懶惰程序員，根據整數的性質會得到刻度，在計算第 <span>$i$</span><!-- Has MathJax --> 個刻度採用 <span>$\lfloor \frac{in}{m} \rfloor$</span><!-- Has MathJax -->，自然而然地可以與下一個刻度形成一個區間。不幸地，若 <span>$m &gt; n$</span><!-- Has MathJax --> 時，有些刻度會重疊，導致重複計算的情況發生。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method1</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L, R; i &lt; m; i++) &#123;</span><br><span class="line">        L = i*n/m, R = (i+<span class="number">1</span>)*n/m - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="ceil"><a href="#ceil" class="headerlink" title="ceil"></a>ceil</h3><p>從《具體數學》第三章節的介紹，得到幾個簡單的數學公式</p>
+<span>$$\begin{align}
+n = \left \lceil \frac{n}{m} \right \rceil + \left \lceil \frac{n-1}{m} \right \rceil + \cdots + \left \lceil \frac{n-m-1}{m} \right \rceil
+\end{align}$$</span><!-- Has MathJax -->
+<p>第 <span>$i$</span><!-- Has MathJax --> 團 (<span>$0 \le i &lt; m$</span><!-- Has MathJax -->)，要處理 <span>$\left \lceil \frac{n-i}{m} \right \rceil$</span><!-- Has MathJax --> 個元素。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method2</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R, sz; i &lt; m; i++) &#123;</span><br><span class="line">        sz = (n + m-i<span class="number">-1</span>) / m;</span><br><span class="line">        R = L + sz<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, sz);</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="floor"><a href="#floor" class="headerlink" title="floor"></a>floor</h3><p>又或者使用 floor 表示法</p>
+<span>$$\begin{align}
+n = \left \lfloor \frac{n}{m} \right \rfloor + \left \lfloor \frac{n+1}{m} \right \rfloor + \cdots + \left \lfloor \frac{n+m-1}{m} \right \rfloor
+\end{align}$$</span><!-- Has MathJax -->
+<p>第 <span>$i$</span><!-- Has MathJax --> 團 (<span>$0 \le i &lt; m$</span><!-- Has MathJax -->)，要處理 <span>$\left \lceil \frac{n+i}{m} \right \rceil$</span><!-- Has MathJax --> 個元素。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method3</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R, sz; i &lt; m; i++) &#123;</span><br><span class="line">        sz = (n + i) / m;</span><br><span class="line">        R = L + sz<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, sz);</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="補充流"><a href="#補充流" class="headerlink" title="補充流"></a>補充流</h3><p>不管怎樣，前 <span>$i$</span><!-- Has MathJax --> 就拿取 <span>$\lceil \frac{n}{m} \rceil$</span><!-- Has MathJax -->，最後一組拿少一點。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method4</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">int</span> bsz = (n + m<span class="number">-1</span>)/m, sz;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R; i &lt; m; i++) &#123;</span><br><span class="line">        L = i*bsz, R = L + bsz - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (R &gt;= n)	R = n<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method0</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">int</span> bsz = n/m, rm = n%m, sz;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R; i &lt; m; i++) &#123;</span><br><span class="line">        sz = bsz + (i &lt; rm);</span><br><span class="line">        R = L + sz - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method1</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L, R; i &lt; m; i++) &#123;</span><br><span class="line">        L = i*n/m, R = (i+<span class="number">1</span>)*n/m - <span class="number">1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method2</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R, sz; i &lt; m; i++) &#123;</span><br><span class="line">        sz = (n + m-i<span class="number">-1</span>) / m;</span><br><span class="line">        R = L + sz<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, sz);</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method3</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R, sz; i &lt; m; i++) &#123;</span><br><span class="line">        sz = (n + i) / m;</span><br><span class="line">        R = L + sz<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, sz);</span><br><span class="line">        L = R + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">method4</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"In %s\n"</span>, __func__);</span><br><span class="line">    <span class="keyword">int</span> bsz = (n + m<span class="number">-1</span>)/m, sz;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>, L = <span class="number">0</span>, R; i &lt; m; i++) &#123;</span><br><span class="line">        L = i*bsz, R = L + bsz - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (R &gt;= n)	R = n<span class="number">-1</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d len([%d, %d]) = %d\n"</span>, i, L, R, (R - L + <span class="number">1</span>));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">void</span> (*FUNC[])(<span class="keyword">int</span>, <span class="keyword">int</span>) = &#123;method0, method1, method2, method3, method4&#125;;</span><br><span class="line">    <span class="keyword">int</span> n, m;</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m) == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="keyword">sizeof</span>(FUNC)/<span class="keyword">sizeof</span>(FUNC[<span class="number">0</span>]); i++)</span><br><span class="line">            (*FUNC[i])(n, m);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-jg-10085" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/16/jg-10085/" class="article-date">
@@ -114,7 +546,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/03/16/jg-10085/" data-id="cipwcq7fz00430rxcdtc8x5il" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/03/16/jg-10085/" data-id="cipys6idi004ajoxcme51035z" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/03/16/jg-10085/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -183,7 +615,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/03/16/jg-10084/" data-id="cipwcq7g6004g0rxc1tqjig1h" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/03/16/jg-10084/" data-id="cipys6idg0047joxct4sst9to" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/03/16/jg-10084/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -265,7 +697,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/" data-id="cipwcq7it00870rxc1khns6e7" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/" data-id="cipys6ihg008vjoxcdwzrt2gv" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-bvh-contract-and-traversal/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -441,7 +873,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-environment-lights/" data-id="cipwcq7iq00810rxc4bftjy2u" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-environment-lights/" data-id="cipys6ih8008kjoxc35biiyns" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-environment-lights/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -574,7 +1006,7 @@ Y_c = \frac{\sum^{}_{(x, y) \in \mathit{region}} L^2_{(x, y)} \; y}{\sum^{}_{(x,
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/" data-id="cipwcq7iw00890rxcf211ud1g" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/" data-id="cipys6ihr0097joxch76kz7bq" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-realistic-camera/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -845,7 +1277,7 @@ Y_c = \frac{\sum^{}_{(x, y) \in \mathit{region}} L^2_{(x, y)} \; y}{\sum^{}_{(x,
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/rendering-height-field/" data-id="cipwcq7is00830rxco9ue0keq" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/01/21/rendering-height-field/" data-id="cipys6iho0094joxc31js13gv" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/01/21/rendering-height-field/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -924,385 +1356,6 @@ N_y = \begin{bmatrix}
 
 
   
-    <article id="post-realtime-system-add-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/01/21/realtime-system-add-scheduler/" class="article-date">
-  <time datetime="2016-01-21T07:27:07.000Z" itemprop="datePublished">2016-01-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/3eq7W2z.jpg" rel="gallery_cipwcq7ij007p0rxcepg2oclj">
-        <img src="http://i.imgur.com/3eq7W2z.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/21/realtime-system-add-scheduler/">即時系統 加入排程器</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/" data-id="cipwcq7ij007p0rxcepg2oclj" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2016/01/21/realtime-system-add-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h2><p>修改 linux kernel，在 <code>kernel/sched.</code>} 相關 scheduler 部分增加 Weighted Round-Robin scheduler、Shortest Job First scheduler 以及 Rate-monotonic scheduler。最後藉由 Project 1 的練習撰寫測試程序驗證 scheduler 是否符合預期結果。</p>
-<h3 id="修改檔案列表"><a href="#修改檔案列表" class="headerlink" title="修改檔案列表"></a>修改檔案列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── README.md</span><br><span class="line">├── arch</span><br><span class="line">│   └── x86</span><br><span class="line">│       ├── include</span><br><span class="line">│       │   └── asm</span><br><span class="line">│       │       ├── unistd_32.h</span><br><span class="line">│       │       └── unistd_64.h</span><br><span class="line">│       └── kernel</span><br><span class="line">│           └── syscall_table_32.S</span><br><span class="line">├── include</span><br><span class="line">│   └── linux</span><br><span class="line">│       ├── sched.h</span><br><span class="line">│       └── syscalls.h</span><br><span class="line">└── kernel</span><br><span class="line">    ├── sched.c</span><br><span class="line">    ├── sched_fair.c</span><br><span class="line">    ├── sched_rt.c</span><br><span class="line">    └── sched_weighted_rr.c</span><br></pre></td></tr></table></figure>
-<p>特別注意到，若編譯環境為 <code>x86_64</code> 則需要額外修改 <code>arch/x86/include/asm/unistd_64.h</code> 複製 <code>arch/x86/include/asm/unistd_32.h</code> 增加的 syscall。 同理，增加自己定義的 syscall 時，需要修改 <code>arch/x86</code> 下的那三個檔案 (如果發現編譯 kernel 時，出現 <code>WARNING: syscall NOT IMPLEMENTION.</code> 大多數都是這個造成)。</p>
-<p>在 <code>include/linux/sched.h</code> 中，增加 task 的成員變數，提供接下來針對 task 操作需要的參數，特別的是在 <code>struct sched_rt_entity;</code> 中，相較於一般資料結構的寫法，linux 採用倒過來將節點訊息放在資料內部中，利用 <code>#define container_of(ptr, type, member)</code> 取得物件訊息，這種寫法方便解決 task 在數個 scheduler 中轉換。</p>
-<p>因為 syscall 的方式設定 task weighted，增加一個全區變數 <code>int weighted_rr_time_slice;</code>，每一次 syscall 去設定這一個全區變數值，然後 task 建立時，經過 <code>sched_fork</code>，直接利用被修改全區變數作為這一個 task 的 weight。若要特別針對 task 設定 weighted round-robin，在建立前都要呼叫 syscall 設定全區變數。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sched_rt_entity &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">struct</span> list_head weighted_rr_list_item;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="keyword">struct</span> task_struct &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> task_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: weighted_rr_prio</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> weighted_time_slice;</span><br><span class="line">    <span class="comment">//+ RTS Proj2: bonus RMS</span></span><br><span class="line">    <span class="keyword">int</span> period;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line">...</span><br><span class="line"><span class="comment">//+ RTS Proj2: weighted_rr</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">int</span> weighted_rr_time_slice;</span><br></pre></td></tr></table></figure>
-<h3 id="Part-1-Weighted-Round-Robin-Scheduler"><a href="#Part-1-Weighted-Round-Robin-Scheduler" class="headerlink" title="Part 1. Weighted Round-Robin Scheduler"></a>Part 1. Weighted Round-Robin Scheduler</h3><ul>
-<li><p><code>enqueue_task_weighted_rr()</code><br>函數將會給予 task 和 rq，將 task 根據 rq 的資料結構重新將 task 放入。若按照 <code>list</code> 結構，直接模擬 queue 即可，由於 linux 提供 list 本身為雙向串列，直接加入尾端只需要 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --> 時間。並且運行 <code>rq-&gt;weighted_rr.nr_running++;</code> 增加 rq 中的計數，隨後用來在回報該 scheduler 中有沒有存在 task 需要運行，方便在 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --> 時間內完成，由於 Weighted round-robin 只需要確認 list 是否為空，那麼也可以利用 linux 提供的 <code>list_empty()</code> 確認。</p>
-</li>
-<li><p><code>dequeue_task_weighted_rr()</code><br>當 task 完成任務時，都要呼叫 <code>update_curr_weighted_rr</code> 進行統計運行多久，並且更新與 task 相關的排程權重。接著將 task 從 rq 串列中移除，並且更新 scheduler 的 task 計數 (<code>rq-&gt;weighted_rr.nr_running--;</code>)。時間複雜度 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --></p>
-</li>
-<li><p><code>requeue_task_weighted_rr()</code><br>將一個 task 出列，在 Weighted round-robin 只需要直接對將 <code>task.weighted_rr_list_item</code> 移到串列最尾端，由於採用雙向串列，直接跟 scheduler 取得 list head (linux list 的 head 是不存放任何資訊) 直接加入尾端即可。時間複雜度 <span>$\mathcal{O}(1)$</span><!-- Has MathJax --></p>
-</li>
-<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
-</li>
-<li><p><code>pick_next_task_weighted_rr()</code><br>當最上層分配一段時間給 scheduler 運行，運行時會調用這個函數，並拿取要執行的 task，但並不用將其移除串列，並執行 <code>next-&gt;se.exec_start = rq-&gt;clock;</code> 紀錄 task 的開始運行時間，再呼叫 <code>void update_curr_weighted_rr(struct rq *)</code>。若不更新時間，則計算的相對運行時間會錯誤。</p>
-</li>
-<li><p><code>task_tick_weighted_rr()</code><br>當 scheduler 運行時，每隔一段固定的時間會呼叫此函數。若程序執行量超過 scheduler 的設定，則需要更新串列，特別注意到 <code>if (p-&gt;task_time_slice &amp;&amp; --p-&gt;task_time_slice)</code> 在原本預設是 <code>unsigned int</code> 型態，處理不當會造成 overflow，另一種情況會是一開始 quantum 設定為 0 所導致。<br>需根據不同的 task 要補充不同的量 <code>p-&gt;weighted_time_slice</code>，不只要讓這支程式重進進入串列，同時需要呼叫 <code>set_tsk_need_resched(p)</code> (參考 <code>kernel/sched_rt.c</code> 代碼)，藉以重新呼叫 <code>pick_next_task_weighted_rr(struct rq*)</code>，否則這支程序會運行到結束。</p>
-</li>
-</ul>
-<h3 id="Part-2-Shortest-Job-First-Scheduler"><a href="#Part-2-Shortest-Job-First-Scheduler" class="headerlink" title="Part 2. Shortest Job First Scheduler"></a>Part 2. Shortest Job First Scheduler</h3><ul>
-<li><p><code>enqueue_task_weighted_rr()</code><br>與 Weighted round-robin 類似，利用 list 做插入排序，可以在最慘 <span>$\mathcal{O}(n)$</span><!-- Has MathJax --> 時間內維護一個優先權由高至低的 list。需要 task 時，直接將串列的首元素移除。</p>
-</li>
-<li><p><code>dequeue_task_weighted_rr()</code><br>類同 Weighted round-robin。</p>
-</li>
-<li><p><code>requeue_task_weighted_rr()</code><br>在最短工作優先排程中，由於 task 優先權會變動，不方便確定執行過一陣子的 task 要移動到哪裡，最簡單的實作方式採用 <code>dequeue</code> 後再一次 <code>enqueue</code>。時間複雜度 <span>$\mathcal{O}(n)$</span><!-- Has MathJax --></p>
-</li>
-<li><p><code>yield_task_weighted_rr()</code><br>直接運行 \lstinline{requeue} 即可。</p>
-</li>
-<li><p><code>pick_next_task_weighted_rr()</code><br>類同 Weighted round-robin。 </p>
-</li>
-<li><p><code>task_tick_weighted_rr()</code><br>在最短工作優先排程中若按照 Weighted round-robin 的寫法且不補充 quantum，則會變成 non-preemptive SJF。相反地，若要實作 preemptive SJF，需要在 <code>check_preempt_curr_weighted_rr(struct rq*, struct task_struct*, int)</code> 檢查執行的程序是不是串列的首元素，意即是不是最高優先權，如果不是最高優先權，則呼叫 <code>resched_task()</code> 即可完成 (詳見 Bonus RMS 的寫法)。</p>
-</li>
-</ul>
-<h3 id="Bonus-RMS"><a href="#Bonus-RMS" class="headerlink" title="Bonus RMS"></a>Bonus RMS</h3><p>額外增加 syscall，修改三個檔案 <code>unistd_32.h</code>, <code>unistd_64.h</code>, <code>syscall_table_32.S</code>。增加 Rate-monotonic scheduler 的額外週期 (period) 和 syscall 函數主題，修改兩個檔案 <code>sched.h</code>, <code>sched.c</code>。</p>
-<h4 id="程式碼細節-sched-weighted-rr-c"><a href="#程式碼細節-sched-weighted-rr-c" class="headerlink" title="程式碼細節 sched_weighted_rr.c"></a>程式碼細節 <code>sched_weighted_rr.c</code></h4><ul>
-<li><code>enqueue_task_weighted_rr</code><br>使用與最短工作優先排程相同寫法，但利用週期 (period) 進行由優先權高到低排序。</li>
-<li><code>check_preempt_curr_weighted_rr</code><br>週期程式可能會搶之前正在運行程式，若發現運行程式的優先權低於要進入排程器的程式優先權，呼叫 <code>resched_task()</code> 重新排程。</li>
-<li>其餘類同 SJF。</li>
-</ul>
-<h4 id="測試程序-test-rms-c"><a href="#測試程序-test-rms-c" class="headerlink" title="測試程序 test_rms.c"></a>測試程序 <code>test_rms.c</code></h4><p>參考 Project 1 的寫法，linux 針對每一個 thread 有各自計時的計時器，當 thread 被 context-switch 時，計時器也會隨之停止。</p>
-<p>利用 main thread 產生週期性程式，<code>pthread_create</code> 並不會馬上將 thread 立即執行，迫使 main thread 的方式使用 <code>sleep(1)</code>，以秒為單位產生週期性程式。由於要考慮週期程式的執行時間，又能在輸出緩衝區觀察順序關係，利用 thread 的計時器，盡可能接近 1ms 才進行一次印出，但這也會造成幾毫秒的誤差，對於一支程序一秒大約印出 1000 個字元，測試程式中，將連續相同字元計數，若相同字元取用四捨五入到秒才進行印出，計時誤差部分就不予輸出。</p>
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/morris821028/hw-realtime-system" target="_blank" rel="external">https://github.com/morris821028/hw-realtime-system</a></p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-realtime-system-qemu" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/01/21/realtime-system-qemu/" class="article-date">
-  <time datetime="2016-01-21T07:13:45.000Z" itemprop="datePublished">2016-01-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2sHgITS.jpg" rel="gallery_cipwcq7in007v0rxc5k00d6zn">
-        <img src="http://i.imgur.com/2sHgITS.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/21/realtime-system-qemu/">初體驗 qemu</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-qemu/" data-id="cipwcq7in007v0rxc5k00d6zn" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2016/01/21/realtime-system-qemu/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <p>若不想在 Windows 上灌 Virtual Box 進行 kernel 修改，那麼在 Linux 上面灌 qemu，在上面測試，假設只要測試 kernel 那麼 qemu 在第一次編譯以及在部分檔案重新編譯都只需要兩三分鐘。若 Windows 上用 Virtual Box 灌 Linux，又在 Linux 上面灌 qemu，容易遭遇到記憶體不夠的窘境。</p>
-<h3 id="Ubuntu-Environment"><a href="#Ubuntu-Environment" class="headerlink" title="Ubuntu Environment"></a>Ubuntu Environment</h3><p>Ubuntu 環境需要安裝下列插件。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install qemu-system</span><br><span class="line">$ sudo apt-get install libncurses5-dev</span><br></pre></td></tr></table></figure>
-<h3 id="Buildroot"><a href="#Buildroot" class="headerlink" title="Buildroot"></a>Buildroot</h3><p>用 busybox 建造一直失敗，轉向學長推薦的 buildroot，用別人打包好的環境替 qemu 建造 file system。</p>
-<p><a href="https://buildroot.uclibc.org/download.html" target="_blank" rel="external">site</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://buildroot.uclibc.org/downloads/buildroot-2015.11.1.tar.bz2</span><br><span class="line">$ bzip2 -d FileName.bz2</span><br><span class="line">$ tar xvf FileName.tar</span><br></pre></td></tr></table></figure>
-<h4 id="Compile-Config"><a href="#Compile-Config" class="headerlink" title="Compile Config"></a>Compile Config</h4><p>Buildroot 提供很多參數給予選擇</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
-<p>這次作業設定，由於需要改寫 kernel 版本為 2.6.32.* 左右，因此相關的 gcc 編譯器等設定如下。同時，根據機器架構設定，助教預設在 visual box 上面，通常為 i386，而我們用實驗室 server，編 x86 64。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Target options  ---&gt;</span><br><span class="line">    Target Architecture (x86_64)  ---&gt;</span><br><span class="line">        x86_64</span><br><span class="line"></span><br><span class="line">Toolchain  ---&gt;</span><br><span class="line">    C library (glibc)  ---&gt;</span><br><span class="line">        glibc</span><br><span class="line">    Kernel Headers (Manually specified Linux version)  ---&gt;</span><br><span class="line">        custom 2.6.x</span><br><span class="line">        2.6.32.6</span><br><span class="line"></span><br><span class="line">System configuration  ---&gt;</span><br><span class="line">    [*] Enable root login with password</span><br><span class="line">    [*] remount root filesystem read-write during boot </span><br><span class="line"></span><br><span class="line">Filesystem images  ---&gt; </span><br><span class="line">    [*] ext2/3/4 root filesystem</span><br><span class="line">    [*] tar the root filesystem</span><br></pre></td></tr></table></figure>
-<h4 id="Compile"><a href="#Compile" class="headerlink" title="Compile"></a>Compile</h4><p><code>make -j8</code> 用 8 個執行緒編譯，如果機器有很多個 core，那麼可以用 <code>make -j20</code> 在非常短的時間內完成。</p>
-<p>接著在 <code>buildroot</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make -j8</span><br><span class="line">$ cp output/image/rootfs.ext* WORKSPACE_PATH</span><br></pre></td></tr></table></figure>
-<h3 id="Linux-kernel-config"><a href="#Linux-kernel-config" class="headerlink" title="Linux kernel config"></a>Linux kernel config</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ make defconfig</span><br><span class="line">$ make menuconfig</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[_] Enable loadable module support</span><br><span class="line"></span><br><span class="line">File systems  ---&gt; </span><br><span class="line">    [*] Second extended fs support</span><br><span class="line">        [*] ext2</span><br><span class="line"></span><br><span class="line">Device Drivers  ---&gt;</span><br><span class="line">    Generic Driver Options  ---&gt; </span><br><span class="line">        [*] Create a kernel maintained /dev tmpfs (EXPERIMENTAL) </span><br><span class="line">        [*] Automount devtmpfs at /dev</span><br></pre></td></tr></table></figure>
-<p>create <code>arch/x86/boot/bzImage</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make -j20</span><br></pre></td></tr></table></figure>
-<h3 id="Test-Flow"><a href="#Test-Flow" class="headerlink" title="Test Flow"></a>Test Flow</h3><h4 id="move-test-execute-file"><a href="#move-test-execute-file" class="headerlink" title="move test execute file"></a>move test execute file</h4><p><code>mnt.sh</code></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mount rootfs.ext2 mnt</span><br><span class="line">sudo cp test_weighted_rr/test_weighted_rr mnt/root/</span><br><span class="line">sudo umount mnt</span><br></pre></td></tr></table></figure>
-<p><code>run.sh</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">qemu-system-x86_64 -M pc -kernel arch/x86/boot/bzImage -hda rootfs-dirty.ext4 -netdev user,id=network0 -device e1000,netdev=network0 -nographic -append &quot;root=/dev/sda console=ttyS0&quot;</span><br></pre></td></tr></table></figure></p>
-<h3 id="How-to-enlarge-the-rootfs-ext4"><a href="#How-to-enlarge-the-rootfs-ext4" class="headerlink" title="How to enlarge the rootfs.ext4"></a>How to enlarge the rootfs.ext4</h3><p><a href="http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image" target="_blank" rel="external">http://stackoverflow.com/questions/3495854/extend-the-size-of-already-existing-ext2-image</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ dd if=/dev/zero of=foo.img count=0 bs=1M seek=2000   # assuming target size is 2000M</span><br><span class="line"># e2fsck -f foo.img</span><br><span class="line"># resize2fs foo.img</span><br></pre></td></tr></table></figure>
-<h3 id="Screen-Workspace"><a href="#Screen-Workspace" class="headerlink" title="Screen Workspace"></a>Screen Workspace</h3><p><a href="http://ssorc.tw/19" target="_blank" rel="external">commond tutorial</a></p>
-<p>執行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ screen</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>ctrl+a c</code><br>開啟新的視窗，並同時切換到這個新的視窗</li>
-<li><code>ctrl+a tab</code><br>切換視窗</li>
-<li><code>ctrl+a |</code><br>切割垂直視窗，並產生新的視窗。</li>
-<li><code>ctrl+a k</code><br>關閉此視窗</li>
-</ul>
-<p>之所以用 Screen 指令，主要是因為遠端到工作站上操作 qemu，若程序掛掉，很容易遭遇到要重新連線的麻煩事。</p>
-<h3 id="Speical-Thanks"><a href="#Speical-Thanks" class="headerlink" title="Speical Thanks"></a>Speical Thanks</h3><ul>
-<li>蕭光宏 蕭大帥</li>
-<li>Lab 332 Parallel &amp; Distributed Laboratory</li>
-</ul>
-<h3 id="Virtual-Box"><a href="#Virtual-Box" class="headerlink" title="Virtual Box"></a>Virtual Box</h3><h4 id="第一次運行"><a href="#第一次運行" class="headerlink" title="第一次運行"></a>第一次運行</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src</span><br><span class="line">$ sudo wget http://newslab.csie.ntu.edu.tw/course/rts2015/projects/linux-2.6.32.60.tar.gz</span><br><span class="line">$ sudo tar -zxvf linux-2.6.32.60.tar.gz</span><br><span class="line">$ cd linux-2.6.32.60</span><br><span class="line">$ sudo make mrproper</span><br><span class="line">$ sudo make menuconfig</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/arch/x86/include/asm/unistd_64.h arch/x86/include/asm/</span><br><span class="line">$ scp morris1028@140.112.30.245:~/RTS/linux-2.6.32.60/kernel/sched_weighted_rr.c kernel/</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ sudo vim /etc/default/grub</span><br><span class="line">#Add &quot;#&quot; to comment the following 2 lines</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT=10</span><br><span class="line">#GRUB_HIDDEN_TIMEOUT_QUIET=true</span><br><span class="line">$ sudoupdate-grub2</span><br><span class="line">$ sudoshutdown -r now</span><br></pre></td></tr></table></figure>
-<h4 id="Test-flow"><a href="#Test-flow" class="headerlink" title="Test flow"></a>Test flow</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ cd /usr/src/linux-2.6.32.60</span><br><span class="line">$ sudo make bzImage</span><br><span class="line">$ sudo make modules</span><br><span class="line">$ sudo make modules_install</span><br><span class="line">$ sudo make install</span><br></pre></td></tr></table></figure>
-<h4 id="Debug-by-printk"><a href="#Debug-by-printk" class="headerlink" title="Debug by printk"></a>Debug by <code>printk</code></h4><p>在另一個 terminal 開啟以下代碼，並且等待執行測試 scheduler 得執行檔在 kernel 運行時所打印出的 <code>printk</code> 訊息。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo more /proc/kmsg</span><br></pre></td></tr></table></figure>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-realtime-system-using-scheduler" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/01/21/realtime-system-using-scheduler/" class="article-date">
-  <time datetime="2016-01-21T06:41:29.000Z" itemprop="datePublished">2016-01-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/即時系統/">即時系統</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-<div class="article-gallery">
-  <div class="article-gallery-photos">
-    
-      <a class="article-gallery-img fancybox" href="http://i.imgur.com/2L6Zmwa.jpg" rel="gallery_cipwcq7io007x0rxcsktmxpjq">
-        <img src="http://i.imgur.com/2L6Zmwa.jpg" itemprop="image">
-      </a>
-    
-  </div>
-</div>
-
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/21/realtime-system-using-scheduler/">即時系統 使用排程器</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/" data-id="cipwcq7io007x0rxcsktmxpjq" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2016/01/21/realtime-system-using-scheduler/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h3 id="目標"><a href="#目標" class="headerlink" title="目標"></a>目標</h3><p>安裝 linux kernel 2.6.32.68、練習 pthread 設定 scheduler 相關函數以利後續修改 kernel source code。</p>
-<h3 id="設定-scheduler-問題"><a href="#設定-scheduler-問題" class="headerlink" title="設定 scheduler 問題"></a>設定 scheduler 問題</h3><ul>
-<li>設定 thread 可以在哪些 core 運行，由於要測試執行順序,強制讓 pthread 都在 CPU 0 運行。<br>編譯時，增加 <code>#define _GNU_SOURCE</code> 在 <code>#include &lt;pthread&gt;</code> 之前，確定 <code>cpu_set_t</code> 型別存在。</li>
-</ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cpu_set_t</span> mask;</span><br><span class="line">CPU_ZERO(&amp;mask);</span><br><span class="line">CPU_SET(<span class="number">0</span>, &amp;mask);</span><br><span class="line">sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(mask), &amp;mask);</span><br></pre></td></tr></table></figure>
-<ul>
-<li>使用 <code>sched_setscheduler()</code> 時，需查閱 <code>int policy</code> 相關規定去設定 <code>struct sched_param</code> 的 priority 數值。例如 <code>SCHED_FIFO</code> 的 priority 介於 1 到 99 之間,若 priority 錯誤，<code>sched_setscheduler()</code> 會發生錯誤，錯誤訊息可以藉由 <code>printf(&quot;Message␣%s\n&quot;, mid, strerror(errno));</code> 查閱。</li>
-</ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sched_setaffinity(<span class="number">0</span>, <span class="keyword">sizeof</span>(mask), &amp;mask);</span><br><span class="line">              <span class="function"><span class="keyword">int</span> <span class="title">sched_setscheduler</span><span class="params">(pid_t pid, <span class="keyword">int</span> policy,</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">struct</span> sched_param *param)</span></span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>如果 pid = 0，相當於 caller 的 thread 會被設置對應的 policy 和 <code>sched_param</code>。在 policy 設定 規範中，有兩種 real time scheduler <code>SCHED_FIFO</code> 和 <code>SCHED_RR</code>。當 thread 設置 real time scheduler 時，需要用 root 權限來執行程式，否則會設置失敗。相反地，若使用 non-real time scheduler 則不需要 root 權限，如 <code>SCHED_BATCH</code>。</li>
-</ul>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sched_param param;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Thread %d sched_setscheduler()\n"</span>, mid);</span><br><span class="line">param.sched_priority = sched_get_priority_max(SCHED_FIFO);</span><br><span class="line">s = sched_setscheduler(<span class="number">0</span>, SCHED_FIFO, &amp;param);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Thread %d sched after %s\n"</span>, mid, strerror(errno));</span><br></pre></td></tr></table></figure>
-<h3 id="三種方法設定-pthread"><a href="#三種方法設定-pthread" class="headerlink" title="三種方法設定 pthread"></a>三種方法設定 pthread</h3><h4 id="方法一"><a href="#方法一" class="headerlink" title="方法一"></a>方法一</h4><p>各自的 <code>pthread_create()</code> 後，再呼叫 <code>sched_setscheduler()</code> 進行設定。這種寫法在本次實驗有順序問題，在 create 之後，無法保證執行 <code>sched_setscheduler()</code> 的順序，無法依靠 main thread 中執行 <code>pthread_create()</code> 的順序決定。幸運地，仍可以使用 </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pthread_barrier_t</span> barrier; </span><br><span class="line">pthread_barrier_wait(&amp;barrier);</span><br><span class="line">pthread_barrier_init(&amp;barrier, <span class="literal">NULL</span>, MAX_THREAD);</span><br></pre></td></tr></table></figure>
-<p>確保每一個 thread 都設置好各自的 <code>sched_setscheduler()</code> 後統一運行，運行順序取決 priority。</p>
-<h4 id="方法二"><a href="#方法二" class="headerlink" title="方法二"></a>方法二</h4><p>在 main thread 中，呼叫 <code>pthread_attr_setinheritsched(attr, PTHREAD_INHERIT_SCHED);</code> 接下來 create 出來的 pthread 都將繼承 main thread 的 scheduler 設定。這種寫法很方便，如果需要各自設置 priority 會不方便，倒不如直接用第三種寫法。</p>
-<h4 id="方法三"><a href="#方法三" class="headerlink" title="方法三"></a>方法三</h4><p>在 main thread 中，手動設置每一個 pthread 的 scheduler。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pthread_attr_t</span> *attr = <span class="keyword">new</span> <span class="keyword">pthread_attr_t</span>;</span><br><span class="line"><span class="keyword">struct</span> sched_param *param = <span class="keyword">new</span> <span class="keyword">struct</span> sched_param;</span><br><span class="line"><span class="comment">// increasing order</span></span><br><span class="line">param-&gt;sched_priority = sched_get_priority_max(SCHED_FIFO) - i;</span><br><span class="line"><span class="comment">// set scheduler</span></span><br><span class="line">pthread_attr_setinheritsched(attr, PTHREAD_EXPLICIT_SCHED);</span><br><span class="line">pthread_attr_setschedpolicy(attr, SCHED_FIFO);</span><br><span class="line">pthread_attr_setschedparam(attr, param);</span><br><span class="line"><span class="comment">// create thread</span></span><br><span class="line">pthread_create(&amp;tid[i], attr, running_print, create_arg(i+<span class="number">1</span>, scheduler))</span><br></pre></td></tr></table></figure>
-<h3 id="計時設置"><a href="#計時設置" class="headerlink" title="計時設置"></a>計時設置</h3><p>為確定每一個 thread 按照設定的 scheduler 運行，方式採用 <code>print()</code> 進行，但有可能輸出之間間隔距離過短，導致順序容易在輸出上發生無法預期的問題，適時地加入一秒間隔完成。</p>
-<p>如何準確地停止一秒？不能呼叫 <code>sleep()</code> 因為這類的 system call 會產生 interrupt，此時 thread 將會降低 priority 或者進入隊列尾端。佔據 CPU time 有以下三種</p>
-<h4 id="busy-work"><a href="#busy-work" class="headerlink" title="busy work"></a>busy work</h4><p>只要停留的夠久即可，下面是一種簡單的方法 </p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// busy 1 second</span></span><br><span class="line"><span class="keyword">double</span> a = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10000000</span>; i++)	a += <span class="number">0.1f</span>;</span><br></pre></td></tr></table></figure>
-<h4 id="系統時間"><a href="#系統時間" class="headerlink" title="系統時間"></a>系統時間</h4><p>利用 critical section 抓系統時間 <code>int gettimeofday (struct timeval * tv, struct timezone * tz);</code>，這寫法會共用同一份時間，因此需要使用 mutex 完成。仍使用一個迴圈來判定時間是否超過，實際運行時間會超過一秒。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">double</span> <span class="title">my_clock</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> timeval t;</span><br><span class="line">    gettimeofday(&amp;t, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1e-6</span> * t.tv_usec + t.tv_sec;</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_lock(&amp;outputlock);</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">double</span> sttime = my_clock();</span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (my_clock() - sttime &gt; <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(&amp;outputlock);</span><br></pre></td></tr></table></figure>
-<h4 id="執行緒運行時間"><a href="#執行緒運行時間" class="headerlink" title="執行緒運行時間"></a>執行緒運行時間</h4><p>事實上 Linux 有提供每一個 thread 各自的 clock，用來計算 thread 的執行時間。使用 <code>clock_gettime(CLOCK_THREAD_CPUTIME_ID, &amp;t)</code>，在舊版本需在編譯參數中加入 <code>-lrt</code> 才能使用。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">double</span> <span class="title">my_clock</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> timespec t;</span><br><span class="line">    assert(clock_gettime(CLOCK_THREAD_CPUTIME_ID, &amp;t) == <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1e-9</span> * t.tv_nsec + t.tv_sec;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="輸出-console-問題"><a href="#輸出-console-問題" class="headerlink" title="輸出 console 問題"></a>輸出 console 問題</h3><p>在 <code>SCHED_FIFO</code> 這類的 real time scheduler 情況下，thread 輸出無法即時顯示在 terminal 上。</p>
-<p>從 <a href="http://man7.org/linux/man-pages/man7/sched.7.html" target="_blank" rel="external">http://man7.org/linux/man-pages/man7/sched.7.html</a> 可以見到 real-time scheduler 安排工作的比例，由於 <code>print()</code> 之後的顯示處理並不是 real-time process，當 real-time process 完全用盡 95\% 的 CPU time 時，顯示處理可能沒辦法在一秒內完成，可能要用好幾秒中的 5% 來完成。這也就是造成一開始會停頓一陣子，隨後才一次輸出數行結果。(註：並不是每一種裝置都會造成這問題，跟 CPU 時脈有關。)</p>
-<blockquote>
-<p>The value in this file specifies how much of the period time  can be used by all real-time and deadline scheduled processes on the system.  The value in this file can range from <code>-1</code> to <code>INT_MAX-1</code>.  Specifying <code>-1</code> makes the runtime the same as the period; that is, no CPU time is set aside for non-real-time processes (which was the Linux behavior before kernel 2.6.25). The default value in this file is 950,000 (0.95 seconds), meaning that 5% of the CPU time is reserved for processes that don’t run under a real-time or deadline scheduling policy.</p>
-</blockquote>
-<p>解決這類的問題，可以從 kernel 設定著手，降低 real-time 最大佔有量，讓 <code>print()</code> 處理能即刻印出。這不是好的解決辦法，但可用於實驗。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// default</span><br><span class="line">$ sudo /sbin/sysctl -w kernel.sched_rt_runtime_us=950000</span><br><span class="line">// modify</span><br><span class="line">$ sudo /sbin/sysctl -w kernel.sched_rt_runtime_us=500000</span><br></pre></td></tr></table></figure>
-<p>又或者採用拉大間隔，讓每一個 thread 都停止數十秒以上。</p>
-<h3 id="特別感謝"><a href="#特別感謝" class="headerlink" title="特別感謝"></a>特別感謝</h3><p>蕭光宏學長</p>
-<h3 id="Github"><a href="#Github" class="headerlink" title="Github"></a>Github</h3><p><a href="https://github.com/morris821028/hw-realtime-system" target="_blank" rel="external">https://github.com/morris821028/hw-realtime-system</a></p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-security-notes7" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2015/06/23/security-notes7/" class="article-date">
-  <time datetime="2015-06-23T00:06:29.000Z" itemprop="datePublished">2015-06-23</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/資訊安全/">資訊安全</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/06/23/security-notes7/">近代加密 小額付費</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2015/06/23/security-notes7/" data-id="cipwcq7jo009o0rxcbfwsj20y" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2015/06/23/security-notes7/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/密碼學/">密碼學</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="關於小額付費"><a href="#關於小額付費" class="headerlink" title="關於小額付費"></a>關於小額付費</h2><p>另一個名稱為 <strong> 微支付 </strong> (Micropayment)，簡單來說提供顧客 (Consumer) - 銀行 (Broker) - 商家 (Vendor) 三方的交易。小額付費標明在交易金額小，因此交易成本也應該小，否則交易手續的計算能量就超過交易金額，更別說要扣除交易物品的成本。通常要在以下三點最小化</p>
-<ul>
-<li>計算資源：<br>在先前提到的加密算法中，key 的 bit-length 相當長，導致計算的能量消耗大。倘若只消費 1 元，耗電成本就佔了 1% 以上，甚至更多，那麼是划不來的。</li>
-<li>儲存空間花費：<br>計算每一組交易明細所需要的空間要最小，例如記錄金額需要 32-bit，那麼 n 次交易就需要 n 個 32-bit 的空間，在其他細節中還需要紀錄額外的購買來源、 … 等。</li>
-<li>管理成本：<br>第三方 (通常是銀行) 要管理顧客的金額花費、商家是否能取用顧客的錢。銀行要怎麼紀錄顧客的狀態、如何驗證商家真的有跟顧客交易 … 等。</li>
-</ul>
-<p>由於交易金額小，即使被破解對雙方的損失也不大。但通常破解手段需要的時間、資源往往超過交易金額，因此不太會有人去破解這個。</p>
-<h2 id="應用層面"><a href="#應用層面" class="headerlink" title="應用層面"></a>應用層面</h2><h3 id="網路電子報："><a href="#網路電子報：" class="headerlink" title="網路電子報："></a>網路電子報：</h3><p>一份電子報可能有一些特別的標題內容，若要深入查閱內文，需要讀者付費觀看。這一部分更具有彈性，對於一份具有相當多面向的電子報而言，有些人只看幾個專欄就必須花費購買一整本的金額，有些時候是浪費的。</p>
-<h3 id="網路期刊購買、資料庫詢問"><a href="#網路期刊購買、資料庫詢問" class="headerlink" title="網路期刊購買、資料庫詢問"></a>網路期刊購買、資料庫詢問</h3><p>網路學術期刊就跟電子報的情況一樣。資料庫詢問比較特別，花費小金額來交換資料庫服務的次數。</p>
-<h3 id="廣告"><a href="#廣告" class="headerlink" title="廣告"></a>廣告</h3><p>互動式影片、廣告商為了誘拐大眾仔細觀看廣告，由廣告商付錢給觀看者。例如回答問卷回饋、機率性地抽獎回饋 … 等。</p>
-<h3 id="網頁閱讀"><a href="#網頁閱讀" class="headerlink" title="網頁閱讀"></a>網頁閱讀</h3><p>類似向大眾徵文，鼓勵分享知識。徵求到的文章，由平台供應者支付。</p>
-<h2 id="何時用"><a href="#何時用" class="headerlink" title="何時用"></a>何時用</h2><p>使用者付費，而非訂閱長時間的垃圾訊息或服務。在大多數的服務商中，會提供時間內無限使用或按照次數計費兩種方案，在大多數的情況下，時間內無限使用是對商家有利，可以預先得到使用者的投資，但使用者在後續時間內可能沒有去使用、或者沒時間去用。</p>
-<p>不是 <strong> 按照次數計費全然好 </strong>，就如 <strong> 電話費 </strong>，打了多少通電話、講了多久，只有電信商知道，即便告訴花費相當多金額，通話明細也是由他們提供，很難證明到底花了多少，這是對使用者的不利。相較起來，小額付費比較接近投幣式的公共電話，投了多少就打多少，等到快沒有餘額時，再進行補充。</p>
-<p>先付款給商家會對使用者不利，有可能取得不好的服務，後付款給商家會對商家不利，因為使用者可能沒有足夠的金額。正因為小額交易，適時地刷新狀態 (再投幣) 就能在之間達到平衡。</p>
-<h2 id="數學"><a href="#數學" class="headerlink" title="數學"></a>數學</h2><p>由制定 RSA 那伙人 Rivest, Shamir 提供 Payword scheme 的方法。</p>
-<p>首先，概念建立在假設不用數字儲存金額 (減少儲存空間、管理花費)，而是用運算次數來知道花費金額 (用簡單運算來完成，防止能源消耗過大)。金額花費是整數，由最小單位 1 元構成，如果是在通貨膨脹的國家，最小單位可能不一樣？</p>
-<p>那麼可以建立一個儲值金額 n 元的串列如下。</p>
-<span>$x_0 \leftarrow x_1 \leftarrow x_2 \leftarrow \text{ ... } \leftarrow x_{n-1} \leftarrow x_n$</span><!-- Has MathJax -->
-<p>由使用者拿一個<span>$x_n$</span><!-- Has MathJax --> 初始化，接著利用 hash<span>$x_i = h(x_{i+1})$</span><!-- Has MathJax --> 得到每一個硬幣<span>$x_i$</span><!-- Has MathJax -->。用數學表示遞迴公式<span>$x_i = h^{n-i}(x_n)$</span><!-- Has MathJax -->。</p>
-<p>當顧客跟商家交易時，簽一份簽章 (例如用 RSA 或者是 DSA 等方式) 給商家。簽章內容為</p>
-<span>$\text{Sign}_C(\text{Merchant-ID} || x_0 || \text{Cert})$</span><!-- Has MathJax -->
-<p>其中 <span>$\text{Cert}$</span><!-- Has MathJax --> 是由第三方信任銀行簽署給用戶的內容 (類似銀行帳戶的確認)。最後發送給商家資訊為</p>
-<span>$\text{Sign}_C(\text{Merchant-ID} || x_0 || \text{Cert}), \text{Merchant-ID}, x_0, \text{Cert}$</span><!-- Has MathJax -->
-<p>由商人去驗證 (檢查簽證內容、拿對方的 public key 打開，再去拿銀行的 public key 驗證 <span>$\text{Cert}$</span><!-- Has MathJax -->  是否正確) 是否是可信任的顧客或者是顧客是否存在。</p>
-<p>接下來交易採用最笨的方案，每一次交易 1 元，交付 i 元時，顧客就告知<span>$x_i$</span><!-- Has MathJax --> 值給商家，這裡顧客得到硬幣方法為重新計算<span>$x_i = h^{n-i}(x_n)$</span><!-- Has MathJax -->，可以不事先用記憶體儲存<span>$[x_0, x_n]$</span><!-- Has MathJax -->，保留 <span>$n$</span><!-- Has MathJax --> 和<span>$x_n$</span><!-- Has MathJax --> 即可。</p>
-<p>之後商家拿著 i 元<span>$x_i$</span><!-- Has MathJax --> 和<span>$\text{Sign}_C(\text{Merchant-ID} || x_0 || \text{Cert})$</span><!-- Has MathJax --> 的資訊給銀行，銀行計算 <span>$i$</span><!-- Has MathJax --> 次 hash<span>$x_0 = h^i(x_i)$</span><!-- Has MathJax --> 查看是否正確，若檢驗沒問題，則銀行從客戶存簿撥款給商家。</p>
-<h3 id="為什麼可行"><a href="#為什麼可行" class="headerlink" title="為什麼可行"></a>為什麼可行</h3><p>運算過程中使用 hash，hash 提供不可逆的操作，因此商家無法有更多金額的索取，假設從顧客手中得到<span>$x_i$</span><!-- Has MathJax -->，無法計算出<span>$x_{i+1}$</span><!-- Has MathJax --> 究竟是什麼，具有一定安全性。而顧客必須由銀行索取簽證，來表示當前的狀態是合法的，顧客沒辦法竄改自己的狀態，使得自己有更多的金錢，銀行那裏會有最新一組的簽章在？應該是吧，銀行會在商家發送驗證資訊時發生異狀檢查顧客是否竄改。</p>
-<p>數學之美。</p>
-
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
       <a class="extend prev" rel="prev" href="/categories/學校課程/page/2/">&laquo; Prev</a><a class="page-number" href="/categories/學校課程/">1</a><a class="page-number" href="/categories/學校課程/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/categories/學校課程/page/4/">4</a><a class="page-number" href="/categories/學校課程/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/categories/學校課程/page/10/">10</a><a class="extend next" rel="next" href="/categories/學校課程/page/4/">Next &raquo;</a>
@@ -1317,7 +1370,7 @@ N_y = \begin{bmatrix}
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">92</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">96</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -1327,6 +1380,38 @@ N_y = \begin{bmatrix}
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10101/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10101. Fast Game of Life (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10100/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10100. Fast Matrix Multiplication (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10099/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10099. Dot Product (CUDA)</a>
+          </li>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10098/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10098. Print Device Information (CUDA)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/26/jg-10105/">
@@ -1374,38 +1459,6 @@ N_y = \begin{bmatrix}
                 <i class="icon-file-o"></i> 
               
             批改娘 10091. Fast Matrix Multiplication (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/jg-10090/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10090. Dot Product (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/jg-10089/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10089. Print Platform Information (OpenCL)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/uva-13100/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13100 - Painting the Wall</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/26/uva-13102/">
-              
-                <i class="icon-file-o"></i> 
-              
-            UVa 13102 - Tobby Stones</a>
           </li>
         
       </ul>
