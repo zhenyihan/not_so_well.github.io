@@ -89,6 +89,64 @@
         
           <section id="main">
   
+    <article id="post-jg-10092" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/06/26/jg-10092/" class="article-date">
+  <time datetime="2016-06-26T07:43:05.000Z" itemprop="datePublished">2016-06-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/學校課程/">學校課程</a>►<a class="article-category-link" href="/categories/學校課程/平行程式/">平行程式</a>
+  </div>
+
+  </div>
+  <div class="article-inner ">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/06/26/jg-10092/">批改娘 10092. OpenCL Build Program Debug</a>
+    </h1>
+  
+
+      </header>
+        
+    <footer class="article-footer">
+      <a data-url="http://morris821028.github.io/2016/06/26/jg-10092/" data-id="cipz2w5hr004hvgxcxsgf8ctm" class="article-share-link">Share</a>
+      
+        <a href="http://morris821028.github.io/2016/06/26/jg-10092/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenCL/">OpenCL</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/批改娘/">批改娘</a></li></ul>
+
+    </footer>
+    <div class="article-entry article-index" itemprop="articleBody">
+      
+          
+        
+          <div class="toggle-content">
+            <h2 id="題目描述"><a href="#題目描述" class="headerlink" title="題目描述"></a>題目描述</h2><p>為 OpenCL 中的 <code>clBuildProgram()</code> Debug 鋪路。請嘗試從標準輸入得到要編譯的檔案名稱，並把編譯的錯誤訊息輸出。</p>
+<h3 id="err1-cl"><a href="#err1-cl" class="headerlink" title="err1.cl"></a>err1.cl</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="keyword">uint32_t</span>;</span><br><span class="line">__<span class="function">kernel <span class="keyword">void</span> <span class="title">mul</span><span class="params">(__global uint32_t A[], __global uint32_t C[], <span class="keyword">const</span> <span class="keyword">int</span> N)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    opencl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="輸入格式"><a href="#輸入格式" class="headerlink" title="輸入格式"></a>輸入格式</h2><p>輸入只有一行，字串長度不大於 30 的檔案名稱。</p>
+<h2 id="輸出格式"><a href="#輸出格式" class="headerlink" title="輸出格式"></a>輸出格式</h2><p>將錯誤訊息印出，如 <code>printf(&quot;%s&quot;, program_log);</code>。</p>
+<h2 id="範例輸入-1"><a href="#範例輸入-1" class="headerlink" title="範例輸入 1"></a>範例輸入 1</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">err1.cl</span><br></pre></td></tr></table></figure>
+<h2 id="範例輸出-1"><a href="#範例輸出-1" class="headerlink" title="範例輸出 1"></a>範例輸出 1</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;kernel&gt;:4:2: error: use of undeclared identifier &apos;opencl&apos;</span><br><span class="line">        opencl;</span><br><span class="line">        ^</span><br></pre></td></tr></table></figure>
+<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>盡量使用較少的 device，減少建立文本的 overhead，反正都是錯誤的代碼要找編譯錯誤資訊，那麼就直接用其中一個 device 編譯即可，除非牽涉到 compute version 問題，原則上都會是一樣的。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;assert.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;CL/cl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXGPU 1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MAXN 2048</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> N = MAXN;</span><br><span class="line"><span class="keyword">char</span> clSrc[<span class="number">1024</span>] = <span class="string">""</span>;</span><br><span class="line"><span class="keyword">char</span> clSrcMain[<span class="number">1024</span>] = <span class="string">"notused"</span>;</span><br><span class="line"><span class="comment">// -- start working with OpenCL</span></span><br><span class="line">cl_context             clCtx;</span><br><span class="line">cl_program             clPrg;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> clCallFunc &amp;clCtx, &amp;clPrg</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> clFuncArgs cl_context *clCtx, cl_program *clPrg</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CheckFailAndExit(status) \</span><br><span class="line">    <span class="meta-keyword">if</span> (status != CL_SUCCESS) &#123; \</span><br><span class="line">        fprintf(stderr, <span class="string">"Error: Line %u in file %s\n\n"</span>, __LINE__, __FILE__), \</span><br><span class="line">        destroyGPU(clCtx, clPrg); \</span><br><span class="line">    &#125;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> clPrint(fmt, ...) fprintf(stdout, fmt, ##__VA_ARGS__)</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">destroyGPU</span><span class="params">(clFuncArgs)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"Starting Cleanup ...\n\n"</span>);</span><br><span class="line">    <span class="keyword">if</span> (*clCtx)	clReleaseContext(*clCtx);</span><br><span class="line">    <span class="keyword">if</span> (*clPrg)	clReleaseProgram(*clPrg);</span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">clCompile</span><span class="params">(<span class="keyword">char</span> fileName[], clFuncArgs)</span> </span>&#123;</span><br><span class="line">    FILE *codefin = fopen(fileName, <span class="string">"r"</span>);</span><br><span class="line">    assert(codefin != <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">size_t</span> clSrcLen = fread(clSrc, <span class="number">1</span>, <span class="number">1024</span>, codefin);</span><br><span class="line">    fclose(codefin);</span><br><span class="line">    cl_int				clStat;</span><br><span class="line">    cl_uint				clPlatN, clGPUN;</span><br><span class="line">    cl_platform_id		clPlatID;</span><br><span class="line">    cl_device_id		clGPUID[MAXGPU];</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>			*clSrcPtr = clSrc;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// -- basic OpenCL setup</span></span><br><span class="line">    clGetPlatformIDs(<span class="number">1</span>, &amp;clPlatID, &amp;clPlatN);</span><br><span class="line">    clGetDeviceIDs(clPlatID, CL_DEVICE_TYPE_GPU, MAXGPU, clGPUID, &amp;clGPUN);</span><br><span class="line">    *clCtx = clCreateContext(<span class="literal">NULL</span>, <span class="number">1</span>, clGPUID, <span class="literal">NULL</span>, <span class="literal">NULL</span>, &amp;clStat);</span><br><span class="line">    CheckFailAndExit(clStat);</span><br><span class="line">    *clPrg = clCreateProgramWithSource(*clCtx, <span class="number">1</span>, &amp;clSrcPtr, &amp;clSrcLen, &amp;clStat);</span><br><span class="line">    CheckFailAndExit(clStat);</span><br><span class="line">    clStat = clBuildProgram(*clPrg, <span class="number">1</span>, clGPUID, <span class="literal">NULL</span>, <span class="literal">NULL</span>, <span class="literal">NULL</span>);</span><br><span class="line">    <span class="keyword">if</span> (clStat != CL_SUCCESS) &#123;</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">char</span> program_log[<span class="number">32767</span>];</span><br><span class="line">        clGetProgramBuildInfo(*clPrg, clGPUID[<span class="number">0</span>],</span><br><span class="line">                CL_PROGRAM_BUILD_LOG, <span class="keyword">sizeof</span>(program_log), program_log, <span class="literal">NULL</span>);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%s"</span>, program_log);</span><br><span class="line">        CheckFailAndExit(CL_BUILD_PROGRAM_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> fileName[<span class="number">128</span>];</span><br><span class="line">    assert(<span class="built_in">scanf</span>(<span class="string">"%s"</span>, fileName) == <span class="number">1</span>);</span><br><span class="line">    clCompile(fileName, clCallFunc);</span><br><span class="line">    <span class="comment">// Compile Success</span></span><br><span class="line">    destroyGPU(clCallFunc);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          </div>
+          <div class="toggle-input article-more-link"><a>Read More +</a></div>
+        
+      
+    </div>
+
+  </div>
+  
+</article>
+
+
+  
     <article id="post-jg-10091" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/06/26/jg-10091/" class="article-date">
@@ -114,7 +172,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/jg-10091/" data-id="cipz12t0g004ot1xcu0ak6s4u" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/jg-10091/" data-id="cipz2w5i8004vvgxcdfqetuok" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/jg-10091/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -186,7 +244,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/jg-10090/" data-id="cipz12t0k004st1xcxv8t6zo0" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/jg-10090/" data-id="cipz2w5hv004lvgxc0xzqqggv" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/jg-10090/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -248,7 +306,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/jg-10089/" data-id="cipz12t0d004lt1xcz43a1peu" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/jg-10089/" data-id="cipz2w5hi0047vgxcua6oqtcf" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/jg-10089/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -303,7 +361,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/uva-13100/" data-id="cipz12thi00pot1xc3t80621p" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/uva-13100/" data-id="cipz2w68f01fnvgxcmfvh3qry" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/uva-13100/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -359,7 +417,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/uva-13102/" data-id="cipz12thr00pzt1xcqm31vnwv" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/uva-13102/" data-id="cipz2w68701fjvgxcu3xiph51" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/uva-13102/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -413,7 +471,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/26/uva-13101/" data-id="cipz12tho00pvt1xcymurb5ix" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/26/uva-13101/" data-id="cipz2w67z01fgvgxcwlc7mq4a" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/26/uva-13101/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -473,7 +531,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/24/uva-13000/" data-id="cipz12tg100o1t1xcpdf4iyvl" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/24/uva-13000/" data-id="cipz2w5um00nyvgxck0ipvsv3" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/24/uva-13000/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -530,7 +588,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/24/uva-13070/" data-id="cipz12thl00pst1xc45hklz83" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/24/uva-13070/" data-id="cipz2w67v01fdvgxcks51x2u0" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/24/uva-13070/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -585,7 +643,7 @@
       </header>
         
     <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/24/uva-13036/" data-id="cipz12tgv00out1xckkotkcxk" class="article-share-link">Share</a>
+      <a data-url="http://morris821028.github.io/2016/06/24/uva-13036/" data-id="cipz2w5vk00p4vgxc032huo2c" class="article-share-link">Share</a>
       
         <a href="http://morris821028.github.io/2016/06/24/uva-13036/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -616,64 +674,9 @@
 
 
   
-    <article id="post-uva-13057" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/06/24/uva-13057/" class="article-date">
-  <time datetime="2016-06-24T06:28:21.000Z" itemprop="datePublished">2016-06-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/解題區/">解題區</a>►<a class="article-category-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a>
-  </div>
-
-  </div>
-  <div class="article-inner ">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/06/24/uva-13057/">UVa 13057 - Prove Them All</a>
-    </h1>
-  
-
-      </header>
-        
-    <footer class="article-footer">
-      <a data-url="http://morris821028.github.io/2016/06/24/uva-13057/" data-id="cipz12thd00pgt1xcsl5futo5" class="article-share-link">Share</a>
-      
-        <a href="http://morris821028.github.io/2016/06/24/uva-13057/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DAG/">DAG</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SCC/">SCC</a></li></ul>
-
-    </footer>
-    <div class="article-entry article-index" itemprop="articleBody">
-      
-          
-        
-          <div class="toggle-content">
-            <h2 id="Problem"><a href="#Problem" class="headerlink" title="Problem"></a>Problem</h2><p>這家公司有自動推論引擎，請問至少要證明幾個基礎定理後，剩餘的都可以藉由推論引擎得到？</p>
-<h2 id="Sample-Input"><a href="#Sample-Input" class="headerlink" title="Sample Input"></a>Sample Input</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">4  4</span><br><span class="line">1  2</span><br><span class="line">1  3</span><br><span class="line">4  2</span><br><span class="line">4  3</span><br></pre></td></tr></table></figure>
-<h2 id="Sample-Output"><a href="#Sample-Output" class="headerlink" title="Sample Output"></a>Sample Output</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Case 1: 2</span><br></pre></td></tr></table></figure>
-<h2 id="Solution"><a href="#Solution" class="headerlink" title="Solution"></a>Solution</h2><p>把這張圖的所有 SCC 元件全部縮成一點，變成 DAG 後，計算有幾個節點的 indegree 等於零，其零的個數就是答案。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="comment">// similar as UVa 11504 - Dominos </span></span><br><span class="line"><span class="comment">// algorithm: SCC</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> MAXN = <span class="number">32767</span>;</span><br><span class="line"><span class="keyword">class</span> SCC &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">int</span> n;</span><br><span class="line">    <span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; g[MAXN], dag[MAXN];</span><br><span class="line">    <span class="comment">// &lt;SCC begin&gt;</span></span><br><span class="line">    <span class="keyword">int</span> vfind[MAXN], findIdx;</span><br><span class="line">    <span class="keyword">int</span> stk[MAXN], stkIdx;</span><br><span class="line">    <span class="keyword">int</span> in_stk[MAXN], visited[MAXN];</span><br><span class="line">    <span class="keyword">int</span> contract[MAXN];</span><br><span class="line">    <span class="keyword">int</span> scc_cnt;</span><br><span class="line">    <span class="comment">// &lt;SCC end&gt;</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">scc</span><span class="params">(<span class="keyword">int</span> u)</span> </span>&#123;</span><br><span class="line">        in_stk[u] = visited[u] = <span class="number">1</span>;</span><br><span class="line">        stk[++stkIdx] = u, vfind[u] = ++findIdx;</span><br><span class="line">        <span class="keyword">int</span> mn = vfind[u], v;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; g[u].size(); i++) &#123;</span><br><span class="line">        	v = g[u][i];</span><br><span class="line">            <span class="keyword">if</span>(!visited[v])</span><br><span class="line">                mn = min(mn, scc(v));</span><br><span class="line">            <span class="keyword">if</span>(in_stk[v])</span><br><span class="line">                mn = min(mn, vfind[v]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(mn == vfind[u]) &#123;</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                in_stk[stk[stkIdx]] = <span class="number">0</span>;</span><br><span class="line">                contract[stk[stkIdx]] = scc_cnt;</span><br><span class="line">            &#125; <span class="keyword">while</span>(stk[stkIdx--] != u);</span><br><span class="line">            scc_cnt++;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> mn;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">addEdge</span><span class="params">(<span class="keyword">int</span> u, <span class="keyword">int</span> v)</span> </span>&#123; <span class="comment">// u -&gt; v</span></span><br><span class="line">        g[u].push_back(v);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">solve</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            visited[i] = in_stk[i] = <span class="number">0</span>;</span><br><span class="line">        scc_cnt = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        	<span class="keyword">if</span> (visited[i])	<span class="keyword">continue</span>;</span><br><span class="line">        	stkIdx = findIdx = <span class="number">0</span>;</span><br><span class="line">        	scc(i);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">make_DAG</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> x, y;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            x = contract[i];</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; g[i].size(); j++) &#123;</span><br><span class="line">                y = contract[g[i][j]];</span><br><span class="line">                <span class="keyword">if</span> (x != y)</span><br><span class="line">                    dag[x].push_back(y);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; scc_cnt; i++) &#123;</span><br><span class="line">            sort(dag[i].begin(), dag[i].end());</span><br><span class="line">            dag[i].resize(unique(dag[i].begin(), dag[i].end()) - dag[i].begin());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;n = n;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">            g[i].clear(), dag[i].clear();</span><br><span class="line">    &#125;</span><br><span class="line">&#125; g;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> testcase, cases = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;testcase);</span><br><span class="line">    <span class="keyword">while</span> (testcase--) &#123;</span><br><span class="line">        <span class="keyword">int</span> n, m, u, v;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;m);</span><br><span class="line">        g.init(n);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">            <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;u, &amp;v);</span><br><span class="line">            u--, v--;</span><br><span class="line">            g.addEdge(u, v);</span><br><span class="line">        &#125;</span><br><span class="line">        g.solve();</span><br><span class="line">        g.make_DAG();</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> indeg[MAXN] = &#123;&#125;, ret = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; g.scc_cnt; i++) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;e : g.dag[i]) &#123;</span><br><span class="line">                indeg[e]++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; g.scc_cnt; i++)</span><br><span class="line">            ret += indeg[i] == <span class="number">0</span>;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Case %d: %d\n"</span>, ++cases, ret);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-          </div>
-          <div class="toggle-input article-more-link"><a>Read More +</a></div>
-        
-      
-    </div>
-
-  </div>
-  
-</article>
-
-
-  
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/77/">77</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/78/">78</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -685,7 +688,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">107</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">37</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/">學校課程</a><span class="category-list-count">108</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/介面設計/">介面設計</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/作業系統/">作業系統</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/即時系統/">即時系統</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/大學專題/">大學專題</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/巨量資料/">巨量資料</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/平行程式/">平行程式</a><span class="category-list-count">38</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/敏捷方法/">敏捷方法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/數位影像生成/">數位影像生成</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/編譯器/">編譯器</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/自然語言/">自然語言</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/虛擬實境/">虛擬實境</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算型智慧/">計算型智慧</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/計算幾何/">計算幾何</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資料庫系統/">資料庫系統</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/資訊安全/">資訊安全</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/學校課程/通識課程/">通識課程</a><span class="category-list-count">14</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/手札日記/">手札日記</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/">網頁設計</a><span class="category-list-count">15</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/About-This-Blog/">About This Blog</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/HTML5/">HTML5</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/JQuery/">JQuery</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/Markdown/">Markdown</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/網頁設計/NodeJs/">NodeJs</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/">解題區</a><span class="category-list-count">617</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/Latex/">Latex</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/出題解題/">出題解題</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-POJ/">解題區 - POJ</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-UVa/">解題區 - UVa</a><span class="category-list-count">479</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-Zerojudge/">解題區 - Zerojudge</a><span class="category-list-count">76</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-其他題目/">解題區 - 其他題目</a><span class="category-list-count">39</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/解題區/解題區-未解題目/">解題區 - 未解題目</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/雜言筆記/">雜言筆記</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -695,6 +698,14 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a class="text" href="/2016/06/28/jg-10116/">
+              
+                <i class="icon-file-o"></i> 
+              
+            批改娘 10116. Fast Dynamic Programming Computing I (OpenMP)</a>
+          </li>
         
           <li>
             <a class="text" href="/2016/06/28/jg-10113/">
@@ -766,14 +777,6 @@
                 <i class="icon-file-o"></i> 
               
             批改娘 10104. Streams and Concurrency (CUDA)</a>
-          </li>
-        
-          <li>
-            <a class="text" href="/2016/06/28/jg-10103/">
-              
-                <i class="icon-file-o"></i> 
-              
-            批改娘 10103. Advanced Matrix Calculator (CUDA)</a>
           </li>
         
       </ul>
